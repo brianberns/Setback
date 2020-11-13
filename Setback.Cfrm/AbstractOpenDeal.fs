@@ -37,7 +37,7 @@ type AbstractOpenDeal =
 module AbstractOpenDeal =
 
     /// Creates an open deal from the given hands.
-    let create dealer (hands : Map<_, Hand>) =
+    let fromHands dealer (hands : Map<_, Hand>) =
         {
             ClosedDeal =
                 AbstractClosedDeal.initial
@@ -59,6 +59,33 @@ module AbstractOpenDeal =
                     |> Seq.collect snd
                     |> Seq.sumBy (fun card -> card.Rank.GamePoints)
         }
+
+    /// Deals cards from the given deck to each player.
+    let fromDeck dealer deck =
+
+        let numCardsPerGroup = 3
+        assert (Setback.numCardsPerHand % numCardsPerGroup = 0)
+
+        deck.Cards
+
+                // number each card
+            |> Seq.mapi (fun iCard card -> iCard, card)
+
+                // assign each card to a player
+            |> Seq.groupBy (fun (iCard, card) ->
+                dealer |> Seat.incr ((iCard / numCardsPerGroup) + 1))   // deal first group of cards to dealer's left
+
+                // gather each player's cards
+            |> Seq.map (fun (seat, pairs) ->
+                let hand : Hand =
+                    pairs
+                        |> Seq.map snd
+                        |> Seq.take Setback.numCardsPerHand
+                seat, hand)
+            |> Map
+
+                // create a deal from these hands
+            |> fromHands dealer
 
     /// Indicates whether the given deal is complete.
     let isComplete deal =

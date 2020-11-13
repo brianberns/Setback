@@ -28,7 +28,7 @@ module Seat =
         | _ -> failwith "Unexpected seat"
 
     /// Nth seat after the given seat.
-    let private incr n (seat : Seat) =
+    let incr n (seat : Seat) =
         assert(n >= 0)
         (int seat + n) % numSeats
             |> enum<Seat>

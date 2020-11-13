@@ -14,7 +14,7 @@ module Team =
     let numTeams = 2
 
     /// Nth team after the given team.
-    let private incr n (team : Team) =
+    let incr n (team : Team) =
         assert(n >= 0)
         { Id = (team.Id + n) % numTeams }
 
