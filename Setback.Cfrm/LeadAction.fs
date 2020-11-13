@@ -178,8 +178,8 @@ module LeadAction =
     /// String representation of a follow action.
     let layout =
         [|
-            SpanLayout.ofLength 1
-            SpanLayout.ofLength 1
+            SpanLayout.ofLength 1   // action type
+            SpanLayout.ofLength 1   // action detail
         |] |> SpanLayout.combine
 
     /// String representation of a lead action.

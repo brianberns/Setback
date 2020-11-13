@@ -3,7 +3,7 @@
 open Setback
 
 /// Abstract view of a closed deal (i.e. excluding unplayed cards,
-/// which are kept private by each player).
+/// which are private to each player).
 type AbstractClosedDeal =
     {
         /// Auction phase of this deal.

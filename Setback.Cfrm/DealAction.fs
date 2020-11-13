@@ -17,5 +17,5 @@ module DealAction =
 
     /// String representation of a deal action.
     let copyTo span = function
-        | DealBidAction _ -> failwith "Unexpected"
+        | DealBidAction _ -> failwith "Unexpected"   // bid actions never require explicit representation
         | DealPlayAction action -> PlayAction.copyTo span action

@@ -28,6 +28,7 @@ module BidAction =
 
         let pairs =
             hand
+                    // determine strength of each suit
                 |> Seq.groupBy (fun card -> card.Suit)
                 |> Seq.map (fun (suit, cards) ->
                     let strength =
@@ -40,19 +41,24 @@ module BidAction =
                             |> Seq.sortDescending
                             |> Seq.toArray
                     strength, (suit, ranks))
-                |> Seq.sortWith (fun (strengthA, (_, ranksA)) (strengthB, (_, ranksB)) ->
-                    let value =
-                        match compare strengthA strengthB with
-                            | 0 -> compareArrays ranksA ranksB
-                            | value -> value
-                    -1 * value)
+
+                    // sort descending by strength
+                |> Seq.sortWith (
+                    fun (strengthA, (_, ranksA)) (strengthB, (_, ranksB)) ->
+                        let value =
+                            match compare strengthA strengthB with
+                                | 0 -> compareArrays ranksA ranksB   // ensure deterministic behavior
+                                | value -> value
+                        -1 * value)
                 |> Seq.toArray
         assert(pairs.Length > 0)
 
         [|
+                // always choose strongest suit
             let strength0, (suit0, ranks0) = pairs.[0]
             yield suit0, ranks0
 
+                // also choose second-strongest suit?
             if pairs.Length > 1 then
                 let strength1, (suit1, ranks1) = pairs.[1]
                 assert(strength0 > strength1

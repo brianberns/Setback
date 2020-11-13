@@ -178,9 +178,10 @@ module FollowAction =
 
     /// String representation of a follow action.
     let layout =
-        SpanLayout.ofLength 1
-            |> Array.replicate 2
-            |> SpanLayout.combine
+        [|
+            SpanLayout.ofLength 1   // action type
+            SpanLayout.ofLength 1   // action detail
+        |] |> SpanLayout.combine
 
     /// String representation of a follow action.
     let copyTo (span : Span<_>) action =
