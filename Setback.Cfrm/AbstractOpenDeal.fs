@@ -60,7 +60,7 @@ module AbstractOpenDeal =
                     |> Seq.sumBy (fun card -> card.Rank.GamePoints)
         }
 
-    /// Indicates whether the given abstract deal is complete.
+    /// Indicates whether the given deal is complete.
     let isComplete deal =
         deal.ClosedDeal
             |> AbstractClosedDeal.isComplete
@@ -112,8 +112,8 @@ module AbstractOpenDeal =
         assert(result || deal |> isComplete |> not)
         result
 
-    /// Abstract score of this deal (relative to the dealer's team),
-    /// not counting any setback penalty.
+    /// Score of this deal (relative to the dealer's team), not
+    /// counting any setback penalty.
     let dealScore deal =
 
             // assigns a single point to the given team, if any
@@ -178,7 +178,7 @@ module AbstractOpenDeal =
         deal.HandLowTrumpRankOpts.[iPlayer]
 
     /// Actions available to the current player with the given
-    /// hand in the given abstract deal.
+    /// hand in the given deal.
     let getActions deal =
         if isComplete deal then
             Array.empty
@@ -191,7 +191,7 @@ module AbstractOpenDeal =
                     hand
                     handLowTrumpRankOpt
 
-    /// Adds a bid to the auction of the given abstract deal.
+    /// Adds a bid to the auction of the given deal.
     let addBid bid (deal : AbstractOpenDeal) =
         {
             deal with
@@ -200,7 +200,7 @@ module AbstractOpenDeal =
                         |> AbstractClosedDeal.addBid bid
         }
 
-    /// Plays a card in the given abstract deal.
+    /// Plays a card in the given deal.
     let addPlay (card : Card) deal : AbstractOpenDeal =
 
             // determine High, Low, and Jack cards when trump is first established

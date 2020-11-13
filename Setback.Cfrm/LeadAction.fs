@@ -22,7 +22,7 @@ type LeadAction =
 
 module LeadAction =
 
-    /// Creates a lead action for the given card in the given abstract
+    /// Creates a lead action for the given card in the given
     /// playout.
     let createOpt
         hand

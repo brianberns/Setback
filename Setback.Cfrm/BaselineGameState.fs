@@ -209,7 +209,7 @@ module BaselineGameState =
                 Hand = AuctionHand.parse (layout.Slice(2, span))
             }
 
-    /// String representation of an abstract open deal.
+    /// String representation of an open deal.
     let copyTo (span : Span<_>) dealActions (openDeal : AbstractOpenDeal) =
 
         let closedDeal = openDeal.ClosedDeal

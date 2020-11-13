@@ -22,7 +22,7 @@ module AbstractClosedDeal =
             PlayoutOpt = None
         }
 
-    /// Indicates whether the given abstract deal is complete.
+    /// Indicates whether the given deal is complete.
     let isComplete closedDeal =
         match closedDeal.PlayoutOpt with
             | None ->
@@ -43,7 +43,7 @@ module AbstractClosedDeal =
                     |> AbstractPlayout.currentPlayerIndex
 
     /// Actions available to the current player with the given
-    /// hand in the given abstract deal.
+    /// hand in the given deal.
     let getActions hand handLowTrumpRankOpt closedDeal =
         match closedDeal.PlayoutOpt with
             | None ->
@@ -57,7 +57,7 @@ module AbstractClosedDeal =
                         handLowTrumpRankOpt
                     |> Array.map DealPlayAction
 
-    /// Adds a bid to the auction of the given abstract deal.
+    /// Adds a bid to the auction of the given deal.
     let addBid bid closedDeal =
         assert(closedDeal.PlayoutOpt.IsNone)
         let auction =
@@ -76,7 +76,7 @@ module AbstractClosedDeal =
                 PlayoutOpt = playoutOpt
         }
 
-    /// Plays a card in the given abstract deal.
+    /// Plays a card in the given deal.
     let addPlay card closedDeal =
         assert(closedDeal.PlayoutOpt.IsSome)
         {

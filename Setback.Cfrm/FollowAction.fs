@@ -35,8 +35,7 @@ type FollowAction =
 
 module FollowAction =
 
-    /// Creates a follow action for the given card in the given abstract
-    /// playout.
+    /// Creates a follow action for the given card in the given playout.
     let create lowTrumpRankOpt (playout : AbstractPlayout) (card : Card) =
         let trick = playout.CurrentTrick
         assert(trick.NumPlays > 0)

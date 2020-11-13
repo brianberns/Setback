@@ -38,14 +38,14 @@ module AbstractTrickPlay =
             IsTrump = (card.Suit = trump)
         }
 
-    /// String representation of an abstract trick play.
+    /// String representation of a trick play.
     let layout =
         [|
             SpanLayout.ofLength 1   // rank
             SpanLayout.ofLength 1   // suit
         |] |> SpanLayout.combine
 
-    /// String representation of an abstract trick play.
+    /// String representation of a trick play.
     let copyTo (span : Span<_>) lowTrumpRankOpt play =
         assert(span.Length = layout.Length)
 
@@ -123,8 +123,8 @@ type AbstractTrick =
 
 module AbstractTrick =
 
-    /// Creates an abstract trick with the given leader, relative
-    /// to the dealer.
+    /// Creates a trick with the given leader, relative to the
+    /// dealer.
     let create lowTrumpRankOpt leaderIdx =
         assert(leaderIdx >= 0 && leaderIdx < Seat.numSeats)
         {
@@ -135,7 +135,7 @@ module AbstractTrick =
             LowTrumpRankOpt = lowTrumpRankOpt
         }
 
-    /// Indicates whether the given abstract trick is complete.
+    /// Indicates whether the given trick is complete.
     let isComplete (trick : AbstractTrick) =
         assert(trick.NumPlays >= 0 && trick.NumPlays <= Seat.numSeats)
         assert(trick.Plays.Length = trick.NumPlays)
@@ -145,7 +145,7 @@ module AbstractTrick =
     let currentPlayerIndex (trick : AbstractTrick) =
         (trick.NumPlays + trick.LeaderIndex) % Seat.numSeats
 
-    /// Adds the given card to the given abstract trick.
+    /// Adds the given card to the given trick.
     let addPlay trump (card : Card) trick =
         assert(trick |> isComplete |> not)
         {
@@ -228,14 +228,14 @@ module AbstractTrick =
                 .Slice(plays.Length * AbstractTrickPlay.layout.Length)
                 .Fill('.')
 
-    /// String representation of an abstract trick.
+    /// String representation of a trick.
     let layout =
         [|
             Plays.layout            // cards played
             SpanLayout.ofLength 1   // trick winner so far, relative to trick leader
         |] |> SpanLayout.combine
 
-    /// String representation of an abstract trick.
+    /// String representation of a trick.
     let copyTo (span : Span<_>) handLowTrumpRankOpt trick =
         assert(trick |> isComplete |> not)
         assert(span.Length = layout.Length)

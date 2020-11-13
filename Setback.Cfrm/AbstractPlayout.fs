@@ -23,7 +23,7 @@ type AbstractPlayout =
 
 module AbstractPlayout =
 
-    /// Initializes an abstract playout with the given auction result.
+    /// Initializes a playout with the given auction result.
     let create highBid =
         assert(highBid.BidderIndex >= 0)
         assert(highBid.Bid > Bid.Pass)
@@ -35,7 +35,7 @@ module AbstractPlayout =
                 AbstractTrick.create None highBid.BidderIndex
         }
 
-    /// Indicates whether the given abstract playout is complete.
+    /// Indicates whether the given playout is complete.
     let isComplete playout =
         playout.History
             |> AbstractPlayoutHistory.isComplete
@@ -135,14 +135,14 @@ module AbstractPlayout =
             |]
         else dealScore
 
-    /// String representation of an abstract playout.
+    /// String representation of a playout.
     let layout =
         [|
             AbstractPlayoutHistory.layout
             AbstractTrick.layout
         |] |> SpanLayout.combine
 
-    /// String representation of an abstract playout.
+    /// String representation of a playout.
     let copyTo (span : Span<_>) handLowTrumpRankOpt playout =
         assert(playout |> isComplete |> not)
         assert(span.Length = layout.Length)

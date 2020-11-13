@@ -24,7 +24,7 @@ module AbstractScore =
         Array.replicate Team.numTeams 0
             |> AbstractScore
 
-    /// Creates an abstract score from the given points, relative
+    /// Creates a score from the given points, relative
     /// to the given team.
     let create baseTeam (points : Map<Team, int>) =
         baseTeam

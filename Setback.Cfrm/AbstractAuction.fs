@@ -15,7 +15,7 @@ type AbstractAuction =
 
 module AbstractAuction =
 
-    /// Initial abstract auction state.
+    /// Initial auction state.
     let initial =
         {
             NumBids = 0
@@ -49,7 +49,7 @@ module AbstractAuction =
                     [| Bid.Pass |]
             | _ -> failwith "Unexpected"
 
-    /// Adds the given bid to the given abstract auction.
+    /// Adds the given bid to the given auction.
     let addBid bid auction =
         assert(auction |> legalBids |> Seq.contains bid)
         let highBid =
@@ -68,13 +68,13 @@ module AbstractAuction =
                 HighBid = highBid
         }
 
-    /// String representation of an abstract auction.
+    /// String representation of an auction.
     let layout =
         [|
             SpanLayout.ofLength 1   // high bid so far
         |] |> SpanLayout.combine
 
-    /// String representation of an abstract auction.
+    /// String representation of an auction.
     let copyTo (span : Span<_>) auction =
         assert(auction |> isComplete |> not)
         assert(span.Length = layout.Length)

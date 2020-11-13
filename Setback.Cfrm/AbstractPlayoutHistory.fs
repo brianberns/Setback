@@ -131,7 +131,7 @@ module AbstractPlayoutHistory =
                         else acc.TrumpVoids
                 })
 
-    /// String representation of an abstract playout history.
+    /// String representation of a playout history.
     let layout =
         [|
             SpanLayout.ofLength 1   // 0: high established
@@ -141,7 +141,7 @@ module AbstractPlayoutHistory =
             SpanLayout.ofLength 1   // 4: trump voids
         |] |> SpanLayout.combine
 
-    /// String representation of an abstract playout history.
+    /// String representation of a playout history.
     let copyTo (span : Span<_>) handLowTrumpRankOpt trick history =
         assert(history |> isComplete |> not)
         assert(span.Length = layout.Length)
