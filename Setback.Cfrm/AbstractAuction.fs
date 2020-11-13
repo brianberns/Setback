@@ -22,7 +22,7 @@ module AbstractAuction =
             HighBid = AbstractHighBid.none
         }
 
-    /// Indicates whether the given abstract auction is complete.
+    /// Indicates whether the given auction is complete.
     let isComplete auction =
         assert(
             auction.NumBids >= 0
@@ -42,8 +42,8 @@ module AbstractAuction =
             | Bid.Two -> [| Bid.Pass; Bid.Three; Bid.Four |]
             | Bid.Three -> [| Bid.Pass; Bid.Four |]
             | Bid.Four ->
-                if currentBidderIndex auction = 0 then   // dealer can take four-bid
-                    assert(auction.NumBids = Seat.numSeats - 1)
+                if auction.NumBids = Seat.numSeats - 1 then   // dealer can take four-bid
+                    assert(currentBidderIndex auction = 0)
                     [| Bid.Pass; Bid.Four |]
                 else
                     [| Bid.Pass |]
@@ -51,7 +51,7 @@ module AbstractAuction =
 
     /// Adds the given bid to the given abstract auction.
     let addBid bid auction =
-        assert(auction |> isComplete |> not)
+        assert(auction |> legalBids |> Seq.contains bid)
         let highBid =
             if bid = Bid.Pass then
                 auction.HighBid
@@ -86,19 +86,3 @@ module AbstractAuction =
                 && currentBidderIndex auction = 0 then 'D'   // dealer can override?
             else highBid |> int |> Char.fromDigit
         layout.Slice(0, span).Fill(cBid)
-
-    type Record =
-        {
-            HighBid : Bid
-            DealerOverride : bool
-        }
-
-    let parse (span : Span<_>) =
-        assert(span.Length = layout.Length)
-        let bidStr = layout.Slice(0, span).ToString()
-        {
-            HighBid =
-                if bidStr = "D" then Bid.Four
-                else bidStr |> int |> enum<Bid>
-            DealerOverride = bidStr = "D"
-        }

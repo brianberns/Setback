@@ -123,19 +123,6 @@ module BaselineGameState =
             let slice = layout.Slice(1, span)
             PlayoutHand.copyTo slice dealActions
 
-        type Record =
-            {
-                Playout : AbstractPlayout.Record
-                Hand : PlayoutHand.Record
-            }
-
-        let parse (span : Span<_>) =
-            assert(span.Length = layout.Length)
-            {
-                Playout = AbstractPlayout.parse (layout.Slice(0, span))
-                Hand = PlayoutHand.parse (layout.Slice(1, span))
-            }
-
     /// String representation for public+private auction information.
     module AbstractAuctionPlus =
 
@@ -165,19 +152,6 @@ module BaselineGameState =
 
                 // fill
             layout.Slice(2, span).Fill('.')
-
-        type Record =
-            {
-                Auction : AbstractAuction.Record
-                Hand : AuctionHand.Record
-            }
-
-        let parse (span : Span<_>) =
-            assert(span.Length = layout.Length)
-            {
-                Auction = AbstractAuction.parse (layout.Slice(0, span))
-                Hand = AuctionHand.parse (layout.Slice(1, span))
-            }
 
     /// String representation for establishing trump.
     module EstablishTrump =
@@ -323,8 +297,8 @@ type BaselineGameState(openDeal : AbstractOpenDeal) =
                                 |> AbstractOpenDeal.dealScore
 
                             // apply Setback penalty, if necessary
-                        playout.HighBid
-                            |> AbstractHighBid.finalizeDealScore dealScoreRaw
+                        playout
+                            |> AbstractPlayout.finalizeDealScore dealScoreRaw
 
                         // transform to zero-sum
                     let delta =

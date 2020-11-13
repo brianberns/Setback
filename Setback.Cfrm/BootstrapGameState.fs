@@ -171,8 +171,8 @@ type BootstrapGameState(openDeal : AbstractOpenDeal, gameScore : AbstractScore) 
                                     |> AbstractOpenDeal.dealScore
 
                                 // apply Setback penalty, if necessary
-                            playout.HighBid
-                                |> AbstractHighBid.finalizeDealScore dealScoreRaw
+                            playout
+                                |> AbstractPlayout.finalizeDealScore dealScoreRaw
 
                             // update game score as a result of this deal
                         let gameScore =
@@ -254,8 +254,8 @@ type BootstrapGameState(openDeal : AbstractOpenDeal, gameScore : AbstractScore) 
                         let dealScore =
                             let dealScoreRaw =
                                 openDeal |> AbstractOpenDeal.dealScore
-                            playout.HighBid
-                                |> AbstractHighBid.finalizeDealScore dealScoreRaw
+                            playout
+                                |> AbstractPlayout.finalizeDealScore dealScoreRaw
                         let gameScore = gameScore + dealScore
                         openDeal, gameScore
 

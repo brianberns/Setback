@@ -41,8 +41,8 @@ module AbstractTrickPlay =
     /// String representation of an abstract trick play.
     let layout =
         [|
-            SpanLayout.ofLength 1
-            SpanLayout.ofLength 1
+            SpanLayout.ofLength 1   // rank
+            SpanLayout.ofLength 1   // suit
         |] |> SpanLayout.combine
 
     /// String representation of an abstract trick play.

@@ -114,6 +114,27 @@ module AbstractPlayout =
                 CurrentTrick = curTrick
         }
 
+    /// Applies setback penalty to the given deal score, if applicable.
+    let finalizeDealScore (dealScore : AbstractScore) playout =
+
+            // determine amount bid by auction-winning team
+        let highBid = playout.HighBid
+        let iBidderTeam =
+            highBid.BidderIndex % Team.numTeams
+        let nBid = int highBid.Bid
+        assert(nBid > 0)
+
+            // apply penalty?
+        if dealScore.[iBidderTeam] < nBid then
+            AbstractScore [|
+                for iTeam = 0 to Team.numTeams - 1 do
+                    if iTeam = iBidderTeam then
+                        yield -nBid
+                    else
+                        yield dealScore.[iTeam]
+            |]
+        else dealScore
+
     /// String representation of an abstract playout.
     let layout =
         [|
@@ -141,14 +162,3 @@ module AbstractPlayout =
             slice
             handLowTrumpRankOpt
             trick
-
-    type Record =
-        {
-            String : string
-        }
-
-    let parse (span : Span<_>) =
-        assert(span.Length = layout.Length)
-        {
-            String = span.ToString()
-        }
