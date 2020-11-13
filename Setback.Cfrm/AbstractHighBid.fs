@@ -16,19 +16,22 @@ type AbstractHighBid =
 
 module AbstractHighBid =
 
+    /// No high bid yet. This state persists until someone makes a bid
+    /// other than Pass.
+    let none =
+        {
+            BidderIndex = -1
+            Bid = Bid.Pass
+        }
+
     /// Creates a high bid for the given bidder, relative to the dealer.
     let create bidderIdx bid =
-        assert(bidderIdx >= -1 && bidderIdx < Seat.numSeats)
-        assert(bidderIdx >= 0 || bid = Bid.Pass)
+        assert(bidderIdx >= 0 && bidderIdx < Seat.numSeats)
+        assert(bid <> Bid.Pass)
         {
             BidderIndex = bidderIdx
             Bid = bid
         }
-
-    /// No high bid yet. This state persists until someone makes a bid
-    /// other than Pass.
-    let none =
-        create -1 Bid.Pass
 
     /// Applies setback penalty to the given deal score, if applicable.
     let finalizeDealScore (dealScore : AbstractScore) highBid =

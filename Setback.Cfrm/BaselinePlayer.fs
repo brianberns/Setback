@@ -5,7 +5,7 @@ open Cfrm
 open PlayingCards
 open Setback
 
-/// A Setback player.
+/// A Setback player. Scores are relative to the dealer.
 type Player<'bidExtra, 'playExtra> =
     {
         /// Function that makes a bid in the given deal.

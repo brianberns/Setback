@@ -2,7 +2,7 @@
 
 open Setback
 
-/// Abstract view of deal/game score, relative to a specific team.
+/// Abstract view of a score, relative to a specific team.
 type AbstractScore =
     | AbstractScore of int[]
 
@@ -12,7 +12,7 @@ type AbstractScore =
         let (AbstractScore points) = this
         points.[index]
 
-    /// Adds two abstract scores.
+    /// Adds two scores.
     static member (+) (AbstractScore pointsA, AbstractScore pointsB) =
         Array.map2 (+) pointsA pointsB
             |> AbstractScore
@@ -21,8 +21,8 @@ module AbstractScore =
 
     /// No score.
     let zero =
-        assert(Team.numTeams = 2)
-        AbstractScore [| 0; 0 |]
+        Array.replicate Team.numTeams 0
+            |> AbstractScore
 
     /// Creates an abstract score from the given points, relative
     /// to the given team.

@@ -36,10 +36,7 @@ module BootstrapPlayer =
                                     deal |> AbstractOpenDeal.currentPlayerIndex
                                 deal.UnplayedCards.[iPlayer]
                             assert(hand.Count = Setback.numCardsPerHand)
-                            BootstrapGameState.toAbbr
-                                auction
-                                score
-                                hand
+                            BootstrapGameState.toAbbr auction score hand
 
                             // profile contains key?
                         profile.Best(key)
