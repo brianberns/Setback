@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <Platforms>AnyCPU;x64</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Prelude.fs" />
+    <Compile Include="SpanLayout.fs" />
+    <Compile Include="AbstractScore.fs" />
+    <Compile Include="AbstractHighBid.fs" />
+    <Compile Include="AbstractAuction.fs" />
+    <Compile Include="AbstractTrick.fs" />
+    <Compile Include="AbstractPlayoutHistory.fs" />
+    <Compile Include="AbstractPlayout.fs" />
+    <Compile Include="BidAction.fs" />
+    <Compile Include="LeadAction.fs" />
+    <Compile Include="FollowAction.fs" />
+    <Compile Include="PlayAction.fs" />
+    <Compile Include="DealAction.fs" />
+    <Compile Include="AbstractClosedDeal.fs" />
+    <Compile Include="AbstractOpenDeal.fs" />
+    <Compile Include="BaselineGameState.fs" />
+    <Compile Include="BaselinePlayer.fs" />
+    <Compile Include="BootstrapGameState.fs" />
+    <Compile Include="BootstrapPlayer.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Cfrm" Version="2.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PlayingCards\PlayingCards.fsproj" />
+    <ProjectReference Include="..\Setback\Setback.fsproj" />
+  </ItemGroup>
+
+</Project>

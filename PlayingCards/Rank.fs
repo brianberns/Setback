@@ -27,19 +27,18 @@ module Rank =
         "23456789TJQKA".[int rank - 2]
 
     /// Converts the given character to a rank.
-    let fromChar c =
-        match c with
-            | 'T' -> Rank.Ten
-            | 'J' -> Rank.Jack
-            | 'Q' -> Rank.Queen
-            | 'K' -> Rank.King
-            | 'A' -> Rank.Ace
-            | _ ->
-                let n = int c - int '0'
-                if n >= 2 && n <= 9 then
-                    enum<Rank> n
-                else
-                    failwith "Unexpected rank char"
+    let fromChar = function
+        | 'T' -> Rank.Ten
+        | 'J' -> Rank.Jack
+        | 'Q' -> Rank.Queen
+        | 'K' -> Rank.King
+        | 'A' -> Rank.Ace
+        | c ->
+            let n = int c - int '0'
+            if n >= 2 && n <= 9 then
+                enum<Rank> n
+            else
+                failwith "Unexpected rank char"
 
 [<AutoOpen>]
 module RankExt =

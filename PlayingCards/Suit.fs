@@ -18,13 +18,12 @@ module Suit =
         "♣♦♥♠".[int suit]
 
     /// Converts the given character to a rank.
-    let fromChar c =
-        match c with
-            | 'C' | '♣' -> Suit.Clubs
-            | 'D' | '♦' -> Suit.Diamonds
-            | 'H' | '♥' -> Suit.Hearts
-            | 'S' | '♠' -> Suit.Spades
-            | _ -> failwith "Unexpected suit char"
+    let fromChar = function
+        | 'C' | '♣' -> Suit.Clubs
+        | 'D' | '♦' -> Suit.Diamonds
+        | 'H' | '♥' -> Suit.Hearts
+        | 'S' | '♠' -> Suit.Spades
+        | _ -> failwith "Unexpected suit char"
 
 [<AutoOpen>]
 module SuitExt =

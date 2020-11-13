@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <Platforms>AnyCPU;x64</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Rank.fs" />
+    <Compile Include="Bid.fs" />
+    <Compile Include="Seat.fs" />
+    <Compile Include="Team.fs" />
+    <Compile Include="Setback.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PlayingCards\PlayingCards.fsproj" />
+  </ItemGroup>
+
+</Project>
