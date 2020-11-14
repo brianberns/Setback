@@ -1,6 +1,7 @@
 ﻿namespace Bernsrite.Setback.Cfrm.Train
 
 open System
+open System.Diagnostics
 
 open Cfrm
 
@@ -10,8 +11,7 @@ open Setback.Cfrm
 
 module Program =
 
-    open System.Diagnostics
-
+    /// Initializes a game.
     let createGame (rng : Random) =
         let dealer = Seat.South
         Deck.shuffle rng
@@ -19,32 +19,42 @@ module Program =
             |> BaselineGameState
 
     let minimize batchSize =
+
+            // initialize
         let rng = Random(0)
-        let initialBatch =
-            CfrBatch.create 2 (fun _ ->
+        let initialState =
+            let numPlayers = 2
+            CfrBatch.create numPlayers (fun _ ->
                 createGame rng)
-        let batchNums = Seq.initInfinite ((+) 1)
+        let batchNums = Seq.initInfinite ((+) 1)   // 1, 2, 3, ...
+
+            // run CFR
         let stopwatch = Stopwatch()
-        printfn "Batch size: %d" batchSize
         printfn "Iteration,Payoff,Size,Time"
-        (initialBatch, batchNums)
+        (initialState, batchNums)
             ||> Seq.fold (fun inBatch batchNum ->
+
+                    // run CFR on this batch of games
                 stopwatch.Start()
                 let outBatch =
                     inBatch
                         |> CounterFactualRegret.minimizeBatch batchSize
                 outBatch.StrategyProfile.Save("Baseline.strategy")
                 stopwatch.Stop()
+
+                    // report results from this batch
                 printfn "%d,%A,%d,%A"
                     (batchNum * batchSize)
-                    outBatch.ExpectedGameValues.[1]
+                    outBatch.ExpectedGameValues.[1]   // value of a deal from the first bidder's point of view
                     outBatch.InfoSetMap.Count
                     stopwatch.Elapsed
                 stopwatch.Reset()
+
+                    // feed results into next loop
                 outBatch)
             |> ignore
 
     [<EntryPoint>]
     let main argv =
-        minimize 100000
+        minimize 10
         0
