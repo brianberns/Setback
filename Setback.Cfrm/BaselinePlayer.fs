@@ -6,13 +6,13 @@ open PlayingCards
 open Setback
 
 /// A Setback player. Scores are relative to the dealer.
-type Player<'bidExtra, 'playExtra> =
+type Player =
     {
         /// Function that makes a bid in the given deal.
-        MakeBid : AbstractScore -> AbstractOpenDeal -> (Bid * Option<'bidExtra>)
+        MakeBid : AbstractScore -> AbstractOpenDeal -> Bid
 
         /// Function that plays a card in the given deal.
-        MakePlay : AbstractScore -> AbstractOpenDeal -> (Card * Option<'playExtra>)
+        MakePlay : AbstractScore -> AbstractOpenDeal -> Card
     }
 
 /// Score-insensitive player.
@@ -45,7 +45,7 @@ module BaselinePlayer =
                 auction |> AbstractAuction.legalBids
             match legalBids.Length with
                 | 0 -> failwith "Unexpected"
-                | 1 -> legalBids.[0], None   // trivial case
+                | 1 -> legalBids.[0]   // trivial case
 
                     // must choose between multiple legal bids
                 | _ ->
@@ -54,10 +54,10 @@ module BaselinePlayer =
                         let hand = AbstractOpenDeal.currentHand deal
                         BidAction.getActions hand auction
 
-                    let bidAction, key, strategy =
+                    let bidAction =
                         match legalBidActions.Length with
                             | 0 -> failwith "Unexpected"
-                            | 1 -> legalBidActions.[0], "Forced", [| 1.0 |]   // trivial case
+                            | 1 -> legalBidActions.[0]   // trivial case
 
                                 // choose action
                             | _ ->
@@ -70,33 +70,16 @@ module BaselinePlayer =
                                     // profile contains key?
                                 profile.Best(key)
                                     |> Option.map (fun iAction ->
-                                        legalBidActions.[iAction], key, profile.Map.[key])
+                                        legalBidActions.[iAction])
 
                                         // fallback
                                     |> Option.defaultWith (fun () ->
-                                        let legalBidSet = set legalBids
-                                        let bid =
-                                            if legalBidSet.Contains(Bid.Three) then Bid.Three
-                                            else Bid.Pass
-                                        let zeros = Array.replicate legalBidActions.Length 0.0
-                                        BidAction bid, key, zeros)
+                                        if legalBids |> Array.contains Bid.Three then Bid.Three
+                                        else Bid.Pass
+                                        |> BidAction)
 
                         // convert action to bid
-                    let bid = BidAction.getBid auction bidAction
-
-                        // assemble extra information
-                    let extraOpt =
-                        let names =
-                            legalBidActions
-                                |> Seq.map (fun (BidAction bid) ->
-                                    bid.ToString())
-                                |> Seq.toArray
-                        Some {
-                            Key = key
-                            Probabilities = (Array.zip names strategy)
-                        }
-
-                    bid, extraOpt
+                    BidAction.getBid auction bidAction
 
         /// Plays a card in the given deal.
         let makePlay (_ : AbstractScore) (deal : AbstractOpenDeal) =
@@ -117,7 +100,7 @@ module BaselinePlayer =
                     | _ -> failwith "Unexpected"
             match legalPlays.Length with
                 | 0 -> failwith "Unexpected"
-                | 1 -> legalPlays.[0], None   // trivial case
+                | 1 -> legalPlays.[0]   // trivial case
 
                     // must choose between multiple legal plays
                 | _ ->
@@ -126,10 +109,10 @@ module BaselinePlayer =
                     let legalPlayActions =
                         PlayAction.getActions hand handLowTrumpRankOpt playout
 
-                    let action, key, strategy =
+                    let action =
                         match legalPlayActions.Length with
                             | 0 -> failwith "Unexpected"
-                            | 1 -> legalPlayActions.[0], "Forced", [| 1.0 |]   // trivial case
+                            | 1 -> legalPlayActions.[0]   // trivial case
 
                                 // choose action
                             | _ ->
@@ -143,35 +126,18 @@ module BaselinePlayer =
                                     // profile contains key?
                                 profile.Best(key)
                                     |> Option.map (fun iAction ->
-                                        legalPlayActions.[iAction], key, profile.Map.[key])
+                                        legalPlayActions.[iAction])
 
                                         // fallback
                                     |> Option.defaultWith (fun () ->
-                                        let zeros = Array.replicate legalPlayActions.Length 0.0
-                                        legalPlayActions.[0], key, zeros)
+                                        legalPlayActions.[0])
 
                         // convert action to card
-                    let card =
-                        PlayAction.getPlay
-                            hand
-                            handLowTrumpRankOpt
-                            playout
-                            action
-
-                        // assemble extra information
-                    let extraOpt =
-                        let names =
-                            legalPlayActions
-                                |> Seq.map (function
-                                    | Lead action -> action.ToString()
-                                    | Follow action -> action.ToString())
-                                |> Seq.toArray
-                        Some {
-                            Key = key
-                            Probabilities = (Array.zip names strategy)
-                        }
-
-                    card, extraOpt
+                    PlayAction.getPlay
+                        hand
+                        handLowTrumpRankOpt
+                        playout
+                        action
 
         {
             MakeBid = makeBid

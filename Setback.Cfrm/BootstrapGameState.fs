@@ -24,6 +24,8 @@ module BootstrapGameState =
 
     module AbstractScore =
 
+        /// Converts the given score to deal points needed to win the
+        /// game, relative to the dealer's team.
         let toNeed (AbstractScore scores) =
             let winThreshold =
                 seq {
@@ -34,9 +36,8 @@ module BootstrapGameState =
             assert(Team.numTeams = 2)
             winThreshold - scores.[0], winThreshold - scores.[1]
 
-        /// String representation of an Us vs. Them score.
+        /// String representation of a game score.
         let toAbbr (gameScore : AbstractScore) =
-            assert(Team.numTeams = 2)
 
             let toChar need =
                 if need <= Setback.numDealPoints then
@@ -67,6 +68,7 @@ module BootstrapGameState =
                 hand,
                 SpanAction(AuctionHand.copyTo))
 
+    // String representation of the given game state.
     let toAbbr auction (gameScore : AbstractScore) hand =
         let gameScore =
             let iCurTeam =   // index of current team relative to dealer
@@ -82,14 +84,12 @@ module BootstrapGameState =
             (AbstractAuction.toAbbr auction)
             (Hand.toAbbr hand)
 
+    /// Baseline strategy profile used for playout.
     let baselineProfile =
-        printfn "Reading baseline strategy profile from disk..."
-        let profile = StrategyProfile.Load("Baseline.strategy")
-        printfn "%d entries" profile.Map.Count
-        profile
+        StrategyProfile.Load("Baseline.strategy")
 
     /// Plays a card in the given deal.
-    let play (deal : AbstractOpenDeal) =
+    let play deal =
 
             // get legal plays in this situation
         let hand =
@@ -148,8 +148,8 @@ module BootstrapGameState =
                     playout
                     action
 
-/// State of a Setback game for counterfactual regret minimization.
-/// Score-sensitive.
+/// State of a Setback game for counterfactual regret minimization
+/// of score-sensitive bidding behavior.
 type BootstrapGameState(openDeal : AbstractOpenDeal, gameScore : AbstractScore) =
     inherit BaselineGameState(openDeal)
 
