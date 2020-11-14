@@ -22,6 +22,9 @@ module BidAction =
                     | value -> value
         loop 0
 
+    /// Maximum number of suits considered during bidding.
+    let numSuitsMax = 2
+
     /// Chooses the best trump ranks from the given hand, sorted
     /// in descending order.
     let chooseTrumpRanks (hand : Hand) =
@@ -53,20 +56,23 @@ module BidAction =
                 |> Seq.toArray
         assert(pairs.Length > 0)
 
-        [|
-                // always choose strongest suit
-            let strength0, (suit0, ranks0) = pairs.[0]
-            yield suit0, ranks0
+        let result =
+            [|
+                    // always choose strongest suit
+                let strength0, (suit0, ranks0) = pairs.[0]
+                yield suit0, ranks0
 
-                // also choose second-strongest suit?
-            if pairs.Length > 1 then
-                let strength1, (suit1, ranks1) = pairs.[1]
-                assert(strength0 > strength1
-                    || (strength0 = strength1 && compareArrays ranks0 ranks1 >= 0))
-                if strength0 - strength1 < 2
-                    && compare ranks0 ranks1 <> 0 then
-                    yield suit1, ranks1
-        |]
+                    // also choose second-strongest suit?
+                if pairs.Length > 1 then
+                    let strength1, (suit1, ranks1) = pairs.[1]
+                    assert(strength0 > strength1
+                        || (strength0 = strength1 && compareArrays ranks0 ranks1 >= 0))
+                    if strength0 - strength1 < 2
+                        && compare ranks0 ranks1 <> 0 then
+                        yield suit1, ranks1
+            |]
+        assert(result.Length <= numSuitsMax)
+        result
 
     /// Actions available in the given situation, sorted for
     /// reproducibility.

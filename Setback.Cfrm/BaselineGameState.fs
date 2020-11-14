@@ -13,13 +13,10 @@ module BaselineGameState =
     /// String representation for player-private auction information.
     module AuctionHand =
 
-        /// Maximum number of suits considered during bidding.
-        let private numSuitsMax = 2
-
         /// String representation of a hand.
         let layout =
             SpanLayout.ofLength Setback.numCardsPerHand
-                |> Array.replicate numSuitsMax
+                |> Array.replicate BidAction.numSuitsMax
                 |> SpanLayout.combine
 
         /// String representation of a single suit.
@@ -43,8 +40,8 @@ module BaselineGameState =
                 hand
                     |> BidAction.chooseTrumpRanks
                     |> Array.map snd
-            assert(ranksArrays.Length <= numSuitsMax)
-            for iRanks = 0 to numSuitsMax - 1 do
+            assert(ranksArrays.Length <= BidAction.numSuitsMax)
+            for iRanks = 0 to BidAction.numSuitsMax - 1 do
                 let slice = layout.Slice(iRanks, span)
                 if iRanks < ranksArrays.Length then
                     copySuitTo ranksArrays.[iRanks] slice
@@ -52,53 +49,23 @@ module BaselineGameState =
                     assert(iRanks > 0)
                     slice.Fill('.')
 
-        type Record =
-            {
-                SuitA : Option<string>
-                SuitB : Option<string>
-            }
-
-        let private parseSuit (span : Span<_>) =
-            let suit = span.ToString().Trim('.')
-            if suit = "" then None else Some suit
-
-        let parse (span : Span<_>) =
-            assert(span.Length = layout.Length)
-            {
-                SuitA = parseSuit (layout.Slice(0, span))
-                SuitB = parseSuit (layout.Slice(1, span))
-            }
-
     /// String representation for player-private playout information.
     module PlayoutHand =
 
-        let maxDealActions = 6
-
         /// String representation of playout actions.
         let layout =
-            Array.replicate maxDealActions DealAction.layout
+            Array.replicate PlayAction.maxPerHand DealAction.layout
                 |> SpanLayout.combine
 
         /// String representation of playout actions.
         let copyTo (span : Span<_>) (dealActions : _[]) =
-            assert(dealActions.Length <= maxDealActions)
+            assert(dealActions.Length <= PlayAction.maxPerHand)
             assert(span.Length = layout.Length)
             for iAction = 0 to dealActions.Length - 1 do
                 let action = dealActions.[iAction]
                 let slice = layout.Slice(iAction, span)
                 DealAction.copyTo slice action
             span.Slice(2 * dealActions.Length).Fill('.')
-
-        type Record =
-            {
-                String : string
-            }
-
-        let parse (span : Span<_>) =
-            assert(span.Length = layout.Length)
-            {
-                String = span.ToString()
-            }
 
     /// String representation for public+private playout information.
     module AbstractPlayoutPlus =
@@ -191,23 +158,6 @@ module BaselineGameState =
 
                 // fill
             layout.Slice(3, span).Fill('.')
-
-        type Record =
-            {
-                HighBid : Bid
-                Hand : AuctionHand.Record
-            }
-
-        let parse (span : Span<_>) =
-            assert(span.Length = layout.Length)
-            assert(layout.Slice(0, span).ToString() = "E")
-            {
-                HighBid =
-                    layout.Slice(1, span).ToString()
-                        |> int
-                        |> enum<Bid>
-                Hand = AuctionHand.parse (layout.Slice(2, span))
-            }
 
     /// String representation of an open deal.
     let copyTo (span : Span<_>) dealActions (openDeal : AbstractOpenDeal) =

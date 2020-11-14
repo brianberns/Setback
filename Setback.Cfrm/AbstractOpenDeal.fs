@@ -72,7 +72,7 @@ module AbstractOpenDeal =
             |> Seq.mapi (fun iCard card -> iCard, card)
 
                 // assign each card to a player
-            |> Seq.groupBy (fun (iCard, card) ->
+            |> Seq.groupBy (fun (iCard, _) ->
                 dealer |> Seat.incr ((iCard / numCardsPerGroup) + 1))   // deal first group of cards to dealer's left
 
                 // gather each player's cards
@@ -170,8 +170,8 @@ module AbstractOpenDeal =
                             |> AbstractScore.delta 0
                             |> sign
                     match deltaSign with
-                        |  1 -> Some 0   // "we" win Game
-                        | -1 -> Some 1   // "they" win Game
+                        |  1 -> Some 0   // dealer's team wins Game point
+                        | -1 -> Some 1   // other team wins Game point
                         |  0 -> None     // tie, no Game point
                         |  _ -> failwith "Unexpected"
 
@@ -185,7 +185,7 @@ module AbstractOpenDeal =
 
                     // accumulate total
                 (AbstractScore.zero, scores)
-                    ||> Seq.fold (fun acc score -> score + acc)
+                    ||> Seq.fold (+)
 
             | None -> AbstractScore.zero
 

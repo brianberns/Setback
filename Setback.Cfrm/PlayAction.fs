@@ -11,16 +11,22 @@ type PlayAction =
 
 module PlayAction =
 
+    /// Maximum number of play actions possible for one hand.
+    let maxPerHand = 6
+
     /// Actions available in the given situation.
     let getActions hand handLowTrumpRankOpt playout =
-        if playout.CurrentTrick.NumPlays = 0 then
-            playout
-                |> LeadAction.getActions hand handLowTrumpRankOpt
-                |> Array.map Lead
-        else
-            playout
-                |> FollowAction.getActions hand handLowTrumpRankOpt
-                |> Array.map Follow
+        let actions =
+            if playout.CurrentTrick.NumPlays = 0 then
+                playout
+                    |> LeadAction.getActions hand handLowTrumpRankOpt
+                    |> Array.map Lead
+            else
+                playout
+                    |> FollowAction.getActions hand handLowTrumpRankOpt
+                    |> Array.map Follow
+        assert(actions.Length <= maxPerHand)
+        actions
 
     /// Finds a card to play corresponding to the given action in
     /// the given situation.
