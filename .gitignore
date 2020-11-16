@@ -340,4 +340,5 @@ ASALocalRun/
 healthchecksdb
 
 /Setback.Cfrm.LoadDatabase/Baseline.strategy
+/Setback.Cfrm.LoadDatabase/Bootstrap.strategy
 /Setback.Cfrm.TrainBootstrap/Baseline.strategy

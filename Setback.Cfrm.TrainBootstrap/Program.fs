@@ -1,4 +1,4 @@
-﻿namespace Bernsrite.Setback.Cfrm.Train
+﻿namespace Bernsrite.Setback.Cfrm.TrainBootstrap
 
 open System
 open System.Diagnostics
