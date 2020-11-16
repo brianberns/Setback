@@ -13,3 +13,6 @@ module Setback =
 
     /// Number of deal points required to win.
     let winThreshold = 11
+
+    /// Total number of teams.
+    let numTeams = 2

@@ -148,10 +148,10 @@ module AbstractOpenDeal =
             assert(
                 match teamOpt with
                     | Some team ->
-                        team >= 0 && team < Team.numTeams
+                        team >= 0 && team < Setback.numTeams
                     | None -> true)
             AbstractScore [|
-                for iTeam = 0 to Team.numTeams - 1 do
+                for iTeam = 0 to Setback.numTeams - 1 do
                     if teamOpt = Some iTeam then
                         yield 1
                     else
@@ -262,7 +262,7 @@ module AbstractOpenDeal =
                             deal.UnplayedCards
                                 |> Seq.indexed
                                 |> Seq.collect (fun (iPlayer, cards) ->
-                                    let iTeam = iPlayer % Team.numTeams
+                                    let iTeam = iPlayer % Setback.numTeams
                                     cards
                                         |> Seq.where (fun c -> c.Suit = trump)
                                         |> Seq.map (fun card -> card.Rank, iTeam))

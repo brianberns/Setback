@@ -226,7 +226,7 @@ type BaselineGameState(openDeal : AbstractOpenDeal) =
         let iPlayer =
             openDeal
                 |> AbstractOpenDeal.currentPlayerIndex
-        iPlayer % Team.numTeams
+        iPlayer % Setback.numTeams
 
     /// This state's unique identifier.
     override __.Key =
@@ -260,7 +260,7 @@ type BaselineGameState(openDeal : AbstractOpenDeal) =
                     // no high bidder
                 | None ->
                     assert(openDeal.ClosedDeal.Auction.HighBid = AbstractHighBid.none)
-                    Array.replicate Team.numTeams 0.0
+                    Array.replicate Setback.numTeams 0.0
 
                 |> Some
         else None

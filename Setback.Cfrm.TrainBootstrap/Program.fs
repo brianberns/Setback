@@ -11,12 +11,17 @@ open Setback.Cfrm
 
 module Program =
 
-    /// Initializes a game.
+    /// Initializes a game with a typical random score.
     let createGame (rng : Random) =
-        let dealer = Seat.South
-        Deck.shuffle rng
-            |> AbstractOpenDeal.fromDeck dealer
-            |> BaselineGameState
+        let deal =
+            let dealer = Seat.South
+            Deck.shuffle rng
+                |> AbstractOpenDeal.fromDeck dealer
+        let score =
+            Array.init Setback.numTeams (fun _ ->
+                rng.Next(-3, Setback.winThreshold))
+                |> AbstractScore
+        BootstrapGameState(deal, score)
 
     /// Runs CFR with the given batch size.
     let minimize batchSize =
@@ -40,7 +45,7 @@ module Program =
                 let outBatch =
                     inBatch
                         |> CounterFactualRegret.minimizeBatch batchSize
-                outBatch.StrategyProfile.Save("Baseline.strategy")
+                outBatch.StrategyProfile.Save("Bootstrap.strategy")
                 stopwatch.Stop()
 
                     // report results from this batch
@@ -57,5 +62,5 @@ module Program =
 
     [<EntryPoint>]
     let main argv =
-        minimize 100000
+        minimize 1000000
         0

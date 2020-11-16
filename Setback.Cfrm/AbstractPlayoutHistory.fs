@@ -68,7 +68,7 @@ module AbstractPlayoutHistory =
         let iTrickWinnerTeam =
             let iPlayer =
                 trick |> AbstractTrick.highPlayerIndex
-            iPlayer % Team.numTeams
+            iPlayer % Setback.numTeams
 
             // accumulate effect of each play in the trick
         (history, playIndexes)
@@ -83,7 +83,7 @@ module AbstractPlayoutHistory =
 
                     // game points taken
                 let gameScore =
-                    Array.init Team.numTeams (fun it ->
+                    Array.init Setback.numTeams (fun it ->
                         if it = iTrickWinnerTeam then
                             play.Rank.GamePoints
                         else 0)
@@ -178,7 +178,7 @@ module AbstractPlayoutHistory =
         let delta =
             let iTeam =
                 (trick |> AbstractTrick.currentPlayerIndex)
-                    % Team.numTeams
+                    % Setback.numTeams
             history.GameScore
                 |> AbstractScore.delta iTeam
         let cSign =

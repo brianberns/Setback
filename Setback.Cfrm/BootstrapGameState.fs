@@ -33,7 +33,7 @@ module BootstrapGameState =
                         yield score + 1
                     yield Setback.winThreshold
                 } |> Seq.max
-            assert(Team.numTeams = 2)
+            assert(Setback.numTeams = 2)
             winThreshold - scores.[0], winThreshold - scores.[1]
 
         /// String representation of a game score.
@@ -74,10 +74,10 @@ module BootstrapGameState =
             let iCurTeam =   // index of current team relative to dealer
                 (auction
                     |> AbstractAuction.currentBidderIndex)
-                    % Team.numTeams
+                    % Setback.numTeams
             AbstractScore [|
-                for iTeam = 0 to Team.numTeams - 1 do
-                    yield gameScore.[(iTeam + iCurTeam) % Team.numTeams]   // relative to current team
+                for iTeam = 0 to Setback.numTeams - 1 do
+                    yield gameScore.[(iTeam + iCurTeam) % Setback.numTeams]   // relative to current team
             |]
         sprintf "%s/%s/%s"
             (AbstractScore.toAbbr gameScore)
@@ -199,7 +199,7 @@ type BootstrapGameState(openDeal : AbstractOpenDeal, gameScore : AbstractScore) 
                     // no high bidder
                 | None ->
                     assert(openDeal.ClosedDeal.Auction.HighBid = AbstractHighBid.none)
-                    Array.replicate Team.numTeams 0.0
+                    Array.replicate Setback.numTeams 0.0
 
                 |> Some
         else None

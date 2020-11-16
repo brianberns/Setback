@@ -9,7 +9,6 @@
     <Compile Include="Rank.fs" />
     <Compile Include="Bid.fs" />
     <Compile Include="Seat.fs" />
-    <Compile Include="Team.fs" />
     <Compile Include="Setback.fs" />
   </ItemGroup>
 

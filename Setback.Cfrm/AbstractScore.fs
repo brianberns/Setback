@@ -21,20 +21,11 @@ module AbstractScore =
 
     /// No score.
     let zero =
-        Array.replicate Team.numTeams 0
-            |> AbstractScore
-
-    /// Creates a score from the given points, relative
-    /// to the given team.
-    let create baseTeam (points : Map<Team, int>) =
-        baseTeam
-            |> Team.cycle
-            |> Seq.map (fun team -> points.[team])
-            |> Seq.toArray
+        Array.replicate Setback.numTeams 0
             |> AbstractScore
 
     /// The difference between "our" score and "their" score.
     let delta iTeam (score : AbstractScore) =
-        assert(Team.numTeams = 2)
-        assert(iTeam >= 0 && iTeam < Team.numTeams)
+        assert(Setback.numTeams = 2)
+        assert(iTeam >= 0 && iTeam < Setback.numTeams)
         score.[iTeam] - score.[1 - iTeam]

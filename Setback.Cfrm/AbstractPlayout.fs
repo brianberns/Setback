@@ -120,14 +120,14 @@ module AbstractPlayout =
             // determine amount bid by auction-winning team
         let highBid = playout.HighBid
         let iBidderTeam =
-            highBid.BidderIndex % Team.numTeams
+            highBid.BidderIndex % Setback.numTeams
         let nBid = int highBid.Bid
         assert(nBid > 0)
 
             // apply penalty?
         if dealScore.[iBidderTeam] < nBid then
             AbstractScore [|
-                for iTeam = 0 to Team.numTeams - 1 do
+                for iTeam = 0 to Setback.numTeams - 1 do
                     if iTeam = iBidderTeam then
                         yield -nBid
                     else
