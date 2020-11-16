@@ -7,7 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="Bootstrap.strategy" />
+    <None Include="Bootstrap.strategy">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Baseline.strategy">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

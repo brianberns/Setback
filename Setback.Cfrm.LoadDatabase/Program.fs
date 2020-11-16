@@ -43,12 +43,19 @@ module Program =
             |> Option.map (fun value -> value :> obj)
             |> Option.defaultValue (DBNull.Value :> _)
 
+    /// Is a playout key?
+    let isPlayout (key : string) =
+        ".EH".Contains(key.[0])
+
     /// Creates and loads database.
     let load conn =
 
-            // open strategy file
-        let profile =
-            StrategyProfile.Load("Baseline.strategy")
+            // describe strategy files
+        let profileDescs =
+            [|
+                "Baseline.strategy", isPlayout
+                "Bootstrap.strategy", isPlayout >> not
+            |]
 
             // enable bulk load
         use pragmaCmd =
@@ -67,21 +74,27 @@ module Program =
         let stratKeyParam = strategyCmd.Parameters.Add("Key", DbType.String)
         let stratActionIdxParam = strategyCmd.Parameters.Add("ActionIndex", DbType.Int32)
 
-            // insert rows
-        for (iRow, (key, probs)) in profile.Map |> Map.toSeq |> Seq.indexed do
+            // load each profile
+        for (name, pred) in profileDescs do
+            printfn $"{name}"
+            let profile = StrategyProfile.Load(name)
 
-            let rowNum = iRow + 1
-            if rowNum % 100000 = 0 then
-                printfn "Row: %d" rowNum
+                // insert profile's rows
+            for (iStrategy, (key, probs)) in profile.Map |> Map.toSeq |> Seq.indexed do
 
-            stratKeyParam.Value <- key
-            stratActionIdxParam.Value <-
-                probs
-                    |> Seq.indexed
-                    |> Seq.maxBy snd
-                    |> fst
-            let nRows = strategyCmd.ExecuteNonQuery()
-            assert(nRows = 1)
+                let strategyNum = iStrategy + 1
+                if strategyNum % 100000 = 0 then
+                    printfn $"{strategyNum}"
+
+                if pred key then
+                    stratKeyParam.Value <- key
+                    stratActionIdxParam.Value <-
+                        probs
+                            |> Seq.indexed
+                            |> Seq.maxBy snd
+                            |> fst
+                    let nRows = strategyCmd.ExecuteNonQuery()
+                    assert(nRows = 1)
 
     [<EntryPoint>]
     let main argv =
