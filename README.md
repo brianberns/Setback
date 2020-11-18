@@ -9,7 +9,8 @@ Keys are only created for infosets with more than one legal action.
 | Position | Name | Possible Values | Description |
 |--|--|--|--|
 | 0 | High bid | `0` (pass)<br/>`2` (two bid)<br/>`3` (three bid)<br/>`D` (dealer-overridable four bid) | High bid so far. |
-| 1-6 | Ranks #1 | E.g. `Jxx2` | Strongest suit's ranks |
+| 1-6 | Ranks #1 | 6 rank characters, or `.` placeholders. E.g. `Jxx2..` | Ranks Strongest suit's ranks |
+| 7-12 | Ranks #2 |  | Second strongest suit's ranks, if any |
 
 #### Bootstrap
 ### Playout key
@@ -45,7 +46,7 @@ Trailing dots (`.`) are trimmed from the key to save space.
 2. Copy `Baseline.strategy` into the `TrainBootstrap` project and then run the project to bootstrap a strategy profile (`Bootstrap.strategy`) that is optimized for score-aware bidding (e.g. by bidding more aggressively if the opposing team is close to winning the game). This requires less time and RAM. I recommend 20-30 million CFR iterations.
 3. Copy `Baseline.strategy` and `Bootstrap.strategy` into the `LoadDatabase` project, and then run the project to create a SQLite database that can be used to play Setback (via the `DatabasePlayer` module).
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMjU4MjA1ODMyLDE1ODYxNTc1MzQsLTY4Nj
+eyJoaXN0b3J5IjpbMjQwMzgxMDM3LDE1ODYxNTc1MzQsLTY4Nj
 I0MDQ2OCwxMzIxNjUyMjEsMjA3NTU4NzA5NywtODEyMDM5MjQw
 XX0=
 -->
