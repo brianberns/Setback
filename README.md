@@ -10,7 +10,7 @@ A playout key is a string of up to 24 characters, laid out as follows:
 | 1 | Low taken | `2`<br/>`3`<br/>`4`<br/>`5`<br/>`x` (rank > 5) | Rank of the lowest trump card taken so far. |
 | 2 | Jack taken | `J` (true)<br/>`.` (false) | Indicates whether the Jack of trump has been taken. |
 | 3 | Game delta | `+` (current team is ahead or tied)<br/>`-` (current team is behind) | Indicates how many Game points the current team has taken, relative to the other team. |
-| 4 | Trump voids | `0`-`7` | A hex value that indicates which of the other players are known to be void in trump (because they failed follow suit on a trump lead). |
+| 4 | Trump voids | `0`-`F` | A hex digit that indicates which of the other players are known to be void in trump (because they failed follow suit on a trump lead). |
 | 5 | Rank #1 | `2`-`5` (possible low trump)<br/>`T`-`A` (has Game value)<br/>`x` (other ranks)<br/>`.` (not played yet) | Rank of first card played on current trick. |
 | 6 | Suit #1 | `t` (trump)<br/>`x` (non-trump)<br/>`.` (not played yet) | Suit of first card played on current trick. |
 | 7 | Rank #2 |  | Rank of second card played on current trick. |
@@ -32,6 +32,6 @@ Trailing dots (`.`) are trimmed from the key to save space.
 2. Copy `Baseline.strategy` into the `TrainBootstrap` project and then run the project to bootstrap a strategy profile (`Bootstrap.strategy`) that is optimized for score-aware bidding (e.g. by bidding more aggressively if the opposing team is close to winning the game). This requires less time and RAM. I recommend 20-30 million CFR iterations.
 3. Copy `Baseline.strategy` and `Bootstrap.strategy` into the `LoadDatabase` project, and then run the project to create a SQLite database that can be used to play Setback (via the `DatabasePlayer` module).
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTMyMTY1MjIxLDIwNzU1ODcwOTcsLTgxMj
-AzOTI0MF19
+eyJoaXN0b3J5IjpbOTQwMDMzOTA2LDEzMjE2NTIyMSwyMDc1NT
+g3MDk3LC04MTIwMzkyNDBdfQ==
 -->
