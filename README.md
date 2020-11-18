@@ -1,7 +1,7 @@
 # Counterfactual Regret Minimization for Setback
 This repository uses [Counterfactual Regret Minimization](https://github.com/brianberns/Cfrm) to solve the game of [Setback](https://en.wikipedia.org/wiki/Pitch_%28card_game%29#Auction_Pitch) (aka Auction Pitch).
 ## Approach
-Setback's move tree is not as large as that of some other card games (e.g. Bridge, Hearts), but it is still too large for vanilla CFR. The approach used here is to create a simpler, abstract game that is essentially identical to Setback, but whose move tree is small enough for vanilla CFR. This abstraction is much more of an art than a science, relying heavily on personal intuition for what information is most salient when playing Setback.
+Setback's move tree is not as large as that of some other card games (e.g. Bridge, Hearts), but it is still too large for vanilla CFR. The approach used here is to create a simpler, abstract game that is essentially identical to Setback, but whose move tree is small enough for vanilla CFR. Defining such an abstraction is much more of an art than a science, relying heavily on personal intuition for what information is most salient when playing Setback.
 ## Information set keys
 Keys are only created for infosets with more than one legal action.
 ### Auction key
@@ -50,7 +50,7 @@ Trailing dots (`.`) are trimmed from the key to save space.
 2. Copy `Baseline.strategy` into the `TrainBootstrap` project and then run the project to bootstrap a strategy profile (`Bootstrap.strategy`) that is optimized for score-aware bidding (e.g. by bidding more aggressively if the opposing team is close to winning the game). This requires less time and RAM. I recommend 20-30 million CFR iterations.
 3. Copy `Baseline.strategy` and `Bootstrap.strategy` into the `LoadDatabase` project, and then run the project to create a SQLite database that can be used to play Setback (via the `DatabasePlayer` module).
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTIwMDg1MTg2ODMsMTU4NjE1NzUzNCwtNj
-g2MjQwNDY4LDEzMjE2NTIyMSwyMDc1NTg3MDk3LC04MTIwMzky
-NDBdfQ==
+eyJoaXN0b3J5IjpbNzAyNTcxNTg5LDE1ODYxNTc1MzQsLTY4Nj
+I0MDQ2OCwxMzIxNjUyMjEsMjA3NTU4NzA5NywtODEyMDM5MjQw
+XX0=
 -->
