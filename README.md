@@ -18,8 +18,8 @@ Keys are only created for infosets with more than one legal action.
 This is a key used by the auction winner to establish trump with the first card played.
 | Position | Name | Possible Values | Description |
 |--|--|--|--|
-| 0 | Header | `E` | Establish trump |
-| 1-13 | Auction key | | Corresponding auction key (including possible high bid value of `4`) |
+| 0 | Header | `E` | Establish trump. |
+| 1-13 | Auction key | | Corresponding auction key. |
 #### Normal playout
 A normal playout key is a string of up to 24 characters, laid out as follows:
 | Position | Name | Possible Values | Description |
@@ -50,7 +50,7 @@ Trailing dots (`.`) are trimmed from the key to save space.
 2. Copy `Baseline.strategy` into the `TrainBootstrap` project and then run the project to bootstrap a strategy profile (`Bootstrap.strategy`) that is optimized for score-aware bidding (e.g. by bidding more aggressively if the opposing team is close to winning the game). This requires less time and RAM. I recommend 20-30 million CFR iterations.
 3. Copy `Baseline.strategy` and `Bootstrap.strategy` into the `LoadDatabase` project, and then run the project to create a SQLite database that can be used to play Setback (via the `DatabasePlayer` module).
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTUyNjMxMTY3NywxNTg2MTU3NTM0LC02OD
-YyNDA0NjgsMTMyMTY1MjIxLDIwNzU1ODcwOTcsLTgxMjAzOTI0
-MF19
+eyJoaXN0b3J5IjpbLTIwMDg1MTg2ODMsMTU4NjE1NzUzNCwtNj
+g2MjQwNDY4LDEzMjE2NTIyMSwyMDc1NTg3MDk3LC04MTIwMzky
+NDBdfQ==
 -->
