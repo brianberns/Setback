@@ -1,5 +1,5 @@
 # Counterfactual Regret Minimization for Setback
-A machine learning repository that g a world-class Setback player
+This repository uses Counterfactual Regret Minimization to solve the game of Setback (aka Auction Pitch).
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTI5NDQxNzA5MF19
+eyJoaXN0b3J5IjpbMTkzMjc1ODc2M119
 -->
