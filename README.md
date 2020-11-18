@@ -18,7 +18,7 @@ A playout key is a string of up to 24 characters, laid out as follows:
 | 9 | Rank #3 |  | Rank of third card played on current trick. |
 | 10 | Suit #3 |  | Suit of third card played on current trick. |
 | 11 | Trick winner | `0`-`3`<br/>`.` (none yet) | 0-based index of card play that is winning the current trick. |
-| 12-13 | Legal action #1 |  |
+| 12-13 | Legal action #1 | `Tr` (lead trump of rank `r`)<br/>  |
 | 14-15 | Legal action #2 |  |
 | 16-17 | Legal action #3 |  |
 | 18-19 | Legal action #4 |  |
@@ -32,6 +32,6 @@ Trailing dots (`.`) are trimmed from the key to save space.
 2. Copy `Baseline.strategy` into the `TrainBootstrap` project and then run the project to bootstrap a strategy profile (`Bootstrap.strategy`) that is optimized for score-aware bidding (e.g. by bidding more aggressively if the opposing team is close to winning the game). This requires less time and RAM. I recommend 20-30 million CFR iterations.
 3. Copy `Baseline.strategy` and `Bootstrap.strategy` into the `LoadDatabase` project, and then run the project to create a SQLite database that can be used to play Setback (via the `DatabasePlayer` module).
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbOTQwMDMzOTA2LDEzMjE2NTIyMSwyMDc1NT
-g3MDk3LC04MTIwMzkyNDBdfQ==
+eyJoaXN0b3J5IjpbMTQxMjM5MjU2MywxMzIxNjUyMjEsMjA3NT
+U4NzA5NywtODEyMDM5MjQwXX0=
 -->
