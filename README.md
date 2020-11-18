@@ -12,14 +12,17 @@ A playout key is a string of up to 24 characters, laid out as follows:
 | 3 | Game delta | `+` (current team is ahead or tied)<br/>`-` (current team is behind) | Indicates how many Game points the current team has taken, relative to the other team. |
 | 4 | Trump voids | `0`-`7` | A hex value that indicates which of the other players are known to be void in trump (because they failed follow suit on a trump lead). |
 | 5 | Rank #1 | `2`-`5` (possible low trump)<br/>`T`-`A` (has Game value)<br/>`x` (other ranks)<br/>`.` (not played yet) | Rank of first card played on current trick. |
-| 6 | Suit #1 | `t` (trump)<br/>`x` (non-trump)<br/>`.` (not played yet) | Suit of first card played on current trick |
+| 6 | Suit #1 | `t` (trump)<br/>`x` (non-trump)<br/>`.` (not played yet) | Suit of first card played on current trick. |
 | 7 | Rank #2 | See above | Rank of second card played on current trick. |
-| 8 | Suit #2 | `t` (trump)<br/>`x` (non-trump)<br/>`.` (not played yet) | Suit of first card played on current trick |
+| 8 | Suit #2 | See above | Suit of second card played on current trick. |
+| 7 | Rank #3 | See above | Rank of third card played on current trick. |
+| 8 | Suit #3 | See above | Suit of third card played on current trick. |
+| 9 | Trick winner | `0`-`3`<br/>`.` (not 
 
 ## Usage
 1. Run the `TrainBaseline` project to generate a baseline strategy profile (`Baseline.strategy`) that is optimized to play a hand of Setback without regard to the score of the game. *Warning*: This requires a machine with at least 16GB of RAM, and will take several weeks/months. I recommend 10-20 million CFR iterations.
 2. Copy `Baseline.strategy` into the `TrainBootstrap` project and then run the project to bootstrap a strategy profile (`Bootstrap.strategy`) that is optimized for score-aware bidding (e.g. by bidding more aggressively if the opposing team is close to winning the game). This requires less time and RAM. I recommend 20-30 million CFR iterations.
 3. Copy `Baseline.strategy` and `Bootstrap.strategy` into the `LoadDatabase` project, and then run the project to create a SQLite database that can be used to play Setback (via the `DatabasePlayer` module).
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTQ3MzI4Mjg2OSwtODEyMDM5MjQwXX0=
+eyJoaXN0b3J5IjpbLTY5MjI0MTY1OCwtODEyMDM5MjQwXX0=
 -->
