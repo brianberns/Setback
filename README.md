@@ -13,10 +13,10 @@ A playout key is a string of up to 24 characters, laid out as follows:
 | 4 | Trump voids | `0`-`7` | A hex value that indicates which of the other players are known to be void in trump (because they failed follow suit on a trump lead). |
 | 5 | Rank #1 | `2`-`5` (possible low trump)<br/>`T`-`A` (has Game value)<br/>`x` (other ranks)<br/>`.` (not played yet) | Rank of first card played on current trick. |
 | 6 | Suit #1 | `t` (trump)<br/>`x` (non-trump)<br/>`.` (not played yet) | Suit of first card played on current trick. |
-| 7 | Rank #2 | See above | Rank of second card played on current trick. |
-| 8 | Suit #2 | See above | Suit of second card played on current trick. |
-| 9 | Rank #3 | See above | Rank of third card played on current trick. |
-| 10 | Suit #3 | See above | Suit of third card played on current trick. |
+| 7 | Rank #2 |  | Rank of second card played on current trick. |
+| 8 | Suit #2 |  | Suit of second card played on current trick. |
+| 9 | Rank #3 |  | Rank of third card played on current trick. |
+| 10 | Suit #3 |  | Suit of third card played on current trick. |
 | 11 | Trick winner | `0`-`3`<br/>`.` (none yet) | 0-based index of card play that is winning the current trick. |
 | 12-13 | Legal action #1 |  |
 | 14-15 | Legal action #2 |  |
@@ -32,6 +32,6 @@ Trailing dots (`.`) are trimmed from the key to save space.
 2. Copy `Baseline.strategy` into the `TrainBootstrap` project and then run the project to bootstrap a strategy profile (`Bootstrap.strategy`) that is optimized for score-aware bidding (e.g. by bidding more aggressively if the opposing team is close to winning the game). This requires less time and RAM. I recommend 20-30 million CFR iterations.
 3. Copy `Baseline.strategy` and `Bootstrap.strategy` into the `LoadDatabase` project, and then run the project to create a SQLite database that can be used to play Setback (via the `DatabasePlayer` module).
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbNTE3MDE5NDg3LDIwNzU1ODcwOTcsLTgxMj
+eyJoaXN0b3J5IjpbMTMyMTY1MjIxLDIwNzU1ODcwOTcsLTgxMj
 AzOTI0MF19
 -->
