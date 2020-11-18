@@ -3,6 +3,8 @@ This repository uses [Counterfactual Regret Minimization](https://github.com/bri
 ## Approach
 Setback's move tree is not as large as that of some other card games (e.g. Bridge, Hearts), but it is still too large for vanilla CFR. The approach used here is to create a simpler, abstract game that is essentially identical to Setback, but whose move tree is small enough for vanilla CFR. This abstraction is much more of an art than a science, relying heavily on personal intuition for what information is most salient when playing Setback.
 ### Auction key
+#### Baseline auction
+#### Bootstrap
 ### Playout key
 #### Establish trump
 This is a key used by the auction winner to establish trump with the first card played.
@@ -36,6 +38,6 @@ Trailing dots (`.`) are trimmed from the key to save space.
 2. Copy `Baseline.strategy` into the `TrainBootstrap` project and then run the project to bootstrap a strategy profile (`Bootstrap.strategy`) that is optimized for score-aware bidding (e.g. by bidding more aggressively if the opposing team is close to winning the game). This requires less time and RAM. I recommend 20-30 million CFR iterations.
 3. Copy `Baseline.strategy` and `Bootstrap.strategy` into the `LoadDatabase` project, and then run the project to create a SQLite database that can be used to play Setback (via the `DatabasePlayer` module).
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTU3MzQ3NzcyNSwxMzIxNjUyMjEsMjA3NT
+eyJoaXN0b3J5IjpbMTM2MjE1ODIyMywxMzIxNjUyMjEsMjA3NT
 U4NzA5NywtODEyMDM5MjQwXX0=
 -->
