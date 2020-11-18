@@ -84,12 +84,9 @@ module BootstrapGameState =
             (AbstractAuction.toAbbr auction)
             (Hand.toAbbr hand)
 
-    /// Baseline strategy profile used for playout.
-    let baselineProfile =
-        StrategyProfile.Load("Baseline.strategy")
-
-    /// Plays a card in the given deal.
-    let play deal =
+    /// Plays a card in the given deal using the given baseline strategy
+    /// profile.
+    let play (baselineProfile : StrategyProfile) deal =
 
             // get legal plays in this situation
         let hand =
@@ -150,7 +147,10 @@ module BootstrapGameState =
 
 /// State of a Setback game for counterfactual regret minimization
 /// of score-sensitive bidding behavior.
-type BootstrapGameState(openDeal : AbstractOpenDeal, gameScore : AbstractScore) =
+type BootstrapGameState
+    (baselineProfile : StrategyProfile,
+    openDeal : AbstractOpenDeal,
+    gameScore : AbstractScore) =
     inherit BaselineGameState(openDeal)
 
     /// Final payoffs for this game, if it is now over.
@@ -183,7 +183,7 @@ type BootstrapGameState(openDeal : AbstractOpenDeal, gameScore : AbstractScore) 
 
                                 // reward for winning the game (regardless of deal score)
                             | Some iWinningTeam ->
-                                let reward = 3.5   // value determined empirically
+                                let reward = 5.0   // value determined empirically
                                 if iWinningTeam = 0 then reward
                                 else -reward
 
@@ -238,7 +238,7 @@ type BootstrapGameState(openDeal : AbstractOpenDeal, gameScore : AbstractScore) 
             if openDeal.ClosedDeal.Auction |> AbstractAuction.isComplete then
                 match openDeal.ClosedDeal.PlayoutOpt with
 
-                        // playout
+                        // complete playout
                     | Some playout ->
                         assert(playout.History.NumTricksCompleted = 0)
                         assert(playout.CurrentTrick.NumPlays = 0)
@@ -246,7 +246,10 @@ type BootstrapGameState(openDeal : AbstractOpenDeal, gameScore : AbstractScore) 
                         let openDeal =
                             (openDeal, [1 .. Setback.numCardsPerDeal])
                                 ||> Seq.fold (fun openDeal _ ->
-                                    let card = BootstrapGameState.play openDeal
+                                    let card =
+                                        BootstrapGameState.play
+                                            baselineProfile
+                                            openDeal
                                     openDeal |> AbstractOpenDeal.addPlay card)
                         assert(openDeal |> AbstractOpenDeal.isComplete)
 
@@ -265,4 +268,4 @@ type BootstrapGameState(openDeal : AbstractOpenDeal, gameScore : AbstractScore) 
                 // continue auction
             else openDeal, gameScore
 
-        BootstrapGameState(openDeal, gameScore) :> _
+        BootstrapGameState(baselineProfile, openDeal, gameScore) :> _

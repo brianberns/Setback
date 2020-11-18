@@ -11,6 +11,10 @@ open Setback.Cfrm
 
 module Program =
 
+    /// Baseline strategy profile used for playout.
+    let baselineProfile =
+        StrategyProfile.Load("Baseline.strategy")
+
     /// Initializes a game with a typical random score.
     let createGame (rng : Random) =
         let deal =
@@ -21,7 +25,7 @@ module Program =
             Array.init Setback.numTeams (fun _ ->
                 rng.Next(-3, Setback.winThreshold))
                 |> AbstractScore
-        BootstrapGameState(deal, score)
+        BootstrapGameState(baselineProfile, deal, score)
 
     /// Runs CFR with the given batch size.
     let minimize batchSize =
@@ -33,9 +37,10 @@ module Program =
             CfrBatch.create numPlayers (fun _ ->
                 createGame rng)
         let batchNums = Seq.initInfinite ((+) 1)   // 1, 2, 3, ...
+        let stopwatch = Stopwatch()
 
             // run CFR
-        let stopwatch = Stopwatch()
+        printfn $"Baseline profile size: {baselineProfile.Map.Count}"
         printfn "Iteration,Payoff,Size,Time"
         (initialState, batchNums)
             ||> Seq.fold (fun inBatch batchNum ->

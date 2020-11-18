@@ -28,9 +28,9 @@ module Program =
             CfrBatch.create numPlayers (fun _ ->
                 createGame rng)
         let batchNums = Seq.initInfinite ((+) 1)   // 1, 2, 3, ...
+        let stopwatch = Stopwatch()
 
             // run CFR
-        let stopwatch = Stopwatch()
         printfn "Iteration,Payoff,Size,Time"
         (initialState, batchNums)
             ||> Seq.fold (fun inBatch batchNum ->
