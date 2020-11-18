@@ -8,6 +8,7 @@ Keys are only created for infosets with more than one legal action.
 #### Baseline
 | Position | Name | Possible Values | Description |
 |--|--|--|--|
+| 0 | High bid | `0` (pass)
 
 #### Bootstrap
 ### Playout key
@@ -35,7 +36,6 @@ A normal playout key is a string of up to 24 characters, laid out as follows:
 | 18-19 | Legal action #4 |  |
 | 20-21 | Legal action #5 |  |
 | 22-23 | Legal action #6 |  |
-|--|--|--|--|
 
 Trailing dots (`.`) are trimmed from the key to save space.
 
@@ -44,6 +44,6 @@ Trailing dots (`.`) are trimmed from the key to save space.
 2. Copy `Baseline.strategy` into the `TrainBootstrap` project and then run the project to bootstrap a strategy profile (`Bootstrap.strategy`) that is optimized for score-aware bidding (e.g. by bidding more aggressively if the opposing team is close to winning the game). This requires less time and RAM. I recommend 20-30 million CFR iterations.
 3. Copy `Baseline.strategy` and `Bootstrap.strategy` into the `LoadDatabase` project, and then run the project to create a SQLite database that can be used to play Setback (via the `DatabasePlayer` module).
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMjA5MTk0NjY2OCwtNjg2MjQwNDY4LDEzMj
-E2NTIyMSwyMDc1NTg3MDk3LC04MTIwMzkyNDBdfQ==
+eyJoaXN0b3J5IjpbLTIxMjM1ODY3NzMsLTY4NjI0MDQ2OCwxMz
+IxNjUyMjEsMjA3NTU4NzA5NywtODEyMDM5MjQwXX0=
 -->
