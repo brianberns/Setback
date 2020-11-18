@@ -25,10 +25,12 @@
     <Compile Include="BaselinePlayer.fs" />
     <Compile Include="BootstrapGameState.fs" />
     <Compile Include="BootstrapPlayer.fs" />
+    <Compile Include="DatabasePlayer.fs" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Cfrm" Version="2.1.0" />
+    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.113.6" />
   </ItemGroup>
 
   <ItemGroup>
