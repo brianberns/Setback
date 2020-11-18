@@ -16,14 +16,22 @@ A playout key is a string of up to 24 characters, laid out as follows:
 | 7 | Rank #2 | See above | Rank of second card played on current trick. |
 | 8 | Suit #2 | See above | Suit of second card played on current trick. |
 | 9 | Rank #3 | See above | Rank of third card played on current trick. |
-| 8 | Suit #3 | See above | Suit of third card played on current trick. |
-| 9 | Trick winner | `0`-`3`<br/>`.` (none yet) | 0-based index of card play that is winning the current trick. |
+| 10 | Suit #3 | See above | Suit of third card played on current trick. |
+| 11 | Trick winner | `0`-`3`<br/>`.` (none yet) | 0-based index of card play that is winning the current trick. |
+| 12-13 | Legal action #1 |  |
+| 14-15 | Legal action #2 |  |
+| 16-17 | Legal action #3 |  |
+| 18-19 | Legal action #4 |  |
+| 20-21 | Legal action #5 |  |
+| 22-23 | Legal action #6 |  |
+
+Trailing dots (`.`) are trimmed from the key to reduce space.
 
 ## Usage
 1. Run the `TrainBaseline` project to generate a baseline strategy profile (`Baseline.strategy`) that is optimized to play a hand of Setback without regard to the score of the game. *Warning*: This requires a machine with at least 16GB of RAM, and will take several weeks/months. I recommend 10-20 million CFR iterations.
 2. Copy `Baseline.strategy` into the `TrainBootstrap` project and then run the project to bootstrap a strategy profile (`Bootstrap.strategy`) that is optimized for score-aware bidding (e.g. by bidding more aggressively if the opposing team is close to winning the game). This requires less time and RAM. I recommend 20-30 million CFR iterations.
 3. Copy `Baseline.strategy` and `Bootstrap.strategy` into the `LoadDatabase` project, and then run the project to create a SQLite database that can be used to play Setback (via the `DatabasePlayer` module).
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbNzMyMDIwNDM5LDIwNzU1ODcwOTcsLTgxMj
+eyJoaXN0b3J5IjpbNzAyNTAwNjE2LDIwNzU1ODcwOTcsLTgxMj
 AzOTI0MF19
 -->
