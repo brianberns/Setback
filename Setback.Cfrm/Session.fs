@@ -5,35 +5,9 @@ open System
 open PlayingCards
 open Setback
 
-/// Session interface.
-type ISession =
-
-    /// A new game has started within a series.
-    abstract member RaiseGameStart :
-        unit -> unit
-
-    /// A game has finished.
-    abstract member RaiseGameFinish :
-        AbstractScore (*final game score*)
-            -> AbstractScore (*resulting series score*)
-            -> unit
-
-    /// A new deal has started within a game.
-    abstract member RaiseDealStart :
-        AbstractOpenDeal -> unit
-
-    /// A deal has finished.
-    abstract member RaiseDealFinish :
-        AbstractOpenDeal (*final deal state*)
-            -> AbstractScore (*resulting game score*)
-            -> unit
-
 /// A series of games for a group of players.
 type GameSeries =
     {
-        /// Interactive session.
-        Session : ISession
-
         /// Automated players in this series.
         PlayerMap : Map<Seat, Player>
 
@@ -47,9 +21,8 @@ type GameSeries =
 module GameSeries =
 
     /// Starts a series of games.
-    let start session playerMap rng =
+    let start playerMap rng =
         {
-            Session = session
             PlayerMap = playerMap
             Score = AbstractScore.zero
             Rng = rng
@@ -84,16 +57,11 @@ module Game =
                 | None -> 0 // failwith "No winning team"
 
             // update series score
-        let series =
-            let incr = AbstractScore.forTeam iTeam 1
-            {
-                game.Series with
-                    Score = game.Series.Score + incr
-            }
-
-            // raise event
-        series.Session.RaiseGameFinish game.Score series.Score
-        series
+        let incr = AbstractScore.forTeam iTeam 1
+        {
+            game.Series with
+                Score = game.Series.Score + incr
+        }
 
 /// A deal within a game.
 type GameDeal =
@@ -115,32 +83,25 @@ module GameDeal =
 
     /// Starts a deal with the given dealer.
     let start game dealer =
-        let deal =
-            let deck = Deck.shuffle game.Series.Rng
-            {
-                Game = game
-                Deck = deck
-                Dealer = dealer
-                OpenDeal = AbstractOpenDeal.fromDeck dealer deck
-            }
-        game.Series.Session.RaiseDealStart deal.OpenDeal
-        deal
+        let deck = Deck.shuffle game.Series.Rng
+        {
+            Game = game
+            Deck = deck
+            Dealer = dealer
+            OpenDeal = AbstractOpenDeal.fromDeck dealer deck
+        }
 
     /// Finishes a deal.
-    let finish deal =
-        assert(deal.OpenDeal |> AbstractOpenDeal.isComplete)
+    let finish gameDeal =
+        // assert(gameDeal.OpenDeal |> AbstractOpenDeal.isComplete)
 
             // update score of game
-        let game =
-            let dealScore =
-                deal.OpenDeal |> AbstractOpenDeal.dealScore
-            {
-                deal.Game with
-                    Score = deal.Game.Score + dealScore
-            }
-
-            // raise event
-        game.Series.Session.RaiseDealFinish deal.OpenDeal game.Score
+        let dealScore =
+            gameDeal.OpenDeal |> AbstractOpenDeal.dealScore
+        {
+            gameDeal.Game with
+                Score = gameDeal.Game.Score + dealScore
+        }
 
 type Session(playerMap, rng) as session =
 
@@ -161,36 +122,13 @@ type Session(playerMap, rng) as session =
     *)
 
     let mutable series =
-        GameSeries.start session playerMap rng
+        GameSeries.start playerMap rng
 
     let mutable gameOpt =
         Option<Game>.None
 
-    member __.RaiseGameStart () =
-        gameStartEvent.Trigger()
-
-    member __.RaiseGameFinish gameScore seriesScore =
-        gameFinishEvent.Trigger(gameScore, seriesScore)
-
-    member __.RaiseDealStart openDeal =
-        dealStartEvent.Trigger(openDeal)
-
-    member __.RaiseDealFinish openDeal gameScore =
-        dealFinishEvent.Trigger(openDeal, gameScore)
-
-    interface ISession with
-
-        member session.RaiseGameStart () =
-            session.RaiseGameStart()
-
-        member session.RaiseGameFinish gameScore seriesScore =
-            session.RaiseGameFinish gameScore seriesScore
-
-        member __.RaiseDealStart openDeal =
-            session.RaiseDealStart openDeal
-
-        member __.RaiseDealFinish openDeal gameScore =
-            session.RaiseDealFinish openDeal gameScore
+    let mutable gameDealOpt =
+        Option<GameDeal>.None
 
     [<CLIEvent>]
     member __.GameStartEvent = gameStartEvent.Publish
@@ -204,12 +142,35 @@ type Session(playerMap, rng) as session =
     [<CLIEvent>]
     member __.DealFinishEvent = dealFinishEvent.Publish
 
-    member __.Start() =
+    member __.StartGame() =
+        assert(gameOpt.IsNone)
+        assert(gameDealOpt.IsNone)
         gameOpt <- Game.start series |> Some
-        session.RaiseGameStart ()
+        gameStartEvent.Trigger()
+
+    member __.StartDeal(dealer) =
+        assert(gameDealOpt.IsNone)
+        match gameOpt with
+            | Some game ->
+                let gameDeal = GameDeal.start game dealer
+                gameDealOpt <- Some gameDeal
+                dealStartEvent.Trigger(gameDeal.OpenDeal)
+            | None -> failwith "No active game"
+
+    member __.FinishDeal() =
+        match gameDealOpt, gameOpt with
+            | Some gameDeal, Some game ->
+                let game = GameDeal.finish gameDeal
+                gameDealOpt <- None
+                gameOpt <- Some game
+                dealFinishEvent.Trigger(gameDeal.OpenDeal, game.Score)
+            | None, _ -> failwith "No active deal"
+            | _, None -> failwith "No active game"
 
     member __.FinishGame() =
-        series <-
-            match gameOpt with
-                | Some game -> game |> Game.finish
-                | None -> failwith "No game started"
+        match gameOpt with
+            | Some game ->
+                series <- Game.finish game
+                gameOpt <- None
+                gameFinishEvent.Trigger(game.Score, series.Score)
+            | None -> failwith "No active game"

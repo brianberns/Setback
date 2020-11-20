@@ -38,18 +38,33 @@ let session =
     let rng = Random(0)
     Session(playerMap, rng)
 
+module AbstractScore =
+
+    let toAbbr (score : AbstractScore) =
+        $"{score.[0]}-{score.[1]}"
+
 let onGameStart () =
     printfn "Game start"
+    session.StartDeal(Seat.South)
+
+let onGameFinish (gameScore : AbstractScore, seriesScore : AbstractScore) =
+    printfn "Game finish"
+    printfn $"   Final game score:     {AbstractScore.toAbbr gameScore}"
+    printfn $"   Updated series score: {AbstractScore.toAbbr seriesScore}"
+    session.StartGame()
+
+let onDealStart (openDeal : AbstractOpenDeal) =
+    let hand = openDeal.UnplayedCards.[0] |> Seq.sortDescending
+    printfn "Deal start"
+    for card in hand do
+        printfn $"   {card}"
+    session.FinishDeal()
+
+let onDealFinish (openDeal : AbstractOpenDeal, gameScore : AbstractScore) =
+    printfn "Deal finish"
+    printfn $"   Final deal score:   {openDeal |> AbstractOpenDeal.dealScore |> AbstractScore.toAbbr}"
+    printfn $"   Updated game score: {AbstractScore.toAbbr gameScore}"
     session.FinishGame()
-
-let onGameFinish (gameScore, seriesScore) =
-    printfn $"Game finish: {gameScore}, {seriesScore}"
-
-let onDealStart openDeal =
-    printfn $"Deal start: {openDeal}"
-
-let onDealFinish (openDeal, gameScore) =
-    printfn $"Deal finish: {openDeal}, {gameScore}"
 
 [<EntryPoint>]
 let main argv =
@@ -57,5 +72,5 @@ let main argv =
     session.GameFinishEvent.Add onGameFinish
     session.DealStartEvent.Add onDealStart
     session.DealFinishEvent.Add onDealFinish
-    session.Start()
+    session.StartGame()
     0
