@@ -54,7 +54,7 @@ module Game =
         let iTeam =
             match BootstrapGameState.winningTeamScoreOpt game.Score with
                 | Some iTeam -> iTeam
-                | None -> 0 // failwith "No winning team"
+                | None -> failwith "No winning team"
 
             // update series score
         let incr = AbstractScore.forTeam iTeam 1
@@ -90,7 +90,7 @@ module GameDeal =
 
     /// Finishes a deal.
     let finish gameDeal =
-        // assert(gameDeal.OpenDeal |> AbstractOpenDeal.isComplete)
+        assert(gameDeal.OpenDeal |> AbstractOpenDeal.isComplete)
 
             // update score of game
         let dealScore =
@@ -107,10 +107,12 @@ type Session(playerMap, rng) =
     let gameFinishEvent = new Event<_>()
     let dealStartEvent = new Event<_>()
     let dealFinishEvent = new Event<_>()
-    (*
-    let turnBeginEvent = new Event<_>()
-    let turnEndEvent = new Event<_>()
     let bidEvent = new Event<_>()
+    (*
+    let turnStartEvent = new Event<_>()
+    let turnFinishEvent = new Event<_>()
+    *)
+    (*
     let userBidEvent = new Event<_>()
     let trickBeginEvent = new Event<_>()
     let trickEndEvent = new Event<_>()
@@ -118,46 +120,123 @@ type Session(playerMap, rng) =
     let userPlayEvent = new Event<_>()
     *)
 
+    /// Current game series.
     let mutable series =
         GameSeries.start playerMap rng
 
+    /// Current game.
     let mutable gameOpt =
         Option<Game>.None
 
+    /// Current game deal
     let mutable gameDealOpt =
         Option<GameDeal>.None
 
+    /// Starts a new game.
     member __.StartGame() =
         assert(gameOpt.IsNone)
         assert(gameDealOpt.IsNone)
-        gameOpt <- Game.start series |> Some
+
+            // start game
+        let game = Game.start series
+
+            // update state
+        gameOpt <- Some game
+
+            // trigger event
         gameStartEvent.Trigger()
 
+    /// Starts a new deal.
     member __.StartDeal(dealer) =
         assert(gameDealOpt.IsNone)
+
         match gameOpt with
             | Some game ->
+
+                    // start deal
                 let gameDeal = GameDeal.start game dealer
+
+                    // update state
                 gameDealOpt <- Some gameDeal
+
+                    // trigger event
                 dealStartEvent.Trigger(gameDeal.OpenDeal)
+
             | None -> failwith "No active game"
+
+    member __.DoTurn() =
+        assert(gameOpt.IsSome)
+        match gameDealOpt, gameOpt with
+            | Some gameDeal, Some game ->
+
+                    // get player's bid
+                let auction = gameDeal.OpenDeal.ClosedDeal.Auction
+                assert(auction |> AbstractAuction.isComplete |> not)
+                let seat =
+                    let iPlayer =
+                        auction |> AbstractAuction.currentBidderIndex
+                    gameDeal.Dealer |> Seat.incr iPlayer
+                let bid =
+                    playerMap.[seat].MakeBid game.Score gameDeal.OpenDeal
+
+                    // update state
+                let openDeal =
+                    let closedDeal =
+                        let auction = auction |> AbstractAuction.addBid bid
+                        { gameDeal.OpenDeal.ClosedDeal with Auction = auction }
+                    { gameDeal.OpenDeal with ClosedDeal = closedDeal }
+                gameDealOpt <- Some { gameDeal with OpenDeal = openDeal }
+
+                    // trigger event
+                bidEvent.Trigger(seat, bid, openDeal)
+
+            | None, _ -> failwith "No active deal"
+            | _, None -> failwith "No active game"
+
+    (*
+    member __.StartTurn() =
+        assert(gameOpt.IsSome)
+        match gameDealOpt with
+            | Some gameDeal ->
+                turnStartEvent.Trigger(gameDeal.OpenDeal)
+            | None -> failwith "No active deal"
+
+    member __.FinishTurn() =
+        assert(gameOpt.IsSome)
+        match gameDealOpt with
+            | Some gameDeal ->
+                turnFinishEvent.Trigger(gameDeal.OpenDeal)
+            | None -> failwith "No active deal"
+    *)
 
     member __.FinishDeal() =
         assert(gameOpt.IsSome)
         match gameDealOpt with
             | Some gameDeal ->
+
+                    // finish deal
                 let game = GameDeal.finish gameDeal
-                gameDealOpt <- None
+
+                    // update state
                 gameOpt <- Some game
+                gameDealOpt <- None
+
+                    // trigger event
                 dealFinishEvent.Trigger(gameDeal.OpenDeal, game.Score)
+
             | None -> failwith "No active deal"
 
     member __.FinishGame() =
         match gameOpt with
             | Some game ->
+
+                    // finish game and update state
                 series <- Game.finish game
                 gameOpt <- None
+
+                    // trigger event
                 gameFinishEvent.Trigger(game.Score, series.Score)
+
             | None -> failwith "No active game"
 
     [<CLIEvent>]
@@ -171,3 +250,14 @@ type Session(playerMap, rng) =
 
     [<CLIEvent>]
     member __.DealFinishEvent = dealFinishEvent.Publish
+
+    (*
+    [<CLIEvent>]
+    member __.TurnStartEvent = turnStartEvent.Publish
+
+    [<CLIEvent>]
+    member __.TurnFinishEvent = turnFinishEvent.Publish
+    *)
+
+    [<CLIEvent>]
+    member __.BidEvent = bidEvent.Publish
