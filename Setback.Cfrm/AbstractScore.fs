@@ -8,9 +8,9 @@ type AbstractScore =
 
     /// Answers score of the team with the given index relative to the
     /// base team.
-    member this.Item(index) =
+    member this.Item(teamIdx) =
         let (AbstractScore points) = this
-        points.[index]
+        points.[teamIdx]
 
     /// Adds two scores.
     static member (+) (AbstractScore pointsA, AbstractScore pointsB) =
@@ -22,6 +22,15 @@ module AbstractScore =
     /// No score.
     let zero =
         Array.replicate Setback.numTeams 0
+            |> AbstractScore
+
+    /// Creates a score with the given value for the given team,
+    /// and zero for other teams.
+    let forTeam teamIdx value =
+        assert(teamIdx >= 0 && teamIdx < Setback.numTeams)
+        Array.init Setback.numTeams (fun iTeam ->
+            if iTeam = teamIdx then value
+            else 0)
             |> AbstractScore
 
     /// The difference between "our" score and "their" score.

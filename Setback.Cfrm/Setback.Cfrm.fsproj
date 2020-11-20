@@ -26,6 +26,7 @@
     <Compile Include="BootstrapGameState.fs" />
     <Compile Include="BootstrapPlayer.fs" />
     <Compile Include="DatabasePlayer.fs" />
+    <Compile Include="Session.fs" />
   </ItemGroup>
 
   <ItemGroup>
