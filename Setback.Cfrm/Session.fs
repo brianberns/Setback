@@ -69,9 +69,6 @@ type GameDeal =
         /// Containing game.
         Game : Game
 
-        /// Deck used for this deal.
-        Deck : Deck
-
         /// Dealer for this deal.
         Dealer : Seat
 
@@ -83,12 +80,12 @@ module GameDeal =
 
     /// Starts a deal with the given dealer.
     let start game dealer =
-        let deck = Deck.shuffle game.Series.Rng
         {
             Game = game
-            Deck = deck
             Dealer = dealer
-            OpenDeal = AbstractOpenDeal.fromDeck dealer deck
+            OpenDeal =
+                Deck.shuffle game.Series.Rng
+                    |> AbstractOpenDeal.fromDeck dealer
         }
 
     /// Finishes a deal.
