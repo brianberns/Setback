@@ -103,7 +103,7 @@ module GameDeal =
                 Score = gameDeal.Game.Score + dealScore
         }
 
-type Session(playerMap, rng) as session =
+type Session(playerMap, rng) =
 
         // initialize events raised by this object
     let gameStartEvent = new Event<_>()
@@ -130,18 +130,6 @@ type Session(playerMap, rng) as session =
     let mutable gameDealOpt =
         Option<GameDeal>.None
 
-    [<CLIEvent>]
-    member __.GameStartEvent = gameStartEvent.Publish
-
-    [<CLIEvent>]
-    member __.GameFinishEvent = gameFinishEvent.Publish
-
-    [<CLIEvent>]
-    member __.DealStartEvent = dealStartEvent.Publish
-
-    [<CLIEvent>]
-    member __.DealFinishEvent = dealFinishEvent.Publish
-
     member __.StartGame() =
         assert(gameOpt.IsNone)
         assert(gameDealOpt.IsNone)
@@ -158,14 +146,14 @@ type Session(playerMap, rng) as session =
             | None -> failwith "No active game"
 
     member __.FinishDeal() =
-        match gameDealOpt, gameOpt with
-            | Some gameDeal, Some game ->
+        assert(gameOpt.IsSome)
+        match gameDealOpt with
+            | Some gameDeal ->
                 let game = GameDeal.finish gameDeal
                 gameDealOpt <- None
                 gameOpt <- Some game
                 dealFinishEvent.Trigger(gameDeal.OpenDeal, game.Score)
-            | None, _ -> failwith "No active deal"
-            | _, None -> failwith "No active game"
+            | None -> failwith "No active deal"
 
     member __.FinishGame() =
         match gameOpt with
@@ -174,3 +162,15 @@ type Session(playerMap, rng) as session =
                 gameOpt <- None
                 gameFinishEvent.Trigger(game.Score, series.Score)
             | None -> failwith "No active game"
+
+    [<CLIEvent>]
+    member __.GameStartEvent = gameStartEvent.Publish
+
+    [<CLIEvent>]
+    member __.GameFinishEvent = gameFinishEvent.Publish
+
+    [<CLIEvent>]
+    member __.DealStartEvent = dealStartEvent.Publish
+
+    [<CLIEvent>]
+    member __.DealFinishEvent = dealFinishEvent.Publish
