@@ -1,14 +1,21 @@
 ﻿open System
 
+open PlayingCards
 open Setback
 open Setback.Cfrm
+
+let rng = Random(0)
+
+let chooseRandom (items : _[]) =
+    let idx = rng.Next(items.Length)
+    items.[idx]
 
 let player =
 
     let makeBid _ (openDeal : AbstractOpenDeal) =
         openDeal.ClosedDeal.Auction
             |> AbstractAuction.legalBids
-            |> Seq.head
+            |> chooseRandom
 
     let makePlay _ (openDeal : AbstractOpenDeal) =
         match openDeal.ClosedDeal.PlayoutOpt with
@@ -19,7 +26,8 @@ let player =
                     openDeal.UnplayedCards.[iPlayer]
                 playout
                     |> AbstractPlayout.legalPlays hand
-                    |> Seq.head
+                    |> Seq.toArray
+                    |> chooseRandom
             | None -> failwith "Unexpected"
 
     {
@@ -35,7 +43,6 @@ let session =
             Seat.East, player
             Seat.South, player
         ]
-    let rng = Random(0)
     Session(playerMap, rng)
 
 module AbstractScore =
@@ -53,7 +60,15 @@ let onDealStart (_ : AbstractOpenDeal) =
 
 let onBid (seat : Seat, bid : Bid, openDeal : AbstractOpenDeal) =
     printfn $"{seat} bids {bid}"
-    if openDeal.ClosedDeal.Auction |> AbstractAuction.isComplete then
+    if openDeal |> AbstractOpenDeal.isComplete then
+        assert(openDeal.ClosedDeal.Auction.HighBid.Bid = Bid.Pass)
+        session.FinishDeal()
+    else
+        session.DoTurn()
+
+let onPlay (seat : Seat, card : Card, openDeal : AbstractOpenDeal) =
+    printfn $"{seat} plays {card}"
+    if openDeal |> AbstractOpenDeal.isComplete then
         session.FinishDeal()
     else
         session.DoTurn()
@@ -86,7 +101,24 @@ let onGameFinish (gameScore : AbstractScore, seriesScore : AbstractScore) =
     printfn $"   Updated series score: {AbstractScore.toAbbr seriesScore}"
     session.StartGame()
 
+module Exception =
+
+    let handle (ex : exn) =
+        printfn $"{ex.Message}"
+        printfn $"{ex.StackTrace.[0..400]}"
+
+    /// Registers handler for unhandled exceptions.
+    let initHandler () =
+        AppDomain.CurrentDomain.UnhandledException.Add(
+            fun args ->
+                args.ExceptionObject
+                    :?> exn
+                    |> handle)
+
 let init () =
+
+    Exception.initHandler ()
+
     session.GameStartEvent.Add onGameStart
     session.DealStartEvent.Add onDealStart
     (*
@@ -94,19 +126,12 @@ let init () =
     session.TurnFinishEvent.Add onTurnFinish
     *)
     session.BidEvent.Add onBid
+    session.PlayEvent.Add onPlay
     session.DealFinishEvent.Add onDealFinish
     session.GameFinishEvent.Add onGameFinish
-
-let run () =
-    session.StartGame()
 
 [<EntryPoint>]
 let main argv =
     init ()
-    try
-        run ()
-    with
-        | ex ->
-            printfn $"{ex.Message}"
-            printfn $"{ex.StackTrace.[0..400]}"
+    session.StartGame()
     0
