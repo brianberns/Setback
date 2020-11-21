@@ -170,48 +170,39 @@ type Session(playerMap : Map<_, _>, rng) =
             | Some gameDeal, Some game ->
 
                 let openDeal = gameDeal.OpenDeal
-                let closedDeal = openDeal.ClosedDeal
                 let seat =
                     let iPlayer =
                         openDeal |> AbstractOpenDeal.currentPlayerIndex
                     gameDeal.Dealer |> Seat.incr iPlayer
 
-                match closedDeal.PlayoutOpt with
+                if openDeal.ClosedDeal.PlayoutOpt.IsNone then
 
-                        // auction
-                    | None ->
+                        // get player's bid
+                    let bid =
+                        playerMap.[seat].MakeBid game.Score openDeal
 
-                            // get player's bid
-                        let bid =
-                            playerMap.[seat].MakeBid game.Score openDeal
+                        // update state
+                    let openDeal =
+                        openDeal
+                            |> AbstractOpenDeal.addBid bid
+                    gameDealOpt <- Some { gameDeal with OpenDeal = openDeal }
 
-                            // update state
-                        let openDeal =
-                            let closedDeal =
-                                closedDeal
-                                    |> AbstractClosedDeal.addBid bid
-                            { gameDeal.OpenDeal with ClosedDeal = closedDeal }
-                        gameDealOpt <- Some { gameDeal with OpenDeal = openDeal }
+                        // trigger event
+                    bidEvent.Trigger(seat, bid, openDeal)
 
-                            // trigger event
-                        bidEvent.Trigger(seat, bid, openDeal)
+                else
+                        // get player's play
+                    let card =
+                        playerMap.[seat].MakePlay game.Score openDeal
 
-                    | Some playout ->
+                        // update state
+                    let openDeal =
+                        openDeal
+                            |> AbstractOpenDeal.addPlay card
+                    gameDealOpt <- Some { gameDeal with OpenDeal = openDeal }
 
-                            // get player's play
-                        let card =
-                            playerMap.[seat].MakePlay game.Score openDeal
-
-                            // update state
-                        let openDeal =
-                            let closedDeal =
-                                closedDeal
-                                    |> AbstractClosedDeal.addPlay card
-                            { gameDeal.OpenDeal with ClosedDeal = closedDeal }
-                        gameDealOpt <- Some { gameDeal with OpenDeal = openDeal }
-
-                            // trigger event
-                        playEvent.Trigger(seat, card, openDeal)
+                        // trigger event
+                    playEvent.Trigger(seat, card, openDeal)
 
             | None, _ -> failwith "No active deal"
             | _, None -> failwith "No active game"
