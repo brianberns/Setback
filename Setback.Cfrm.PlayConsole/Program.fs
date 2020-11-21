@@ -101,23 +101,7 @@ let onGameFinish (gameScore : AbstractScore, seriesScore : AbstractScore) =
     printfn $"   Updated series score: {AbstractScore.toAbbr seriesScore}"
     session.StartGame()
 
-module Exception =
-
-    let handle (ex : exn) =
-        printfn $"{ex.Message}"
-        printfn $"{ex.StackTrace.[0..400]}"
-
-    /// Registers handler for unhandled exceptions.
-    let initHandler () =
-        AppDomain.CurrentDomain.UnhandledException.Add(
-            fun args ->
-                args.ExceptionObject
-                    :?> exn
-                    |> handle)
-
 let init () =
-
-    Exception.initHandler ()
 
     session.GameStartEvent.Add onGameStart
     session.DealStartEvent.Add onDealStart
@@ -133,5 +117,9 @@ let init () =
 [<EntryPoint>]
 let main argv =
     init ()
-    session.StartGame()
+    try
+        session.StartGame()
+    with ex ->
+        printfn $"{ex.Message}"
+        printfn $"{ex.StackTrace.[0..400]}"
     0
