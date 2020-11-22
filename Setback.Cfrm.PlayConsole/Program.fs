@@ -35,15 +35,28 @@ let player =
         MakePlay = makePlay
     }
 
+let userBid score openDeal =
+    async {
+        let bid = player.MakeBid score openDeal
+        printfn $"*** User bids {bid}"
+        return bid
+    }
+
+let userPlay score openDeal =
+    async {
+        let card = player.MakePlay score openDeal
+        printfn $"*** User plays {card}"
+        return card
+    }
+
 let session =
     let playerMap =
         Map [
             Seat.West, player
             Seat.North, player
             Seat.East, player
-            Seat.South, player
         ]
-    Session(playerMap, rng)
+    Session(playerMap, userBid, userPlay, rng)
 
 module AbstractScore =
 

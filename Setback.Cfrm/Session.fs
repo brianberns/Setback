@@ -27,7 +27,11 @@ module Game =
             Score = AbstractScore.zero
         }
 
-type Session(playerMap : Map<_, _>, rng) =
+type Session
+    (playerMap : Map<_, _>,
+    userBid,
+    userPlay,
+    rng) =
 
         // initialize events raised by this object
     let gameStartEvent = new Event<_>()
@@ -53,8 +57,12 @@ type Session(playerMap : Map<_, _>, rng) =
                 ||> Seq.fold (fun deal _ ->
                     let seat = getSeat dealer deal
                     let bid =
-                        let player = playerMap.[seat]
-                        player.MakeBid game.Score deal
+                        match playerMap |> Map.tryFind seat with
+                            | Some player ->
+                                player.MakeBid game.Score deal
+                            | None ->
+                                userBid game.Score deal
+                                    |> Async.RunSynchronously
                     let deal = deal |> AbstractOpenDeal.addBid bid
                     bidEvent.Trigger(seat, bid, deal)
                     deal)
@@ -67,8 +75,12 @@ type Session(playerMap : Map<_, _>, rng) =
                     ||> Seq.fold (fun deal _ ->
                         let seat = getSeat dealer deal
                         let card =
-                            let player = playerMap.[seat]
-                            player.MakePlay game.Score deal
+                            match playerMap |> Map.tryFind seat with
+                                | Some player ->
+                                    player.MakePlay game.Score deal
+                                | None ->
+                                    userPlay game.Score deal
+                                        |> Async.RunSynchronously
                         let deal = deal |> AbstractOpenDeal.addPlay card
                         playEvent.Trigger(seat, card, deal)
                         deal)
