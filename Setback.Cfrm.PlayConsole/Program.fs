@@ -52,54 +52,25 @@ module AbstractScore =
 
 let onGameStart () =
     printfn "Game start"
-    session.StartDeal(Seat.South)
 
 let onDealStart (_ : AbstractOpenDeal) =
     printfn "Deal start"
-    session.DoTurn()
 
 let onBid (seat : Seat, bid : Bid, openDeal : AbstractOpenDeal) =
     printfn $"{seat} bids {bid}"
-    if openDeal |> AbstractOpenDeal.isComplete then
-        assert(openDeal.ClosedDeal.Auction.HighBid.Bid = Bid.Pass)
-        session.FinishDeal()
-    else
-        session.DoTurn()
 
 let onPlay (seat : Seat, card : Card, openDeal : AbstractOpenDeal) =
     printfn $"{seat} plays {card}"
-    if openDeal |> AbstractOpenDeal.isComplete then
-        session.FinishDeal()
-    else
-        session.DoTurn()
-
-(*
-let onTurnStart (openDeal : AbstractOpenDeal) =
-    let iPlayer =
-        openDeal |> AbstractOpenDeal.currentPlayerIndex
-    printfn $"Turn start for player {iPlayer}"
-    let hand = openDeal.UnplayedCards.[0] |> Seq.sortDescending
-    for card in hand do
-        printfn $"   {card}"
-    session.FinishTurn()
-
-let onTurnFinish (openDeal : AbstractOpenDeal) =
-    let iPlayer =
-        openDeal |> AbstractOpenDeal.currentPlayerIndex
-    printfn $"Turn finish for player {iPlayer}"
-*)
 
 let onDealFinish (openDeal : AbstractOpenDeal, gameScore : AbstractScore) =
     printfn "Deal finish"
     printfn $"   Final deal score:   {openDeal |> AbstractOpenDeal.dealScore |> AbstractScore.toAbbr}"
     printfn $"   Updated game score: {AbstractScore.toAbbr gameScore}"
-    session.FinishGame()
 
-let onGameFinish (gameScore : AbstractScore, seriesScore : AbstractScore) =
+let onGameFinish (gameScore : AbstractScore (*, seriesScore : AbstractScore*)) =
     printfn "Game finish"
     printfn $"   Final game score:     {AbstractScore.toAbbr gameScore}"
-    printfn $"   Updated series score: {AbstractScore.toAbbr seriesScore}"
-    session.StartGame()
+    // printfn $"   Updated series score: {AbstractScore.toAbbr seriesScore}"
 
 let init () =
 
@@ -117,8 +88,10 @@ let init () =
 [<EntryPoint>]
 let main argv =
     init ()
+    let rng = Random(0)
     try
-        session.StartGame()
+        let iWinningTeam = session.Start(rng)
+        printfn $"Winning team: {iWinningTeam}"
     with ex ->
         printfn $"{ex.Message}"
         printfn $"{ex.StackTrace.[0..400]}"

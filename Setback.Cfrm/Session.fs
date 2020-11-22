@@ -1,103 +1,30 @@
 ﻿namespace Setback.Cfrm
 
-open System
-
 open PlayingCards
 open Setback
 
-/// A series of games for a group of players.
-type GameSeries =
+/// A game(*) of Setback is a sequence of deals that ends when the leading
+/// team's score crosses a fixed threshold.
+///
+/// *Once again, the terminology gets confusing: whichever team accumulates
+/// the most deal points wins the game. Game points don't actually contribute
+/// directly to winning a game.
+type Game =
     {
-        /// Automated players in this series.
+        /// Player that occupies each seat.
         PlayerMap : Map<Seat, Player>
 
-        /// Count of games won by each team in this series.
+        /// Deal points taken by each team.
         Score : AbstractScore
-
-        /// Random number generator.
-        Rng : Random
     }
+    
+module Game =
 
-module GameSeries =
-
-    /// Starts a series of games.
-    let start playerMap rng =
+    /// Creates a new game for the given players.
+    let create playerMap =
         {
             PlayerMap = playerMap
             Score = AbstractScore.zero
-            Rng = rng
-        }
-
-/// A game within a series of games.
-type Game =
-    {
-        /// Containing series.
-        Series : GameSeries
-
-        /// Score of the game.
-        Score : AbstractScore
-    }
-
-module Game =
-
-    /// Starts a game in the given series.
-    let start series =
-        {
-            Series = series
-            Score = AbstractScore.zero
-        }
-
-    /// Finishes a won game.
-    let finish game =
-
-            // determine winning team
-        let iTeam =
-            match BootstrapGameState.winningTeamScoreOpt game.Score with
-                | Some iTeam -> iTeam
-                | None -> failwith "No winning team"
-
-            // update series score
-        let incr = AbstractScore.forTeam iTeam 1
-        {
-            game.Series with
-                Score = game.Series.Score + incr
-        }
-
-/// A deal within a game.
-type GameDeal =
-    {
-        /// Containing game.
-        Game : Game
-
-        /// Dealer for this deal.
-        Dealer : Seat
-
-        /// Underlying deal.
-        OpenDeal : AbstractOpenDeal
-    }
-
-module GameDeal =
-
-    /// Starts a deal with the given dealer.
-    let start game dealer =
-        {
-            Game = game
-            Dealer = dealer
-            OpenDeal =
-                Deck.shuffle game.Series.Rng
-                    |> AbstractOpenDeal.fromDeck dealer
-        }
-
-    /// Finishes a deal.
-    let finish gameDeal =
-        assert(gameDeal.OpenDeal |> AbstractOpenDeal.isComplete)
-
-            // update score of game
-        let dealScore =
-            gameDeal.OpenDeal |> AbstractOpenDeal.dealScore
-        {
-            gameDeal.Game with
-                Score = gameDeal.Game.Score + dealScore
         }
 
 type Session(playerMap : Map<_, _>, rng) =
@@ -109,149 +36,78 @@ type Session(playerMap : Map<_, _>, rng) =
     let dealFinishEvent = new Event<_>()
     let bidEvent = new Event<_>()
     let playEvent = new Event<_>()
-    (*
-    let turnStartEvent = new Event<_>()
-    let turnFinishEvent = new Event<_>()
-    *)
-    (*
-    let userBidEvent = new Event<_>()
-    let trickBeginEvent = new Event<_>()
-    let trickEndEvent = new Event<_>()
-    let userPlayEvent = new Event<_>()
-    *)
 
-    /// Current game series.
-    let mutable series =
-        GameSeries.start playerMap rng
+    let getSeat dealer deal =
+        let iPlayer =
+            deal |> AbstractOpenDeal.currentPlayerIndex
+        dealer |> Seat.incr iPlayer
 
-    /// Current game.
-    let mutable gameOpt =
-        Option<Game>.None
+    /// Plays the given deal.
+    let playDeal dealer (deal : AbstractOpenDeal) game =
 
-    /// Current game deal
-    let mutable gameDealOpt =
-        Option<GameDeal>.None
+        dealStartEvent.Trigger(deal)
 
-    /// Starts a new game.
-    member __.StartGame() =
-        assert(gameOpt.IsNone)
-        assert(gameDealOpt.IsNone)
-
-            // start game
-        let game = Game.start series
-
-            // update state
-        gameOpt <- Some game
-
-            // trigger event
-        gameStartEvent.Trigger()
-
-    /// Starts a new deal.
-    member __.StartDeal(dealer) =
-        assert(gameDealOpt.IsNone)
-
-        match gameOpt with
-            | Some game ->
-
-                    // start deal
-                let gameDeal = GameDeal.start game dealer
-
-                    // update state
-                gameDealOpt <- Some gameDeal
-
-                    // trigger event
-                dealStartEvent.Trigger(gameDeal.OpenDeal)
-
-            | None -> failwith "No active game"
-
-    member __.DoTurn() =
-        assert(gameOpt.IsSome)
-        match gameDealOpt, gameOpt with
-            | Some gameDeal, Some game ->
-
-                let openDeal = gameDeal.OpenDeal
-                let seat =
-                    let iPlayer =
-                        openDeal |> AbstractOpenDeal.currentPlayerIndex
-                    gameDeal.Dealer |> Seat.incr iPlayer
-
-                if openDeal.ClosedDeal.PlayoutOpt.IsNone then
-
-                        // get player's bid
+            // auction
+        let deal =
+            (deal, [1 .. Seat.numSeats])
+                ||> Seq.fold (fun deal _ ->
+                    let seat = getSeat dealer deal
                     let bid =
-                        playerMap.[seat].MakeBid game.Score openDeal
+                        let player = playerMap.[seat]
+                        player.MakeBid game.Score deal
+                    let deal = deal |> AbstractOpenDeal.addBid bid
+                    bidEvent.Trigger(seat, bid, deal)
+                    deal)
+        assert(deal.ClosedDeal.Auction |> AbstractAuction.isComplete)
 
-                        // update state
-                    let openDeal =
-                        openDeal
-                            |> AbstractOpenDeal.addBid bid
-                    gameDealOpt <- Some { gameDeal with OpenDeal = openDeal }
+            // playout
+        let deal =
+            if deal.ClosedDeal.Auction.HighBid.Bid > Bid.Pass then
+                (deal, [1 .. Setback.numCardsPerDeal])
+                    ||> Seq.fold (fun deal _ ->
+                        let seat = getSeat dealer deal
+                        let card =
+                            let player = playerMap.[seat]
+                            player.MakePlay game.Score deal
+                        let deal = deal |> AbstractOpenDeal.addPlay card
+                        playEvent.Trigger(seat, card, deal)
+                        deal)
+            else deal
+                
+            // update the game
+        let game =
+            let dealScore =
+                deal |> AbstractOpenDeal.dealScore
+            { game with Score = game.Score + dealScore }
+        dealFinishEvent.Trigger(deal, game.Score)
+        game
 
-                        // trigger event
-                    bidEvent.Trigger(seat, bid, openDeal)
+    /// Plays the given game.
+    let playGame rng dealer game =
 
-                else
-                        // get player's play
-                    let card =
-                        playerMap.[seat].MakePlay game.Score openDeal
+            // play deals with rotating dealer
+        let rec loop dealer game =
 
-                        // update state
-                    let openDeal =
-                        openDeal
-                            |> AbstractOpenDeal.addPlay card
-                    gameDealOpt <- Some { gameDeal with OpenDeal = openDeal }
+                // play one deal
+            let game =
+                let deal =
+                    Deck.shuffle rng
+                        |> AbstractOpenDeal.fromDeck dealer
+                game |> playDeal dealer deal
 
-                        // trigger event
-                    playEvent.Trigger(seat, card, openDeal)
+                // continue this game?
+            match game.Score |> BootstrapGameState.winningTeamOpt with
+                | Some iWinningTeam -> game.Score, iWinningTeam
+                | None -> game |> loop dealer.Next
 
-            | None, _ -> failwith "No active deal"
-            | _, None -> failwith "No active game"
+        gameStartEvent.Trigger()
+        let score, iWinningTeam = game |> loop dealer
+        gameFinishEvent.Trigger(score)
+        iWinningTeam
 
-    (*
-    member __.StartTurn() =
-        assert(gameOpt.IsSome)
-        match gameDealOpt with
-            | Some gameDeal ->
-                turnStartEvent.Trigger(gameDeal.OpenDeal)
-            | None -> failwith "No active deal"
-
-    member __.FinishTurn() =
-        assert(gameOpt.IsSome)
-        match gameDealOpt with
-            | Some gameDeal ->
-                turnFinishEvent.Trigger(gameDeal.OpenDeal)
-            | None -> failwith "No active deal"
-    *)
-
-    member __.FinishDeal() =
-        assert(gameOpt.IsSome)
-        match gameDealOpt with
-            | Some gameDeal ->
-
-                    // finish deal
-                let game = GameDeal.finish gameDeal
-
-                    // update state
-                gameOpt <- Some game
-                gameDealOpt <- None
-
-                    // trigger event
-                dealFinishEvent.Trigger(gameDeal.OpenDeal, game.Score)
-
-            | None -> failwith "No active deal"
-
-    member __.FinishGame() =
-        match gameOpt with
-            | Some game ->
-
-                    // finish game and update state
-                series <- Game.finish game
-                gameOpt <- None
-
-                    // trigger event
-                gameFinishEvent.Trigger(game.Score, series.Score)
-
-            | None -> failwith "No active game"
+    member __.Start(rng) =
+        Game.create playerMap
+            |> playGame rng Seat.South
 
     [<CLIEvent>]
     member __.GameStartEvent = gameStartEvent.Publish
@@ -264,14 +120,6 @@ type Session(playerMap : Map<_, _>, rng) =
 
     [<CLIEvent>]
     member __.DealFinishEvent = dealFinishEvent.Publish
-
-    (*
-    [<CLIEvent>]
-    member __.TurnStartEvent = turnStartEvent.Publish
-
-    [<CLIEvent>]
-    member __.TurnFinishEvent = turnFinishEvent.Publish
-    *)
 
     [<CLIEvent>]
     member __.BidEvent = bidEvent.Publish
