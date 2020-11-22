@@ -76,10 +76,6 @@ let init () =
 
     session.GameStartEvent.Add onGameStart
     session.DealStartEvent.Add onDealStart
-    (*
-    session.TurnStartEvent.Add onTurnStart
-    session.TurnFinishEvent.Add onTurnFinish
-    *)
     session.BidEvent.Add onBid
     session.PlayEvent.Add onPlay
     session.DealFinishEvent.Add onDealFinish
@@ -88,9 +84,8 @@ let init () =
 [<EntryPoint>]
 let main argv =
     init ()
-    let rng = Random(0)
     try
-        let iWinningTeam = session.Start(rng)
+        let iWinningTeam = session.Start()
         printfn $"Winning team: {iWinningTeam}"
     with ex ->
         printfn $"{ex.Message}"

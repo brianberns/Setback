@@ -105,7 +105,7 @@ type Session(playerMap : Map<_, _>, rng) =
         gameFinishEvent.Trigger(score)
         iWinningTeam
 
-    member __.Start(rng) =
+    member __.Start() =
         Game.create playerMap
             |> playGame rng Seat.South
 
