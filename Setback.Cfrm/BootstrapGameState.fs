@@ -11,7 +11,7 @@ open Setback
 module BootstrapGameState =
 
     /// Which team (if any) won the game with the given score.
-    let winningTeamScoreOpt (AbstractScore scores) =
+    let winningTeamOpt (AbstractScore scores) =
         let maxScore = Array.max scores
         if maxScore >= Setback.winThreshold then
             scores
@@ -179,7 +179,7 @@ type BootstrapGameState
                             gameScore + dealScore
 
                             // compute reward
-                        match BootstrapGameState.winningTeamScoreOpt gameScore with
+                        match BootstrapGameState.winningTeamOpt gameScore with
 
                                 // reward for winning the game (regardless of deal score)
                             | Some iWinningTeam ->
