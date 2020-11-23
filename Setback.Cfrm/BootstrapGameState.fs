@@ -183,7 +183,7 @@ type BootstrapGameState
 
                                 // reward for winning the game (regardless of deal score)
                             | Some iWinningTeam ->
-                                let reward = 5.0   // value determined empirically
+                                let reward = 5.5   // value determined empirically
                                 if iWinningTeam = 0 then reward
                                 else -reward
 
