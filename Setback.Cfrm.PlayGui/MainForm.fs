@@ -8,7 +8,10 @@ open PlayingCards
 open Setback
 open Setback.Cfrm
 
-/// Main form for playing Setback.
+/// Main form for playing Setback:
+///    * One hand control per seat, arranged roughly in a circle
+///    * A bid control next to the users's hand control
+///    * The user's "Go" button for advancing the game
 type MainForm() as this =
     inherit Form(
         Text = "Bernsrite Setback",
@@ -47,18 +50,39 @@ type MainForm() as this =
 
         let padding = 50
 
-            // layout hand controls
-        let vertLeft = (this.ClientSize.Width - HandControl.Width) / 2
-        let horizTop = (this.ClientSize.Height - HandControl.Height - goButton.Height) / 2
-        handControlMap.[Seat.North].Location <- new Point(vertLeft, padding)
-        handControlMap.[Seat.South].Location <- new Point(vertLeft, this.ClientSize.Height - HandControl.Height - goButton.Height - padding)
-        handControlMap.[Seat.East].Location <- new Point(this.ClientSize.Width - HandControl.Width - padding, horizTop)
-        handControlMap.[Seat.West].Location <- new Point(padding, horizTop)
+            // hand controls
+        let vertLeft =
+            (this.ClientSize.Width - HandControl.Width) / 2
+        let horizTop =
+            (this.ClientSize.Height - HandControl.Height - goButton.Height) / 2
+        handControlMap.[Seat.North].Location <-
+            Point(vertLeft, padding)
+        handControlMap.[Seat.South].Location <-
+            let yCoord =
+                this.ClientSize.Height - HandControl.Height - goButton.Height - padding
+            Point(vertLeft, yCoord)
+        handControlMap.[Seat.East].Location <-
+            let xCoord =
+                this.ClientSize.Width - HandControl.Width - padding
+            Point(xCoord, horizTop)
+        handControlMap.[Seat.West].Location <-
+            Point(padding, horizTop)
 
-            // layout go button
+            // bid control
+        let handCtrl = handControlMap.[Seat.South]
+        bidControl.Location <-
+            new Point(
+                handCtrl.Left + handCtrl.ClientSize.Width + 5,
+                handCtrl.Top)
+
+            // go button
         goButton.Location <-
             let handCtrl = handControlMap.[Seat.South]
-            handCtrl.Location + Size((handCtrl.Size.Width - goButton.Size.Width)/ 2, handCtrl.Size.Height + 10)
+            let size =
+                Size(
+                    (handCtrl.Size.Width - goButton.Size.Width) / 2,
+                    handCtrl.Size.Height + 10)
+            handCtrl.Location + size
 
         // a new deal has started
     let onDealStart (dealer, deal : AbstractOpenDeal) =
@@ -93,6 +117,8 @@ type MainForm() as this =
     do
             // initialize controls
         this.Controls.AddRange(handControls)
+        this.Controls.Add(bidControl)
+        this.Controls.Add(goButton)
 
             // layout controls
         this.Resize.Add(fun _ -> onResize ())
