@@ -5,18 +5,6 @@ open System.Windows.Forms
 
 open PlayingCards
 
-[<AutoOpen>]
-module AutoOpen =
-
-    type Control.ControlCollection with
-
-        /// Adds the given controls to the collection.
-        member this.AddRange<'t when 't :> Control>(controls : seq<'t>) =
-            controls
-                |> Seq.cast<Control>
-                |> Seq.toArray
-                |> this.AddRange
-
 module Suit =
 
     /// Color of the given suit.
@@ -33,16 +21,33 @@ module Card =
     let toAbbr (card : Card) =
         sprintf "%c%c" card.Rank.Char card.Suit.Char
 
+module Control =
+
+    /// Adds the given control to the given parent control fluently.
+    let addTo (parent : Control) (control : 't when 't :> Control) =
+        parent.Controls.Add(control)
+        control
+
 /// Graphical representation of a single card.
-type CardControl(card : Card) =
+type CardControl() as this =
     inherit Label(
-        Text = Card.toAbbr card,
-        Font = new Font("Lucida Console", 15.0f),
-        Size = new Size(CardControl.Width, CardControl.Height),
+        Size = Size(CardControl.Width, CardControl.Height),
+        Font = CardControl.GetFont(false),
         BorderStyle = BorderStyle.FixedSingle,
         TextAlign = ContentAlignment.MiddleCenter,
         BackColor = Color.White,
-        ForeColor = Suit.color card.Suit)
+        Visible = false)
+
+    /// Font used for non-trump cards.
+    static let normalFont =
+        new Font("Lucida Console", 15.0f)
+
+    /// Font used for trump cards.
+    static let trumpFont =
+        new Font(normalFont, FontStyle.Underline)
+
+    /// Card represented by this control, if any.
+    let mutable cardOpt = Option<Card>.None
 
     /// Width of this control.
     static member Width = 36
@@ -50,13 +55,30 @@ type CardControl(card : Card) =
     /// Height of this control.
     static member Height = 48
 
-    /// Card represented by this control.
-    member __.Card = card
+    /// Font to use.
+    static member private GetFont(isTrump) =
+        if isTrump then trumpFont
+        else normalFont
 
-    /// Indicates whether this control's card is trump.
-    member this.IsTrump
-        with set (isTrump) =
-            let style =
-                if isTrump then FontStyle.Underline
-                else FontStyle.Regular
-            this.Font <- new Font(this.Font, style)
+    /// Card represented by this control, if any.
+    member __.CardOpt
+        with get () = cardOpt
+
+    /// Sets the card represented by this control.
+    member __.Card
+        with set(card) =
+            cardOpt <- Some card
+            this.Text <- Card.toAbbr card
+            this.ForeColor <- Suit.color card.Suit
+            this.Visible <- true
+
+    /// Indicates whether the card represented by this control is trump.
+    member __.IsTrump
+        with set(isTrump) =
+            this.Font <- CardControl.GetFont(isTrump)
+
+    /// Clears this control.
+    member __.Clear() =
+        cardOpt <- None
+        this.Text <- ""
+        this.Visible <- false

@@ -9,7 +9,7 @@ open Setback
 ///    * A panel of buttons, one per possible bid
 type BidControl() as this =
     inherit Panel(
-        Size = new Size(120, 85),
+        Size = Size(120, 85),
         Font = new Font("Calibri", 12.0f))
 
     /// Triggered when any bid button is selected.
@@ -29,6 +29,7 @@ type BidControl() as this =
                             Point(
                                 xCoord,
                                 yCoord + iButton * height))
+                        |> Control.addTo this
                 button.Click.Add(fun _ ->
                     bidSelectedEvent.Trigger bid)
                 bid, button)
@@ -37,13 +38,6 @@ type BidControl() as this =
     /// Answers the bid associated with the given button.
     let getBid (btn : RadioButton) =
         btn.Tag :?> Bid
-
-        // initialize
-    do
-        buttonMap
-            |> Map.toSeq
-            |> Seq.map snd
-            |> this.Controls.AddRange
 
     /// Answers the button that represents the given bid.
     member __.GetBidButton(bid : Bid) =

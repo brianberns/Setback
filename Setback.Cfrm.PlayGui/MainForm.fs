@@ -15,20 +15,17 @@ open Setback.Cfrm
 type MainForm() as this =
     inherit Form(
         Text = "Bernsrite Setback",
-        Size = new Size(1100, 700))
-
-    /// Unplayed cards for each seat.
-    let handControls =
-        Enum.getValues<Seat>
-            |> Array.map (fun seat ->
-                new HandControl(seat))
+        Size = Size(1100, 700))
 
     /// Unplayed cards for each seat.
     let handControlMap =
-        handControls
-            |> Seq.map (fun ctrl ->
-                ctrl.Cards <- Card.allCards |> Seq.take 6
-                ctrl.Seat, ctrl)
+        Enum.getValues<Seat>
+            |> Seq.map (fun seat ->
+                let ctrl =
+                    new HandControl(seat)
+                        |> Control.addTo this
+                ctrl.Cards <- Card.allCards |> Seq.take 6   // REMOVE
+                seat, ctrl)
             |> Map
 
     /// User's bid control.
@@ -36,6 +33,7 @@ type MainForm() as this =
         new BidControl(
             Height = HandControl.Height,
             Visible = false)
+            |> Control.addTo this
 
     /// User must click to continue.
     let goButton =
@@ -44,6 +42,7 @@ type MainForm() as this =
             Text = "Go",
             Font = new Font("Calibri", 12.0f),
             Visible = false)
+            |> Control.addTo this
 
     /// Lays out controls.
     let onResize () =
@@ -115,15 +114,9 @@ type MainForm() as this =
         Session(playerMap, userBid, userPlay, rng)
 
     do
-            // initialize controls
-        this.Controls.AddRange(handControls)
-        this.Controls.Add(bidControl)
-        this.Controls.Add(goButton)
-
             // layout controls
         this.Resize.Add(fun _ -> onResize ())
         onResize ()
-        this.Visible <- true
 
             // initialize handlers
         session.DealStartEvent.Add(onDealStart)
