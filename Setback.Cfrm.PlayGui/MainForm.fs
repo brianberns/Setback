@@ -34,6 +34,11 @@ type MainForm() as this =
             Visible = true)
             |> Control.addTo this
 
+    /// Current trick.
+    let trickControl =
+        new TrickControl()
+            |> Control.addTo this
+
     /// User must click to continue.
     let goButton =
         new Button(
@@ -72,6 +77,16 @@ type MainForm() as this =
             new Point(
                 handCtrl.Left + handCtrl.ClientSize.Width + 5,
                 handCtrl.Top)
+
+            // trick control
+        let innerLeft = handControlMap.[Seat.West].Right
+        let innerRight = handControlMap.[Seat.East].Left
+        let innerTop = handControlMap.[Seat.North].Bottom
+        let innerBottom = handControlMap.[Seat.South].Top
+        let innerWidth = innerRight - innerLeft
+        let innerHeight = innerBottom - innerTop
+        trickControl.Size <- Size(innerWidth, innerHeight) - 2 * Size(CardControl.Width, CardControl.Height)
+        trickControl.Location <- Point(innerLeft, innerTop) + Size(CardControl.Width, CardControl.Height)
 
             // go button
         goButton.Location <-

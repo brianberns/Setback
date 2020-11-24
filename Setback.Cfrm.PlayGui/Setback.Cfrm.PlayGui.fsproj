@@ -14,6 +14,7 @@
     <Compile Include="CardControl.fs" />
     <Compile Include="HandControl.fs" />
     <Compile Include="BidControl.fs" />
+    <Compile Include="TrickControl.fs" />
     <Compile Include="MainForm.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
