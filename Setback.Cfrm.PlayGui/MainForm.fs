@@ -24,7 +24,6 @@ type MainForm() as this =
                 let ctrl =
                     new HandControl(seat)
                         |> Control.addTo this
-                ctrl.Cards <- Card.allCards |> Seq.take 6   // REMOVE
                 seat, ctrl)
             |> Map
 
@@ -115,17 +114,10 @@ type MainForm() as this =
                 Seat.West, dbPlayer
                 Seat.North, dbPlayer
                 Seat.East, dbPlayer
+                Seat.South, dbPlayer
             ]
-        let userBid score openDeal =
-            async {
-                return dbPlayer.MakeBid score openDeal
-            }
-        let userPlay score openDeal =
-            async {
-                return dbPlayer.MakePlay score openDeal
-            }
         let rng = Random(0)
-        Session(playerMap, userBid, userPlay, rng)
+        Session(playerMap, rng, this)
 
     do
             // layout controls
@@ -136,8 +128,5 @@ type MainForm() as this =
         session.DealStartEvent.Add(onDealStart)
 
             // run
-        try
-            let iWinningTeam = session.Start()
-            MessageBox.Show($"Winning team: {iWinningTeam}") |> ignore
-        with ex ->
-            MessageBox.Show($"{ex.Message}\r\n{ex.StackTrace.[0..400]}") |> ignore
+        async { session.Start() }
+            |> Async.Start

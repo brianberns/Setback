@@ -17,7 +17,6 @@ type TrickControl() as this =
                 let ctrl =
                     new CardControl()
                         |> Control.addTo this
-                ctrl.Card <- Card(Rank.Ace, Suit.Spades)   // REMOVE
                 seat, ctrl)
             |> Map
 
