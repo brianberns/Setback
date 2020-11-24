@@ -31,16 +31,21 @@ type HandControl(seat : Seat) as this =
         new Panel(
             Size = new Size(HandControl.Width, panelHeight))
 
+    /// Default text.
+    let defaultText =
+        seat.ToString()
+
     /// Text label.
     let label =
         new Label(
             Size = new Size(HandControl.Width - (2 * padding), labelHeight),
             Location = new Point(padding, panel.ClientSize.Height),
-            Text = seat.ToString(),
+            Text = defaultText,
             TextAlign = ContentAlignment.MiddleCenter,
             Height = labelHeight,
             Font = new Font("Calibri", 15.0f))
 
+        // initialize
     do
         this.Controls.Add(panel)
         this.Controls.Add(label)
@@ -66,13 +71,11 @@ type HandControl(seat : Seat) as this =
                     new CardControl(
                         card,
                         Left = left iCard,
-                        Top = padding)
-                        :> Control)
-                |> Seq.toArray
+                        Top = padding))
                 |> panel.Controls.AddRange
 
                 // reset to default label
-            label.Text <- seat.ToString()
+            label.Text <- defaultText
 
     /// Contained card controls.
     member __.CardControls =

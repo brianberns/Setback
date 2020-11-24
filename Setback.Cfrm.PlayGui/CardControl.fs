@@ -5,6 +5,18 @@ open System.Windows.Forms
 
 open PlayingCards
 
+[<AutoOpen>]
+module AutoOpen =
+
+    type Control.ControlCollection with
+
+        /// Adds the given controls to the collection.
+        member this.AddRange<'t when 't :> Control>(controls : seq<'t>) =
+            controls
+                |> Seq.cast<Control>
+                |> Seq.toArray
+                |> this.AddRange
+
 module Suit =
 
     /// Color of the given suit.
