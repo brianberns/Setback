@@ -72,13 +72,15 @@ type CardControl() as this =
             this.ForeColor <- Suit.color card.Suit
             this.Visible <- true
 
-    /// Indicates whether the card represented by this control is trump.
-    member __.IsTrump
-        with set(isTrump) =
-            this.Font <- CardControl.GetFont(isTrump)
-
     /// Clears this control.
     member __.Clear() =
         cardOpt <- None
         this.Text <- ""
+        this.ForeColor <- Color.Transparent
         this.Visible <- false
+
+    /// Indicates whether the card represented by this control
+    /// is trump.
+    member __.IsTrump
+        with set(isTrump) =
+            this.Font <- CardControl.GetFont(isTrump)

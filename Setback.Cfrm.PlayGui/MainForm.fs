@@ -31,8 +31,7 @@ type MainForm() as this =
     /// User's bid control.
     let bidControl =
         new BidControl(
-            Height = HandControl.Height,
-            Visible = false)
+            Visible = true)
             |> Control.addTo this
 
     /// User must click to continue.
