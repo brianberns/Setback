@@ -37,7 +37,7 @@ module DatabasePlayer =
             keyParam.Value <- key
             let value = selectActionIndexCmd.ExecuteScalar()
             if DBNull.Value.Equals(value) then None
-            else value :?> int |> Some
+            else value :?> int64 |> int |> Some
 
         /// Makes a bid in the given deal.
         let makeBid score deal =

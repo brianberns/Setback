@@ -49,7 +49,7 @@ type Session
     /// Plays the given deal.
     let playDeal dealer (deal : AbstractOpenDeal) game =
 
-        dealStartEvent.Trigger(deal)
+        dealStartEvent.Trigger(dealer, deal)
 
             // auction
         let deal =

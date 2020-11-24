@@ -66,8 +66,8 @@ module AbstractScore =
 let onGameStart () =
     printfn "Game start"
 
-let onDealStart (_ : AbstractOpenDeal) =
-    printfn "Deal start"
+let onDealStart (dealer : Seat, _ : AbstractOpenDeal) =
+    printfn $"Deal started by {dealer}"
 
 let onBid (seat : Seat, bid : Bid, openDeal : AbstractOpenDeal) =
     printfn $"{seat} bids {bid}"

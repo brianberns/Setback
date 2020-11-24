@@ -1,10 +1,12 @@
 ﻿namespace Setback.Cfrm.PlayGui
 
+open System
 open System.Drawing
 open System.Windows.Forms
 
 open PlayingCards
 open Setback
+open Setback.Cfrm
 
 /// Main form for playing Setback.
 type MainForm() as this =
@@ -25,6 +27,12 @@ type MainForm() as this =
                 ctrl.Cards <- Card.allCards |> Seq.take 6
                 ctrl.Seat, ctrl)
             |> Map
+
+    /// User's bid control.
+    let bidControl =
+        new BidControl(
+            Height = HandControl.Height,
+            Visible = false)
 
     /// User must click to continue.
     let goButton =
@@ -52,6 +60,36 @@ type MainForm() as this =
             let handCtrl = handControlMap.[Seat.South]
             handCtrl.Location + Size((handCtrl.Size.Width - goButton.Size.Width)/ 2, handCtrl.Size.Height + 10)
 
+        // a new deal has started
+    let onDealStart (dealer, deal : AbstractOpenDeal) =
+        let indexedSeats =
+            dealer
+                |> Seat.cycle
+                |> Seq.indexed
+        for (iPlayer, seat) in indexedSeats do
+            let handCtrl = handControlMap.[seat]
+            handCtrl.Cards <- deal.UnplayedCards.[iPlayer]
+
+    let session =
+        let dbPlayer =
+            DatabasePlayer.player "Setback.db"
+        let playerMap =
+            Map [
+                Seat.West, dbPlayer
+                Seat.North, dbPlayer
+                Seat.East, dbPlayer
+            ]
+        let userBid score openDeal =
+            async {
+                return dbPlayer.MakeBid score openDeal
+            }
+        let userPlay score openDeal =
+            async {
+                return dbPlayer.MakePlay score openDeal
+            }
+        let rng = Random(0)
+        Session(playerMap, userBid, userPlay, rng)
+
     do
             // initialize controls
         this.Controls.AddRange(handControls)
@@ -60,3 +98,13 @@ type MainForm() as this =
         this.Resize.Add(fun _ -> onResize ())
         onResize ()
         this.Visible <- true
+
+            // initialize handlers
+        session.DealStartEvent.Add(onDealStart)
+
+            // run
+        try
+            let iWinningTeam = session.Start()
+            MessageBox.Show($"Winning team: {iWinningTeam}") |> ignore
+        with ex ->
+            MessageBox.Show($"{ex.Message}\r\n{ex.StackTrace.[0..400]}") |> ignore
