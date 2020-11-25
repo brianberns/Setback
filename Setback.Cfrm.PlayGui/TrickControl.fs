@@ -36,3 +36,17 @@ type TrickControl() as this =
     do
         this.Resize.Add(fun _ -> onResize ())
         onResize ()
+
+    member __.SetCard(seat, card) =
+        cardControlMap.[seat].Card <- card
+
+    member __.ClearCard(seat) =
+        cardControlMap.[seat].Clear()
+
+    member __.Clear() =
+        let ctrls =
+            cardControlMap
+                |> Map.toSeq
+                |> Seq.map snd
+        for ctrl in ctrls do
+            ctrl.Clear()

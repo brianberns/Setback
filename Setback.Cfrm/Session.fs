@@ -41,6 +41,8 @@ type Session
     let gameFinishEvent = Event<_>()
     let dealStartEvent = Event<_>()
     let dealFinishEvent = Event<_>()
+    let trickStartEvent = Event<_>()
+    let trickFinishEvent = Event<_>()
     let bidEvent = Event<_>()
     let playEvent = Event<_>()
 
@@ -77,13 +79,25 @@ type Session
             if deal.ClosedDeal.Auction.HighBid.Bid > Bid.Pass then
                 (deal, [1 .. Setback.numCardsPerDeal])
                     ||> Seq.fold (fun deal _ ->
-                        let seat = getSeat dealer deal
-                        let card =
-                            let player = playerMap.[seat]
-                            player.MakePlay game.Score deal
-                        let deal = deal |> AbstractOpenDeal.addPlay card
-                        raise playEvent (seat, card, deal)
-                        deal)
+                        match deal.ClosedDeal.PlayoutOpt with
+                            | Some playout ->
+
+                                let numPlays = playout.CurrentTrick.NumPlays
+                                if numPlays = 0 then
+                                    raise trickStartEvent ()
+
+                                let seat = getSeat dealer deal
+                                let card =
+                                    let player = playerMap.[seat]
+                                    player.MakePlay game.Score deal
+                                let deal = deal |> AbstractOpenDeal.addPlay card
+                                raise playEvent (seat, card, deal)
+
+                                if numPlays = Seat.numSeats - 1 then
+                                    raise trickFinishEvent ()
+
+                                deal
+                            | None -> failwith "Unexpected")
             else deal
                 
             // update the game
@@ -132,6 +146,12 @@ type Session
 
     [<CLIEvent>]
     member __.DealFinishEvent = dealFinishEvent.Publish
+
+    [<CLIEvent>]
+    member __.TrickStartEvent = trickStartEvent.Publish
+
+    [<CLIEvent>]
+    member __.TrickFinishEvent = trickFinishEvent.Publish
 
     [<CLIEvent>]
     member __.BidEvent = bidEvent.Publish

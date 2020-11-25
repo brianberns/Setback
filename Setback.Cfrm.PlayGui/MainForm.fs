@@ -15,7 +15,7 @@ open Setback.Cfrm
 type MainForm() as this =
     inherit Form(
         Text = "Bernsrite Setback",
-        Size = Size(1100, 700),
+        Size = Size(960, 730),
         BackColor = Color.DarkGreen)
 
     /// Unplayed cards for each seat.
@@ -101,9 +101,9 @@ type MainForm() as this =
                     handCtrl.Size.Height + 10)
             handCtrl.Location + size
 
-    let actionQueue = ActionQueue(500)
+    let actionQueue = ActionQueue(250)
 
-    /// A new deal has started.
+    /// A deal has started.
     let onDealStart (dealer, deal) =
         let indexedSeats =
             dealer
@@ -113,9 +113,17 @@ type MainForm() as this =
             let handCtrl = handControlMap.[seat]
             handCtrl.Cards <- deal.UnplayedCards.[iPlayer]
 
-    /// A new deal has started.
+    /// A deal has started.
     let delayDealStart args =
         actionQueue.Enqueue(fun () -> onDealStart args)
+
+    /// A trick has finished.
+    let onTrickFinish () =
+        trickControl.Clear()
+
+    /// A trick has finished.
+    let delayTrickFinish args =
+        actionQueue.Enqueue(fun () -> onTrickFinish args)
 
     /// A player has bid.
     let onBid (seat, bid, _) =
@@ -131,6 +139,9 @@ type MainForm() as this =
             // remove card from hand
         let ctrl = handControlMap.[seat]
         ctrl.Clear(card)
+
+            // add card to trick
+        trickControl.SetCard(seat, card)
 
     /// A player has played a card.
     let delayPlay args =
@@ -156,6 +167,7 @@ type MainForm() as this =
 
             // initialize handlers
         session.DealStartEvent.Add(delayDealStart)
+        session.TrickFinishEvent.Add(delayTrickFinish)
         session.BidEvent.Add(delayBid)
         session.PlayEvent.Add(delayPlay)
 
