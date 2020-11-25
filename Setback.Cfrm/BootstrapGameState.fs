@@ -50,12 +50,21 @@ module BootstrapGameState =
                 cThemNeed
                 (if cThemNeed <> 'x' && usNeed > themNeed then '!' else '.')
 
+    module AbstractHighBid =
+
+        /// String representation of a high bid.
+        let toAbbr (absHighBid : AbstractHighBid) =
+            sprintf "%d/%d"
+                (absHighBid.Bid |> int)
+                absHighBid.BidderIndex
+
     module AbstractAuction =
 
         /// String representation of an auction.
-        let toAbbr (auction : AbstractAuction) =
-            sprintf "%d"
-                (auction.HighBid.Bid |> int)
+        let toAbbr (absAuction : AbstractAuction) =
+            sprintf "%s/%d"
+                (absAuction.HighBid |> AbstractHighBid.toAbbr)
+                absAuction.NumBids
 
     module Hand =
 
