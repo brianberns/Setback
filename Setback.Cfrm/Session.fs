@@ -1,5 +1,7 @@
 ﻿namespace Setback.Cfrm
 
+open System.ComponentModel
+
 open PlayingCards
 open Setback
 
@@ -27,19 +29,27 @@ module Game =
             Score = AbstractScore.zero
         }
 
+type ActionDelegate = delegate of unit -> unit
+
 type Session
     (playerMap : Map<_, _>,
-    userBid,
-    userPlay,
-    rng) =
+    rng,
+    sync : ISynchronizeInvoke) =
 
         // initialize events raised by this object
-    let gameStartEvent = new Event<_>()
-    let gameFinishEvent = new Event<_>()
-    let dealStartEvent = new Event<_>()
-    let dealFinishEvent = new Event<_>()
-    let bidEvent = new Event<_>()
-    let playEvent = new Event<_>()
+    let gameStartEvent = Event<_>()
+    let gameFinishEvent = Event<_>()
+    let dealStartEvent = Event<_>()
+    let dealFinishEvent = Event<_>()
+    let trickStartEvent = Event<_>()
+    let trickFinishEvent = Event<_>()
+    let bidEvent = Event<_>()
+    let playEvent = Event<_>()
+
+    let raise (event : Event<_>) arg =
+        let del =
+            ActionDelegate(fun _ -> event.Trigger(arg))
+        sync.BeginInvoke(del, [||]) |> ignore
 
     let getSeat dealer deal =
         let iPlayer =
@@ -49,7 +59,7 @@ type Session
     /// Plays the given deal.
     let playDeal dealer (deal : AbstractOpenDeal) game =
 
-        dealStartEvent.Trigger(deal)
+        raise dealStartEvent (dealer, deal)
 
             // auction
         let deal =
@@ -57,14 +67,10 @@ type Session
                 ||> Seq.fold (fun deal _ ->
                     let seat = getSeat dealer deal
                     let bid =
-                        match playerMap |> Map.tryFind seat with
-                            | Some player ->
-                                player.MakeBid game.Score deal
-                            | None ->
-                                userBid game.Score deal
-                                    |> Async.RunSynchronously
+                        let player = playerMap.[seat]
+                        player.MakeBid game.Score deal
                     let deal = deal |> AbstractOpenDeal.addBid bid
-                    bidEvent.Trigger(seat, bid, deal)
+                    raise bidEvent (seat, bid, deal)
                     deal)
         assert(deal.ClosedDeal.Auction |> AbstractAuction.isComplete)
 
@@ -73,17 +79,25 @@ type Session
             if deal.ClosedDeal.Auction.HighBid.Bid > Bid.Pass then
                 (deal, [1 .. Setback.numCardsPerDeal])
                     ||> Seq.fold (fun deal _ ->
-                        let seat = getSeat dealer deal
-                        let card =
-                            match playerMap |> Map.tryFind seat with
-                                | Some player ->
+                        match deal.ClosedDeal.PlayoutOpt with
+                            | Some playout ->
+
+                                let numPlays = playout.CurrentTrick.NumPlays
+                                if numPlays = 0 then
+                                    raise trickStartEvent ()
+
+                                let seat = getSeat dealer deal
+                                let card =
+                                    let player = playerMap.[seat]
                                     player.MakePlay game.Score deal
-                                | None ->
-                                    userPlay game.Score deal
-                                        |> Async.RunSynchronously
-                        let deal = deal |> AbstractOpenDeal.addPlay card
-                        playEvent.Trigger(seat, card, deal)
-                        deal)
+                                let deal = deal |> AbstractOpenDeal.addPlay card
+                                raise playEvent (seat, card, deal)
+
+                                if numPlays = Seat.numSeats - 1 then
+                                    raise trickFinishEvent ()
+
+                                deal
+                            | None -> failwith "Unexpected")
             else deal
                 
             // update the game
@@ -91,7 +105,7 @@ type Session
             let dealScore =
                 deal |> AbstractOpenDeal.dealScore
             { game with Score = game.Score + dealScore }
-        dealFinishEvent.Trigger(deal, game.Score)
+        raise dealFinishEvent (deal, game.Score)
         game
 
     /// Plays the given game.
@@ -108,14 +122,14 @@ type Session
                 game |> playDeal dealer deal
 
                 // continue this game?
-            match game.Score |> BootstrapGameState.winningTeamOpt with
-                | Some iWinningTeam -> game.Score, iWinningTeam
-                | None -> game |> loop dealer.Next
+            if game.Score |> BootstrapGameState.winningTeamOpt |> Option.isSome then
+                game.Score
+            else
+                game |> loop dealer.Next
 
-        gameStartEvent.Trigger()
-        let score, iWinningTeam = game |> loop dealer
-        gameFinishEvent.Trigger(score)
-        iWinningTeam
+        raise gameStartEvent ()
+        let score = game |> loop dealer
+        raise gameFinishEvent score
 
     member __.Start() =
         Game.create playerMap
@@ -132,6 +146,12 @@ type Session
 
     [<CLIEvent>]
     member __.DealFinishEvent = dealFinishEvent.Publish
+
+    [<CLIEvent>]
+    member __.TrickStartEvent = trickStartEvent.Publish
+
+    [<CLIEvent>]
+    member __.TrickFinishEvent = trickFinishEvent.Publish
 
     [<CLIEvent>]
     member __.BidEvent = bidEvent.Publish
