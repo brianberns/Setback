@@ -161,6 +161,7 @@ type MainForm() as this =
     let delayPlay args =
         actionQueue.Enqueue(fun () -> onPlay args)
 
+    /// Underlying session.
     let session =
         let dbPlayer =
             DatabasePlayer.player "Setback.db"

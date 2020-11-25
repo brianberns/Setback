@@ -31,6 +31,7 @@ module Game =
 
 type ActionDelegate = delegate of unit -> unit
 
+/// Manages a series of games with the given players.
 type Session
     (playerMap : Map<_, _>,
     rng,
@@ -46,11 +47,13 @@ type Session
     let bidEvent = Event<_>()
     let playEvent = Event<_>()
 
-    let raise (event : Event<_>) arg =
+    /// Triggers the given event safely.
+    let trigger (event : Event<_>) arg =
         let del =
             ActionDelegate(fun _ -> event.Trigger(arg))
         sync.BeginInvoke(del, [||]) |> ignore
 
+    /// Answers the current player's seat.
     let getSeat dealer deal =
         let iPlayer =
             deal |> AbstractOpenDeal.currentPlayerIndex
@@ -59,7 +62,7 @@ type Session
     /// Plays the given deal.
     let playDeal dealer (deal : AbstractOpenDeal) game =
 
-        raise dealStartEvent (dealer, deal)
+        trigger dealStartEvent (dealer, deal)
 
             // auction
         let deal =
@@ -70,7 +73,7 @@ type Session
                         let player = playerMap.[seat]
                         player.MakeBid game.Score deal
                     let deal = deal |> AbstractOpenDeal.addBid bid
-                    raise bidEvent (seat, bid, deal)
+                    trigger bidEvent (seat, bid, deal)
                     deal)
         assert(deal.ClosedDeal.Auction |> AbstractAuction.isComplete)
 
@@ -84,17 +87,17 @@ type Session
 
                                 let numPlays = playout.CurrentTrick.NumPlays
                                 if numPlays = 0 then
-                                    raise trickStartEvent ()
+                                    trigger trickStartEvent ()
 
                                 let seat = getSeat dealer deal
                                 let card =
                                     let player = playerMap.[seat]
                                     player.MakePlay game.Score deal
                                 let deal = deal |> AbstractOpenDeal.addPlay card
-                                raise playEvent (seat, card, deal)
+                                trigger playEvent (seat, card, deal)
 
                                 if numPlays = Seat.numSeats - 1 then
-                                    raise trickFinishEvent ()
+                                    trigger trickFinishEvent ()
 
                                 deal
                             | None -> failwith "Unexpected")
@@ -105,7 +108,7 @@ type Session
             let dealScore =
                 deal |> AbstractOpenDeal.dealScore
             { game with Score = game.Score + dealScore }
-        raise dealFinishEvent (deal, game.Score)
+        trigger dealFinishEvent (deal, game.Score)
         game
 
     /// Plays the given game.
@@ -127,9 +130,9 @@ type Session
             else
                 game |> loop dealer.Next
 
-        raise gameStartEvent ()
+        trigger gameStartEvent ()
         let score = game |> loop dealer
-        raise gameFinishEvent score
+        trigger gameFinishEvent score
 
     member __.Start() =
         Game.create playerMap
