@@ -16,10 +16,7 @@ type ActionQueue(interval) =
     /// Executes the top action in the queue.
     let execute _ =
         if queue.Count > 0 then
-            let action = lock queue (fun _ ->
-                if queue.Count = 1 then
-                    timer.Enabled <- false
-                queue.Dequeue())
+            let action = queue.Dequeue()
             action ()
 
         // initialize
@@ -29,6 +26,9 @@ type ActionQueue(interval) =
 
     /// Adds the given action to the queue.
     member __.Enqueue(action) =
-        lock queue (fun _ ->
-            queue.Enqueue(action)
-            timer.Enabled <- true)
+        queue.Enqueue(action)
+
+    /// Indicates whether the queue's timer is running.
+    member __.Enabled
+        with set(value) = timer.Enabled <- value
+        and get() = timer.Enabled

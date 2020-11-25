@@ -45,8 +45,12 @@ type MainForm() as this =
             Size = Size(100, 30),
             Text = "Go",
             Font = new Font("Calibri", 12.0f),
+            UseVisualStyleBackColor = true,
             Visible = false)
             |> Control.addTo this
+
+    /// Action queue for delaying event handlers.
+    let actionQueue = ActionQueue(250)
 
     /// Lays out controls.
     let onResize _ =
@@ -101,7 +105,10 @@ type MainForm() as this =
                     handCtrl.Size.Height + 10)
             handCtrl.Location + size
 
-    let actionQueue = ActionQueue(250)
+    /// Go button has been clicked. Resume handling events.
+    let onGo _ =
+        actionQueue.Enabled <- true
+        goButton.Visible <- false
 
     /// A deal has started.
     let onDealStart (dealer, deal) =
@@ -123,6 +130,13 @@ type MainForm() as this =
 
     /// A trick has finished.
     let delayTrickFinish args =
+
+            // disable handlers until Go button clicked
+        actionQueue.Enqueue(fun () ->
+            goButton.Visible <- true
+            actionQueue.Enabled <- false)
+
+            // then finish the trick
         actionQueue.Enqueue(fun () -> onTrickFinish args)
 
     /// A player has bid.
@@ -170,6 +184,7 @@ type MainForm() as this =
         session.TrickFinishEvent.Add(delayTrickFinish)
         session.BidEvent.Add(delayBid)
         session.PlayEvent.Add(delayPlay)
+        goButton.Click.Add(onGo)
 
             // run
         async { session.Start() }
