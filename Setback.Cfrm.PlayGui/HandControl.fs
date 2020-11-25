@@ -56,6 +56,14 @@ type HandPanel() as this =
             cardControls
                 |> Seq.choose (fun ctrl -> ctrl.CardOpt)
 
+    /// Clears the given card from this control.
+    member __.Clear(card) =
+        let cardControl =
+            cardControls
+                |> Seq.find (fun ctrl ->
+                    ctrl.CardOpt = Some card)
+        cardControl.Clear()
+
 /// Graphical representation of a hand of cards:
 ///    * A panel displaying the cards.
 ///    * A text label displaying the seat/bid.
@@ -113,3 +121,7 @@ type HandControl(seat : Seat) as this =
     member __.Bid
         with set (bid : Bid) =
             label.Text <- $"{seat}: {bid}"
+
+    /// Clears the given card from this control.
+    member __.Clear(card) =
+        panel.Clear(card)

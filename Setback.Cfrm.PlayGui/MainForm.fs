@@ -101,8 +101,10 @@ type MainForm() as this =
                     handCtrl.Size.Height + 10)
             handCtrl.Location + size
 
+    let actionQueue = ActionQueue(500)
+
     /// A new deal has started.
-    let onDealStart (dealer, deal : AbstractOpenDeal) =
+    let onDealStart (dealer, deal) =
         let indexedSeats =
             dealer
                 |> Seat.cycle
@@ -111,9 +113,28 @@ type MainForm() as this =
             let handCtrl = handControlMap.[seat]
             handCtrl.Cards <- deal.UnplayedCards.[iPlayer]
 
+    /// A new deal has started.
+    let delayDealStart args =
+        actionQueue.Enqueue(fun () -> onDealStart args)
+
     /// A player has bid.
     let onBid (seat, bid, _) =
         handControlMap.[seat].Bid <- bid
+
+    /// A player has bid.
+    let delayBid args =
+        actionQueue.Enqueue(fun () -> onBid args)
+
+    // A player has played a card.
+    let onPlay (seat, card, _) =
+
+            // remove card from hand
+        let ctrl = handControlMap.[seat]
+        ctrl.Clear(card)
+
+    /// A player has played a card.
+    let delayPlay args =
+        actionQueue.Enqueue(fun () -> onPlay args)
 
     let session =
         let dbPlayer =
@@ -134,8 +155,9 @@ type MainForm() as this =
         onResize ()
 
             // initialize handlers
-        session.DealStartEvent.Add(onDealStart)
-        session.BidEvent.Add(onBid)
+        session.DealStartEvent.Add(delayDealStart)
+        session.BidEvent.Add(delayBid)
+        session.PlayEvent.Add(delayPlay)
 
             // run
         async { session.Start() }

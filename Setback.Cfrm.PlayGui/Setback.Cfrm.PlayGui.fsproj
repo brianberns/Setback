@@ -15,6 +15,7 @@
     <Compile Include="HandControl.fs" />
     <Compile Include="BidControl.fs" />
     <Compile Include="TrickControl.fs" />
+    <Compile Include="ActionQueue.fs" />
     <Compile Include="MainForm.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
