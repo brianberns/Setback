@@ -152,7 +152,7 @@ type MainForm() as this =
 
             // remove card from hand
         let ctrl = handControlMap.[seat]
-        ctrl.Clear(card)
+        ctrl.Remove(card)
 
             // add card to trick
         trickControl.SetCard(seat, card)
