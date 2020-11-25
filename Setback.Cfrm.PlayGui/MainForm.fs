@@ -148,14 +148,26 @@ type MainForm() as this =
         actionQueue.Enqueue(fun () -> onBid args)
 
     // A player has played a card.
-    let onPlay (seat, card, _) =
+    let onPlay (seat, card : Card, deal) =
 
-            // remove card from hand
-        let ctrl = handControlMap.[seat]
-        ctrl.Remove(card)
+        match deal.ClosedDeal.PlayoutOpt with
+            | Some playout ->
 
-            // add card to trick
-        trickControl.SetCard(seat, card)
+                    // set trump on first play
+                if playout.History.NumTricksCompleted = 0
+                    && playout.CurrentTrick.NumPlays = 1 then
+                    for (KeyValue(_, ctrl)) in handControlMap do
+                        ctrl.Trump <- card.Suit
+                    trickControl.Trump <- card.Suit
+
+                    // remove card from hand
+                let ctrl = handControlMap.[seat]
+                ctrl.Remove(card)
+
+                    // add card to trick
+                trickControl.SetCard(seat, card)
+
+            | None -> failwith "Unexpected"
 
     /// A player has played a card.
     let delayPlay args =

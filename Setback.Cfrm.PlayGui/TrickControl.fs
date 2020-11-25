@@ -44,18 +44,26 @@ type TrickControl() as this =
             Color.White,
             ButtonBorderStyle.Inset)
 
+    /// Trump suit.
+    let mutable trumpOpt = Option<Suit>.None
+
         // layout controls
     do
         this.Resize.Add(onResize)
         this.Paint.Add(onPaint)
         onResize ()
 
+    /// Sets the card played by the given seat in this trick.
     member __.SetCard(seat, card) =
-        cardControlMap.[seat].Card <- card
+        let ctrl = cardControlMap.[seat]
+        ctrl.Card <- card
+        ctrl.IsTrump <- (Some card.Suit = trumpOpt)
 
+    /// Clears the card played by the given seat in this trick.
     member __.ClearCard(seat) =
         cardControlMap.[seat].Clear()
 
+    /// Clears all cards in this trick.
     member __.Clear() =
         let ctrls =
             cardControlMap
@@ -63,3 +71,12 @@ type TrickControl() as this =
                 |> Seq.map snd
         for ctrl in ctrls do
             ctrl.Clear()
+
+    /// Sets the trump suit.
+    member __.Trump
+        with set(trump) =
+            trumpOpt <- Some trump
+
+    /// Clears the trump suit.
+    member __.ClearTrump() =
+        trumpOpt <- None

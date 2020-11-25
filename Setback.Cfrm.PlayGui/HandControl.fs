@@ -56,6 +56,15 @@ type HandPanel() as this =
             cardControls
                 |> Seq.choose (fun ctrl -> ctrl.CardOpt)
 
+    /// Sets trump suit.
+    member __.Trump
+        with set (trump : Suit) =
+            for ctrl in cardControls do
+                match ctrl.CardOpt with
+                    | Some card ->
+                        ctrl.IsTrump <- card.Suit = trump
+                    | None -> ()
+
     /// Removes the given card from this control.
     member __.Remove(card) =
         let cardControl =
@@ -122,6 +131,11 @@ type HandControl(seat : Seat) as this =
     member __.Bid
         with set (bid : Bid) =
             label.Text <- $"{seat}: {bid}"
+
+    /// Sets trump suit.
+    member __.Trump
+        with set (trump : Suit) =
+            panel.Trump <- trump
 
     /// Removes the given card from this control.
     member __.Remove(card) =

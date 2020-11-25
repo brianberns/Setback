@@ -38,12 +38,12 @@ type CardControl() as this =
         Visible = false)
 
     /// Font used for non-trump cards.
-    static let normalFont =
+    static let defaultFont =
         new Font("Lucida Console", 15.0f)
 
     /// Font used for trump cards.
     static let trumpFont =
-        new Font(normalFont, FontStyle.Underline)
+        new Font(defaultFont, FontStyle.Underline)
 
     /// Card represented by this control, if any.
     let mutable cardOpt = Option<Card>.None
@@ -57,7 +57,7 @@ type CardControl() as this =
     /// Font to use.
     static member private GetFont(isTrump) =
         if isTrump then trumpFont
-        else normalFont
+        else defaultFont
 
     /// Card represented by this control, if any.
     member __.CardOpt
@@ -69,6 +69,7 @@ type CardControl() as this =
             cardOpt <- Some card
             this.Text <- Card.toAbbr card
             this.ForeColor <- Suit.color card.Suit
+            this.Font <- defaultFont
             this.Visible <- true
 
     /// Clears this control.
@@ -76,6 +77,7 @@ type CardControl() as this =
         cardOpt <- None
         this.Text <- ""
         this.ForeColor <- Color.Transparent
+        this.Font <- defaultFont
         this.Visible <- false
 
     /// Indicates whether the card represented by this control
