@@ -49,7 +49,7 @@ type MainForm() as this =
             |> Control.addTo this
 
     /// Lays out controls.
-    let onResize () =
+    let onResize _ =
 
         let padding = 50
 
@@ -162,7 +162,7 @@ type MainForm() as this =
 
     do
             // layout controls
-        this.Resize.Add(fun _ -> onResize ())
+        this.Resize.Add(onResize)
         onResize ()
 
             // initialize handlers
