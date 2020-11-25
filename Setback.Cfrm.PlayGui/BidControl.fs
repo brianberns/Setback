@@ -10,7 +10,9 @@ open Setback
 type BidControl() as this =
     inherit Panel(
         Size = Size(120, HandControl.Height),
-        Font = new Font("Calibri", 12.0f))
+        Font = new Font("Calibri", 12.0f),
+        BackColor = Color.Transparent,
+        ForeColor = Color.White)
 
     /// Event triggered when a bid button is selected.
     let bidSelectedEvent = new Event<_>()

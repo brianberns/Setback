@@ -33,7 +33,6 @@ type CardControl() as this =
     inherit Label(
         Size = Size(CardControl.Width, CardControl.Height),
         Font = CardControl.GetFont(false),
-        BorderStyle = BorderStyle.FixedSingle,
         TextAlign = ContentAlignment.MiddleCenter,
         BackColor = Color.White,
         Visible = false)

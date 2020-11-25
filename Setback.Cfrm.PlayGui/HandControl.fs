@@ -9,7 +9,8 @@ open Setback
 /// Graphical representation of a hand of cards.
 type HandPanel() as this =
     inherit Panel(
-        Size = new Size(HandPanel.Width, HandPanel.Height))
+        Size = new Size(HandPanel.Width, HandPanel.Height),
+        BackColor = Color.Transparent)
 
     /// X-coord of the left edge of the card at the given index.
     static let left iCard =
@@ -60,7 +61,8 @@ type HandPanel() as this =
 ///    * A text label displaying the seat/bid.
 type HandControl(seat : Seat) as this =
     inherit Panel(
-        Size = Size(HandControl.Width, HandControl.Height))
+        Size = Size(HandControl.Width, HandControl.Height),
+        BackColor = Color.Transparent)
 
     /// Height of the text label.
     static let labelHeight = 30
@@ -86,7 +88,8 @@ type HandControl(seat : Seat) as this =
             Text = defaultText,
             TextAlign = ContentAlignment.MiddleCenter,
             Height = labelHeight,
-            Font = new Font("Calibri", 15.0f))
+            Font = new Font("Calibri", 15.0f),
+            ForeColor = Color.White)
             |> Control.addTo this
 
     /// Width of this control.
@@ -105,3 +108,8 @@ type HandControl(seat : Seat) as this =
             panel.Cards <- cards
         and get() =
             panel.Cards
+
+    /// Bid displayed by this control.
+    member __.Bid
+        with set (bid : Bid) =
+            label.Text <- $"{seat}: {bid}"

@@ -8,7 +8,8 @@ open Setback
 
 /// Graphical representation of a trick of cards.
 type TrickControl() as this =
-    inherit Panel()
+    inherit Panel(
+        BackColor = Color.Transparent)
 
     /// One card per seat.
     let cardControlMap =

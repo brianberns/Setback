@@ -15,7 +15,8 @@ open Setback.Cfrm
 type MainForm() as this =
     inherit Form(
         Text = "Bernsrite Setback",
-        Size = Size(1100, 700))
+        Size = Size(1100, 700),
+        BackColor = Color.DarkGreen)
 
     /// Unplayed cards for each seat.
     let handControlMap =
@@ -71,21 +72,25 @@ type MainForm() as this =
             Point(padding, horizTop)
 
             // bid control
-        let handCtrl = handControlMap.[Seat.South]
         bidControl.Location <-
+            let handCtrl = handControlMap.[Seat.South]
             new Point(
                 handCtrl.Left + handCtrl.ClientSize.Width + 5,
                 handCtrl.Top)
 
             // trick control
-        let innerLeft = handControlMap.[Seat.West].Right
-        let innerRight = handControlMap.[Seat.East].Left
-        let innerTop = handControlMap.[Seat.North].Bottom
-        let innerBottom = handControlMap.[Seat.South].Top
-        let innerWidth = innerRight - innerLeft
-        let innerHeight = innerBottom - innerTop
-        trickControl.Size <- Size(innerWidth, innerHeight) - 2 * Size(CardControl.Width, CardControl.Height)
-        trickControl.Location <- Point(innerLeft, innerTop) + Size(CardControl.Width, CardControl.Height)
+        let size, location =
+            let innerLeft = handControlMap.[Seat.West].Right
+            let innerRight = handControlMap.[Seat.East].Left
+            let innerTop = handControlMap.[Seat.North].Bottom
+            let innerBottom = handControlMap.[Seat.South].Top
+            let innerWidth = innerRight - innerLeft
+            let innerHeight = innerBottom - innerTop
+            let size = Size(innerWidth, innerHeight) - 2 * Size(CardControl.Width, CardControl.Height)
+            let location = Point(innerLeft, innerTop) + Size(CardControl.Width, CardControl.Height)
+            size, location
+        trickControl.Size <- size
+        trickControl.Location <- location
 
             // go button
         goButton.Location <-
@@ -96,7 +101,7 @@ type MainForm() as this =
                     handCtrl.Size.Height + 10)
             handCtrl.Location + size
 
-        // a new deal has started
+    /// A new deal has started.
     let onDealStart (dealer, deal : AbstractOpenDeal) =
         let indexedSeats =
             dealer
@@ -105,6 +110,10 @@ type MainForm() as this =
         for (iPlayer, seat) in indexedSeats do
             let handCtrl = handControlMap.[seat]
             handCtrl.Cards <- deal.UnplayedCards.[iPlayer]
+
+    /// A player has bid.
+    let onBid (seat, bid, _) =
+        handControlMap.[seat].Bid <- bid
 
     let session =
         let dbPlayer =
@@ -126,6 +135,7 @@ type MainForm() as this =
 
             // initialize handlers
         session.DealStartEvent.Add(onDealStart)
+        session.BidEvent.Add(onBid)
 
             // run
         async { session.Start() }
