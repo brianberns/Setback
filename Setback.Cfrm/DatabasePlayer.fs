@@ -25,8 +25,7 @@ module DatabasePlayer =
                 "select ActionIndex \
                 from Strategy \
                 where Key = @Key",
-                conn
-            )
+                conn)
 
         /// SQL command parameter.
         let keyParam =
@@ -36,7 +35,7 @@ module DatabasePlayer =
         let getActionIndex key =
             keyParam.Value <- key
             let value = selectActionIndexCmd.ExecuteScalar()
-            if DBNull.Value.Equals(value) then None
+            if isNull value then None
             else value :?> int64 |> int |> Some
 
         /// Makes a bid in the given deal.
