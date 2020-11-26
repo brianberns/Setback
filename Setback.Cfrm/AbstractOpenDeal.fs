@@ -119,8 +119,9 @@ module AbstractOpenDeal =
                                     // Game is determined?
                                 let gameUntaken =
                                     let gameTaken =
-                                        let (AbstractScore scores) = history.GameScore
-                                        scores |> Array.sum
+                                        let (AbstractScore points) =
+                                            history.GameScore
+                                        points |> Array.sum
                                     deal.TotalGamePoints - gameTaken
                                 assert(gameUntaken >= 0)
                                 if gameUntaken = 0 then
@@ -141,7 +142,7 @@ module AbstractOpenDeal =
 
     /// Score of this deal (relative to the dealer's team), not
     /// counting any setback penalty.
-    let dealScore deal =
+    let private dealScoreRaw deal =
 
             // assigns a single point to the given team, if any
         let toScore teamOpt =
@@ -188,6 +189,14 @@ module AbstractOpenDeal =
                     ||> Seq.fold (+)
 
             | None -> AbstractScore.zero
+
+    /// Score of this deal (relative to the dealer's team), including
+    /// any setback penalty.
+    let dealScore deal =
+        let rawScore =
+            dealScoreRaw deal
+        deal.ClosedDeal.Auction.HighBid
+            |> AbstractHighBid.finalizeDealScore rawScore
 
     /// Index of the current player, relative to the dealer.
     let currentPlayerIndex deal =

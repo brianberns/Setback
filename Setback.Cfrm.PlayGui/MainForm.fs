@@ -185,6 +185,14 @@ type MainForm() as this =
     let delayPlay args =
         actionQueue.Enqueue(fun () -> onPlay args)
 
+    /// A deal has finished.
+    let onDealFinish (_, gameScore) =
+        scoreControl.Score <- gameScore
+
+    /// A deal has finished.
+    let delayDealFinish args =
+        actionQueue.Enqueue(fun () -> onDealFinish args)
+
     /// Underlying session.
     let session =
         let dbPlayer =
@@ -209,6 +217,7 @@ type MainForm() as this =
         session.TrickFinishEvent.Add(delayTrickFinish)
         session.BidEvent.Add(delayBid)
         session.PlayEvent.Add(delayPlay)
+        session.DealFinishEvent.Add(delayDealFinish)
         goButton.Click.Add(onGo)
 
             // run

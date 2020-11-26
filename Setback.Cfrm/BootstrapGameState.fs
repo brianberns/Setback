@@ -165,52 +165,42 @@ type BootstrapGameState
     /// Final payoffs for this game, if it is now over.
     override __.TerminalValuesOpt =
         if openDeal |> AbstractOpenDeal.isExhausted then
-            match openDeal.ClosedDeal.PlayoutOpt with
-                | Some playout ->
+            if openDeal.ClosedDeal.PlayoutOpt.IsSome then
 
-                        // dealer's team's delta
-                    let delta =
+                    // dealer's team's delta
+                let delta =
 
-                            // final score of this deal
-                        let dealScore =
+                        // final score of this deal
+                    let dealScore =
+                        openDeal
+                            |> AbstractOpenDeal.dealScore
 
-                                // compute raw deal score (before Setback penalty)
-                            let dealScoreRaw =
-                                openDeal
-                                    |> AbstractOpenDeal.dealScore
+                        // update game score as a result of this deal
+                    let gameScore =
+                        gameScore + dealScore
 
-                                // apply Setback penalty, if necessary
-                            playout
-                                |> AbstractPlayout.finalizeDealScore dealScoreRaw
+                        // compute reward
+                    match BootstrapGameState.winningTeamOpt gameScore with
 
-                            // update game score as a result of this deal
-                        let gameScore =
-                            gameScore + dealScore
+                            // reward for winning the game (regardless of deal score)
+                        | Some iWinningTeam ->
+                            let reward = 5.5   // value determined empirically
+                            if iWinningTeam = 0 then reward
+                            else -reward
 
-                            // compute reward
-                        match BootstrapGameState.winningTeamOpt gameScore with
+                            // deal score determines delta directly
+                        | None ->
+                            dealScore
+                                |> AbstractScore.delta 0
+                                |> float
 
-                                // reward for winning the game (regardless of deal score)
-                            | Some iWinningTeam ->
-                                let reward = 5.5   // value determined empirically
-                                if iWinningTeam = 0 then reward
-                                else -reward
+                    // zero-sum
+                Some [| delta; -delta |]
 
-                                // deal score determines delta directly
-                            | None ->
-                                dealScore
-                                    |> AbstractScore.delta 0
-                                    |> float
-
-                        // zero-sum
-                    [| delta; -delta |]
-
-                    // no high bidder
-                | None ->
-                    assert(openDeal.ClosedDeal.Auction.HighBid = AbstractHighBid.none)
-                    Array.replicate Setback.numTeams 0.0
-
-                |> Some
+                // no high bidder
+            else
+                assert(openDeal.ClosedDeal.Auction.HighBid = AbstractHighBid.none)
+                Array.replicate Setback.numTeams 0.0 |> Some
         else None
 
     /// This state's unique identifier.
@@ -262,12 +252,9 @@ type BootstrapGameState
                                     openDeal |> AbstractOpenDeal.addPlay card)
                         assert(openDeal |> AbstractOpenDeal.isComplete)
 
-                            // compute resulting game score
+                            // compute resulting game score (to-do: avoid doing this twice)
                         let dealScore =
-                            let dealScoreRaw =
-                                openDeal |> AbstractOpenDeal.dealScore
-                            playout
-                                |> AbstractPlayout.finalizeDealScore dealScoreRaw
+                            openDeal |> AbstractOpenDeal.dealScore
                         let gameScore = gameScore + dealScore
                         openDeal, gameScore
 

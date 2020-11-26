@@ -235,34 +235,24 @@ type BaselineGameState(openDeal : AbstractOpenDeal) =
     /// Final payoffs for this game, if it is now over.
     override __.TerminalValuesOpt =
         if openDeal |> AbstractOpenDeal.isExhausted then
-            match openDeal.ClosedDeal.PlayoutOpt with
-                | Some playout ->
+            if openDeal.ClosedDeal.PlayoutOpt.IsSome then
 
-                        // compute reward score for this deal
-                    let score =
+                    // compute reward score for this deal
+                let score =
+                    openDeal
+                        |> AbstractOpenDeal.dealScore
 
-                            // compute raw deal score (before Setback penalty)
-                        let dealScoreRaw =
-                            openDeal
-                                |> AbstractOpenDeal.dealScore
+                    // transform to zero-sum
+                let delta =
+                    score
+                        |> AbstractScore.delta 0
+                        |> float
+                Some [| delta; -delta |]
 
-                            // apply Setback penalty, if necessary
-                        playout
-                            |> AbstractPlayout.finalizeDealScore dealScoreRaw
-
-                        // transform to zero-sum
-                    let delta =
-                        score
-                            |> AbstractScore.delta 0
-                            |> float
-                    [| delta; -delta |]
-
-                    // no high bidder
-                | None ->
-                    assert(openDeal.ClosedDeal.Auction.HighBid = AbstractHighBid.none)
-                    Array.replicate Setback.numTeams 0.0
-
-                |> Some
+                // no high bidder
+            else
+                assert(openDeal.ClosedDeal.Auction.HighBid = AbstractHighBid.none)
+                Array.replicate Setback.numTeams 0.0 |> Some
         else None
 
     /// Actions available to the current player in this state.
