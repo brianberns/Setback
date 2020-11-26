@@ -137,7 +137,7 @@ type Session
 
         trigger gameStartEvent ()
         let score = game |> loop dealer
-        trigger gameFinishEvent score
+        trigger gameFinishEvent (dealer, score)
 
     member __.Start() =
         Game.zero |> playGame rng Seat.South

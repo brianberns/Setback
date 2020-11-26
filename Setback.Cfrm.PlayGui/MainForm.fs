@@ -202,28 +202,29 @@ type MainForm() as this =
         delayDisableQueue ()   // pause for Go button
         actionQueue.Enqueue(fun () -> onTrickFinish args)
 
+    /// Shifts from dealer-relative to absolute score.
+    let shiftScore dealer score =
+        let iDealerTeam =
+            int dealer % Setback.numTeams
+        let iAbsoluteTeam =
+            (Setback.numTeams - iDealerTeam) % Setback.numTeams
+        score |> AbstractScore.shift iAbsoluteTeam
+
     /// A deal has finished.
     let onDealFinish (dealer, _, gameScore) =
-
-            // shift from dealer-relative to absolute score
-        let gameScore =
-            let iDealerTeam =
-                int dealer % Setback.numTeams
-            let iAbsoluteTeam =
-                (Setback.numTeams - iDealerTeam) % Setback.numTeams
-            gameScore |> AbstractScore.shift iAbsoluteTeam
-
-        scoreControl.Score <- gameScore
+        scoreControl.Score <- shiftScore dealer gameScore
 
     /// A deal has finished.
     let delayDealFinish args =
         actionQueue.Enqueue(fun () -> onDealFinish args)
 
     /// A game has finished.
-    let onGameFinish score =
-        match BootstrapGameState.winningTeamOpt score with
-            | Some iTeam -> scoreControl.IncrementGamesWon(iTeam)
-            | None -> failwith "Unexpected"
+    let onGameFinish (dealer, gameScore) =
+        gameScore
+            |> shiftScore dealer
+            |> BootstrapGameState.winningTeamOpt
+            |> Option.get
+            |> scoreControl.IncrementGamesWon
 
     /// A game has finished.
     let delayGameFinish args =
