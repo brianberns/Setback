@@ -60,22 +60,24 @@ type ScoreControl() as this =
                 |> ignore
 
             // initialize rows
+        assert(int Seat.East % Setback.numTeams = 0)
         for iRow, text in [| "E+W"; "N+S" |] |> Seq.indexed do
-            this.Controls.Add(
+            let label =
                 new Label(
                     Text = text,
-                    TextAlign = ContentAlignment.MiddleLeft), 0, iRow + 1)
+                    TextAlign = ContentAlignment.MiddleLeft)
+            this.Controls.Add(label, 0, iRow + 1)
 
             // initialize scores
         displayScore AbstractScore.zero scoreLabels
         displayScore gamesWon gamesWonLabels
 
-    /// Score of current game.
+    /// Score of current game (absolute index).
     member __.Score
         with set(score) =
             displayScore score scoreLabels
 
-    /// The given team won a game.
+    /// The given team won a game (absolute index).
     member __.IncrementGamesWon(iTeam) =
         gamesWon <- gamesWon + AbstractScore.forTeam iTeam 1
         displayScore gamesWon gamesWonLabels

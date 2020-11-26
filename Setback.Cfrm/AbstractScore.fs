@@ -33,6 +33,16 @@ module AbstractScore =
             else 0)
             |> AbstractScore
 
+    /// Shifts the given score so it is relative to the given
+    /// team.
+    let shift teamIdx (AbstractScore points) =
+        AbstractScore [|
+            for iTeam = 0 to points.Length - 1 do
+                let iShift =
+                    (teamIdx + iTeam) % points.Length
+                yield points.[iShift]
+        |]
+
     /// The difference between "our" score and "their" score.
     let delta iTeam (score : AbstractScore) =
         assert(Setback.numTeams = 2)

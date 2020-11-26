@@ -24,8 +24,8 @@ module BootstrapGameState =
 
     module AbstractScore =
 
-        /// Converts the given score to deal points needed to win the
-        /// game, relative to the dealer's team.
+        /// Converts the given score to deal points needed to win
+        /// the game.
         let toNeed (AbstractScore scores) =
             let winThreshold =
                 seq {
@@ -34,9 +34,11 @@ module BootstrapGameState =
                     yield Setback.winThreshold
                 } |> Seq.max
             assert(Setback.numTeams = 2)
-            winThreshold - scores.[0], winThreshold - scores.[1]
+            winThreshold - scores.[0],  // "us" need
+            winThreshold - scores.[1]   // "them" need
 
-        /// String representation of a game score.
+        /// String representation of the given game score, which is
+        /// relative to the current player's team.
         let toAbbr (gameScore : AbstractScore) =
 
             let toChar need =
@@ -48,7 +50,8 @@ module BootstrapGameState =
             let cThemNeed = toChar themNeed
             sprintf "%c%c"
                 cThemNeed
-                (if cThemNeed <> 'x' && usNeed > themNeed then '!' else '.')
+                (if cThemNeed <> 'x' && usNeed > themNeed then '!'
+                else '.')
 
     module AbstractHighBid =
 
@@ -79,15 +82,15 @@ module BootstrapGameState =
 
     // String representation of the given game state.
     let toAbbr auction (gameScore : AbstractScore) hand =
+
+            // shift from dealer-relative score to "us" vs. "them" score
         let gameScore =
             let iCurTeam =   // index of current team relative to dealer
                 (auction
                     |> AbstractAuction.currentBidderIndex)
                     % Setback.numTeams
-            AbstractScore [|
-                for iTeam = 0 to Setback.numTeams - 1 do
-                    yield gameScore.[(iTeam + iCurTeam) % Setback.numTeams]   // relative to current team
-            |]
+            gameScore |> AbstractScore.shift iCurTeam
+
         sprintf "%s/%s/%s"
             (AbstractScore.toAbbr gameScore)
             (AbstractAuction.toAbbr auction)
