@@ -5,29 +5,23 @@ open System.ComponentModel
 open PlayingCards
 open Setback
 
-/// A game(*) of Setback is a sequence of deals that ends when the leading
-/// team's score crosses a fixed threshold.
+/// A game of Setback is a sequence of deals that ends when the
+/// leading team's score crosses a fixed threshold.
 ///
-/// *Once again, the terminology gets confusing: whichever team accumulates
-/// the most deal points wins the game. Game points don't actually contribute
-/// directly to winning a game.
+/// The terminology is confusing: whichever team accumulates the
+/// most deal points (High, Low, Jack, Game) wins the game. Game
+/// points (for face cards and tens) don't contribute directly to
+/// winning a game.
 type Game =
     {
-        /// Player that occupies each seat.
-        PlayerMap : Map<Seat, Player>
-
-        /// Deal points taken by each team.
+        /// Deal points taken by each team (absolute index).
         Score : AbstractScore
     }
     
 module Game =
 
-    /// Creates a new game for the given players.
-    let create playerMap =
-        {
-            PlayerMap = playerMap
-            Score = AbstractScore.zero
-        }
+    /// A new game with no score.
+    let zero = { Score = AbstractScore.zero }
 
 type ActionDelegate = delegate of unit -> unit
 
@@ -135,8 +129,7 @@ type Session
         trigger gameFinishEvent score
 
     member __.Start() =
-        Game.create playerMap
-            |> playGame rng Seat.South
+        Game.zero |> playGame rng Seat.South
 
     [<CLIEvent>]
     member __.GameStartEvent = gameStartEvent.Publish
