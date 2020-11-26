@@ -150,6 +150,14 @@ type MainForm() as this =
     let delayDealStart args =
         actionQueue.Enqueue(fun () -> onDealStart args)
 
+    /// An auction has started.
+    let onAuctionStart (leader : Seat) =
+        trickControl.Leader <- leader
+
+    /// An auction has started.
+    let delayAuctionStart args =
+        actionQueue.Enqueue(fun () -> onAuctionStart args)
+
     /// A player has bid.
     let onBid (seat, bid, _) =
         handControlMap.[seat].Bid <- bid
@@ -252,6 +260,7 @@ type MainForm() as this =
             // initialize handlers
         session.GameStartEvent.Add(delayGameStart)
         session.DealStartEvent.Add(delayDealStart)
+        session.AuctionStartEvent.Add(delayAuctionStart)
         session.BidEvent.Add(delayBid)
         session.AuctionFinishEvent.Add(delayAuctionFinish)
         session.PlayEvent.Add(delayPlay)

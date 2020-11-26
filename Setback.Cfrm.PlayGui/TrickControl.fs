@@ -21,9 +21,28 @@ type TrickControl() as this =
                 seat, ctrl)
             |> Map
 
+    /// Size of labels.
+    let labelSize = Size(30, 30)
+
+    /// One label per seat.
+    let labelMap =
+        Enum.getValues<Seat>
+            |> Seq.map (fun seat ->
+                let ctrl =
+                    new Label(
+                        Size = labelSize,
+                        Font = new Font("Lucida Console", 10.0f),
+                        TextAlign = ContentAlignment.MiddleCenter,
+                        ForeColor = Color.White,
+                        BackColor = Color.Transparent)
+                        |> Control.addTo this
+                seat, ctrl)
+            |> Map
+
     /// Lays out controls.
     let onResize _ =
 
+            // card controls
         let padding = 30
         let xCoord = (this.ClientSize.Width - CardControl.Width) / 2
         let yCoord = (this.ClientSize.Height - CardControl.Height) / 2
@@ -33,8 +52,17 @@ type TrickControl() as this =
             Point(this.ClientSize.Width - CardControl.Width - padding, yCoord)
         cardControlMap.[Seat.South].Location <-
             Point(xCoord, this.ClientSize.Height - CardControl.Height - padding)
-
         this.Invalidate()   // erase any previously drawn borders
+
+            // labels
+        let xCoord = (this.ClientSize.Width - labelSize.Width) / 2
+        let yCoord = (this.ClientSize.Height - labelSize.Height) / 2
+        labelMap.[Seat.West].Location <- Point(0, yCoord)
+        labelMap.[Seat.North].Location <- Point(xCoord, 0)
+        labelMap.[Seat.East].Location <-
+            Point(this.ClientSize.Width - labelSize.Width, yCoord)
+        labelMap.[Seat.South].Location <-
+            Point(xCoord, this.ClientSize.Height - labelSize.Height)
 
     /// Draw a border.
     let onPaint (args : PaintEventArgs) =
@@ -80,3 +108,14 @@ type TrickControl() as this =
     /// Clears the trump suit.
     member __.ClearTrump() =
         trumpOpt <- None
+
+    /// Numbered seats starting with the leader.
+    member __.Leader
+        with set(leader) =
+            for iSeat, seat in leader |> Seat.cycle |> Seq.indexed do
+                labelMap.[seat].Text <- $"{iSeat + 1}"
+
+    /// Clears leader labels.
+    member __.ClearLeader() =
+        for (KeyValue(_, label)) in labelMap do
+            label.Text <- ""

@@ -57,12 +57,12 @@ type Session
         dealer |> Seat.incr iPlayer
 
     /// Plays the given deal.
-    let playDeal dealer (deal : AbstractOpenDeal) game =
+    let playDeal (dealer : Seat) (deal : AbstractOpenDeal) game =
 
         trigger dealStartEvent (dealer, deal)
 
             // auction
-        trigger auctionStartEvent ()
+        trigger auctionStartEvent dealer.Next
         let deal =
             (deal, [1 .. Seat.numSeats])
                 ||> Seq.fold (fun deal _ ->
