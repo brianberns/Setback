@@ -49,6 +49,11 @@ type MainForm() as this =
             Visible = false)
             |> Control.addTo this
 
+    /// Team scoreboard.
+    let scoreControl =
+        new ScoreControl()
+            |> Control.addTo this
+
     /// Action queue for delaying event handlers.
     let actionQueue = ActionQueue(250)
 
@@ -104,6 +109,13 @@ type MainForm() as this =
                     (handCtrl.Size.Width - goButton.Size.Width) / 2,
                     handCtrl.Size.Height + 10)
             handCtrl.Location + size
+
+            // score control
+        scoreControl.Location <-
+            let padding = 40
+            Point(
+                padding,
+                this.ClientRectangle.Height - scoreControl.Height - padding)
 
     /// Go button has been clicked. Resume handling events.
     let onGo _ =

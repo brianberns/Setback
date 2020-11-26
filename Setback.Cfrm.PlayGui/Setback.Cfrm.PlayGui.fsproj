@@ -16,6 +16,7 @@
     <Compile Include="BidControl.fs" />
     <Compile Include="TrickControl.fs" />
     <Compile Include="ActionQueue.fs" />
+    <Compile Include="ScoreControl.fs" />
     <Compile Include="MainForm.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
