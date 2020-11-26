@@ -117,6 +117,12 @@ type MainForm() as this =
                 padding,
                 this.ClientRectangle.Height - scoreControl.Height - padding)
 
+    /// Queues an action that will disable the queue.
+    let delayDisableQueue () =
+        actionQueue.Enqueue(fun () ->
+            goButton.Visible <- true
+            actionQueue.Enabled <- false)
+
     /// Go button has been clicked. Resume handling events.
     let onGo _ =
         actionQueue.Enabled <- true
@@ -144,21 +150,6 @@ type MainForm() as this =
     let delayDealStart args =
         actionQueue.Enqueue(fun () -> onDealStart args)
 
-    /// A trick has finished.
-    let onTrickFinish () =
-        trickControl.Clear()
-
-    /// A trick has finished.
-    let delayTrickFinish args =
-
-            // disable handlers until Go button clicked
-        actionQueue.Enqueue(fun () ->
-            goButton.Visible <- true
-            actionQueue.Enabled <- false)
-
-            // then finish the trick
-        actionQueue.Enqueue(fun () -> onTrickFinish args)
-
     /// A player has bid.
     let onBid (seat, bid, _) =
         handControlMap.[seat].Bid <- bid
@@ -166,6 +157,15 @@ type MainForm() as this =
     /// A player has bid.
     let delayBid args =
         actionQueue.Enqueue(fun () -> onBid args)
+
+    /// An auction has finished.
+    let onAuctionFinish () =
+        ()
+
+    /// An auction has finished.
+    let delayAuctionFinish args =
+        delayDisableQueue ()   // pause for Go button
+        actionQueue.Enqueue(fun () -> onAuctionFinish args)
 
     // A player has played a card.
     let onPlay (seat, card : Card, deal) =
@@ -192,6 +192,15 @@ type MainForm() as this =
     /// A player has played a card.
     let delayPlay args =
         actionQueue.Enqueue(fun () -> onPlay args)
+
+    /// A trick has finished.
+    let onTrickFinish () =
+        trickControl.Clear()
+
+    /// A trick has finished.
+    let delayTrickFinish args =
+        delayDisableQueue ()   // pause for Go button
+        actionQueue.Enqueue(fun () -> onTrickFinish args)
 
     /// A deal has finished.
     let onDealFinish (dealer, _, gameScore) =
@@ -242,9 +251,10 @@ type MainForm() as this =
             // initialize handlers
         session.GameStartEvent.Add(delayGameStart)
         session.DealStartEvent.Add(delayDealStart)
-        session.TrickFinishEvent.Add(delayTrickFinish)
         session.BidEvent.Add(delayBid)
+        session.AuctionFinishEvent.Add(delayAuctionFinish)
         session.PlayEvent.Add(delayPlay)
+        session.TrickFinishEvent.Add(delayTrickFinish)
         session.DealFinishEvent.Add(delayDealFinish)
         session.GameFinishEvent.Add(delayGameFinish)
         goButton.Click.Add(onGo)

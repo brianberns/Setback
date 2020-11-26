@@ -34,13 +34,15 @@ type Session
 
         // initialize events raised by this object
     let gameStartEvent = Event<_>()
-    let gameFinishEvent = Event<_>()
     let dealStartEvent = Event<_>()
-    let dealFinishEvent = Event<_>()
-    let trickStartEvent = Event<_>()
-    let trickFinishEvent = Event<_>()
+    let auctionStartEvent = Event<_>()
     let bidEvent = Event<_>()
+    let auctionFinishEvent = Event<_>()
+    let trickStartEvent = Event<_>()
     let playEvent = Event<_>()
+    let trickFinishEvent = Event<_>()
+    let dealFinishEvent = Event<_>()
+    let gameFinishEvent = Event<_>()
 
     /// Triggers the given event safely.
     let trigger (event : Event<_>) arg =
@@ -60,6 +62,7 @@ type Session
         trigger dealStartEvent (dealer, deal)
 
             // auction
+        trigger auctionStartEvent ()
         let deal =
             (deal, [1 .. Seat.numSeats])
                 ||> Seq.fold (fun deal _ ->
@@ -71,6 +74,7 @@ type Session
                     trigger bidEvent (seat, bid, deal)
                     deal)
         assert(deal.ClosedDeal.Auction |> AbstractAuction.isComplete)
+        trigger auctionFinishEvent ()
 
             // playout
         let deal =
@@ -142,22 +146,28 @@ type Session
     member __.GameStartEvent = gameStartEvent.Publish
 
     [<CLIEvent>]
-    member __.GameFinishEvent = gameFinishEvent.Publish
-
-    [<CLIEvent>]
     member __.DealStartEvent = dealStartEvent.Publish
 
     [<CLIEvent>]
-    member __.DealFinishEvent = dealFinishEvent.Publish
-
-    [<CLIEvent>]
-    member __.TrickStartEvent = trickStartEvent.Publish
-
-    [<CLIEvent>]
-    member __.TrickFinishEvent = trickFinishEvent.Publish
+    member __.AuctionStartEvent = auctionStartEvent.Publish
 
     [<CLIEvent>]
     member __.BidEvent = bidEvent.Publish
 
     [<CLIEvent>]
+    member __.AuctionFinishEvent = auctionFinishEvent.Publish
+
+    [<CLIEvent>]
+    member __.TrickStartEvent = trickStartEvent.Publish
+
+    [<CLIEvent>]
     member __.PlayEvent = playEvent.Publish
+
+    [<CLIEvent>]
+    member __.TrickFinishEvent = trickFinishEvent.Publish
+
+    [<CLIEvent>]
+    member __.DealFinishEvent = dealFinishEvent.Publish
+
+    [<CLIEvent>]
+    member __.GameFinishEvent = gameFinishEvent.Publish
