@@ -80,7 +80,7 @@ module BootstrapGameState =
                 hand,
                 SpanAction(AuctionHand.copyTo))
 
-    // String representation of the given game state.
+    /// String representation of the given game state.
     let toAbbr auction (gameScore : AbstractScore) hand =
 
             // shift from dealer-relative score to "us" vs. "them" score

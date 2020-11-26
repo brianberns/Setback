@@ -9,25 +9,14 @@ open Setback
 type Player =
     {
         /// Function that makes a bid in the given deal.
-        MakeBid : AbstractScore -> AbstractOpenDeal -> Bid
+        MakeBid : AbstractScore (*relative to dealer's team*) -> AbstractOpenDeal -> Bid
 
         /// Function that plays a card in the given deal.
-        MakePlay : AbstractScore -> AbstractOpenDeal -> Card
+        MakePlay : AbstractScore (*relative to dealer's team*) -> AbstractOpenDeal -> Card
     }
 
 /// Score-insensitive player.
 module BaselinePlayer =
-
-    /// Extra information associated with taking an action in a particular
-    /// situation (i.e. "info set").
-    type Extra =
-        {
-            /// Situation key.
-            Key : string
-
-            /// Probability of taking each legal action in this situation.
-            Probabilities : (string (*action name*) * float)[]
-        }
 
     /// Score-insenstive player.
     let player path =

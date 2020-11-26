@@ -194,7 +194,16 @@ type MainForm() as this =
         actionQueue.Enqueue(fun () -> onPlay args)
 
     /// A deal has finished.
-    let onDealFinish (_, gameScore) =
+    let onDealFinish (dealer, _, gameScore) =
+
+            // shift from dealer-relative to absolute score
+        let gameScore =
+            let iDealerTeam =
+                int dealer % Setback.numTeams
+            let iAbsoluteTeam =
+                (Setback.numTeams - iDealerTeam) % Setback.numTeams
+            gameScore |> AbstractScore.shift iAbsoluteTeam
+
         scoreControl.Score <- gameScore
 
     /// A deal has finished.

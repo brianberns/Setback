@@ -14,7 +14,8 @@ open Setback
 /// winning a game.
 type Game =
     {
-        /// Deal points taken by each team (absolute index).
+        /// Deal points taken by each team, relative to the current
+        /// dealer's team.
         Score : AbstractScore
     }
     
@@ -102,7 +103,7 @@ type Session
             let dealScore =
                 deal |> AbstractOpenDeal.dealScore
             { game with Score = game.Score + dealScore }
-        trigger dealFinishEvent (deal, game.Score)
+        trigger dealFinishEvent (dealer, deal, game.Score)
         game
 
     /// Plays the given game.
@@ -118,10 +119,16 @@ type Session
                         |> AbstractOpenDeal.fromDeck dealer
                 game |> playDeal dealer deal
 
-                // continue this game?
+                // all done if game is over
             if game.Score |> BootstrapGameState.winningTeamOpt |> Option.isSome then
                 game.Score
+
+                // continue this game with next dealer
             else
+                    // obtain score relative to next dealer's team
+                let game =
+                    let score = game.Score |> AbstractScore.shift 1
+                    { game with Score = score }
                 game |> loop dealer.Next
 
         trigger gameStartEvent ()
