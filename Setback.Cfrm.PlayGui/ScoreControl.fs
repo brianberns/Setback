@@ -17,7 +17,10 @@ type ScoreControl() as this =
 
     let createLabels iColumn =
         Array.init Setback.numTeams (fun iTeam ->
-            let label = new Label()
+            let label =
+                new Label(
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    Anchor = AnchorStyles.None)
             this.Controls.Add(label, iColumn, iTeam + 1)
             label)
 
@@ -36,23 +39,32 @@ type ScoreControl() as this =
             // initialize columns
         let colDescs =
             [|
-                "Team", 33.3f
-                "Score", 33.3f
-                "Games", 33.3f
+                "Team", 33.3f, AnchorStyles.Left, ContentAlignment.MiddleLeft
+                "Score", 33.3f, AnchorStyles.None, ContentAlignment.MiddleCenter
+                "Games", 33.3f, AnchorStyles.None, ContentAlignment.MiddleCenter
             |] |> Seq.indexed
-        for iColumn, (text, width) in colDescs do
+        for iColumn, (text, width, anchor, align) in colDescs do
+
+                // create label
             let label =
                 new Label(
                     Text = text,
                     Font = new Font(this.Font, FontStyle.Bold),
-                    Dock = DockStyle.Fill)
+                    TextAlign = align,
+                    Anchor = anchor)
             this.Controls.Add(label, iColumn, 0)
+
+                // set column width
             ColumnStyle(SizeType.Percent, width)
                 |> this.ColumnStyles.Add
                 |> ignore
 
-        this.Controls.Add(new Label(Text = "N+S"), 0, 1)
-        this.Controls.Add(new Label(Text = "E+W"), 0, 2)
+            // initialize rows
+        for iRow, text in [| "E+W"; "N+S" |] |> Seq.indexed do
+            this.Controls.Add(
+                new Label(
+                    Text = text,
+                    TextAlign = ContentAlignment.MiddleLeft), 0, iRow + 1)
 
             // initialize scores
         displayScore AbstractScore.zero scoreLabels
