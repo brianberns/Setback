@@ -122,6 +122,14 @@ type MainForm() as this =
         actionQueue.Enabled <- true
         goButton.Visible <- false
 
+    /// A game has started.
+    let onGameStart () =
+        scoreControl.Score <- AbstractScore.zero
+
+    /// A game has started.
+    let delayGameStart args =
+        actionQueue.Enqueue(fun () -> onGameStart args)
+
     /// A deal has started.
     let onDealStart (dealer, deal) =
         let indexedSeats =
@@ -193,6 +201,16 @@ type MainForm() as this =
     let delayDealFinish args =
         actionQueue.Enqueue(fun () -> onDealFinish args)
 
+    /// A game has finished.
+    let onGameFinish score =
+        match BootstrapGameState.winningTeamOpt score with
+            | Some iTeam -> scoreControl.IncrementGamesWon(iTeam)
+            | None -> failwith "Unexpected"
+
+    /// A game has finished.
+    let delayGameFinish args =
+        actionQueue.Enqueue(fun () -> onGameFinish args)
+
     /// Underlying session.
     let session =
         let dbPlayer =
@@ -213,11 +231,13 @@ type MainForm() as this =
         onResize ()
 
             // initialize handlers
+        session.GameStartEvent.Add(delayGameStart)
         session.DealStartEvent.Add(delayDealStart)
         session.TrickFinishEvent.Add(delayTrickFinish)
         session.BidEvent.Add(delayBid)
         session.PlayEvent.Add(delayPlay)
         session.DealFinishEvent.Add(delayDealFinish)
+        session.GameFinishEvent.Add(delayGameFinish)
         goButton.Click.Add(onGo)
 
             // run
