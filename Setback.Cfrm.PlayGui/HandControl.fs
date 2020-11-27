@@ -35,6 +35,10 @@ type HandPanel() as this =
     /// Height of this control.
     static member Height = CardControl.Height + 2 * HandPanel.Padding
 
+    /// This control's card controls.
+    member __.CardControls =
+        cardControls
+
     /// Cards displayed by this control.
     member __.Cards
         with set(cards) =
@@ -109,6 +113,17 @@ type HandControl(seat : Seat) as this =
             ForeColor = Color.White)
             |> Control.addTo this
 
+    /// A card has been selected.
+    let cardSelectedEvent = Event<_>()
+
+    do
+            // prepare card selection event
+        for ctrl in panel.CardControls do
+            ctrl.Click.Add(fun _ ->
+                ctrl.CardOpt
+                    |> Option.iter (fun card ->
+                        cardSelectedEvent.Trigger(card)))
+
     /// Width of this control.
     static member Width = HandPanel.Width
 
@@ -118,6 +133,10 @@ type HandControl(seat : Seat) as this =
 
     /// Seat represented by this control.
     member __.Seat = seat
+
+    /// This control's card controls.
+    member __.CardControls =
+        panel.CardControls
 
     /// Cards displayed by this control.
     member __.Cards
@@ -140,3 +159,6 @@ type HandControl(seat : Seat) as this =
     /// Removes the given card from this control.
     member __.Remove(card) =
         panel.Remove(card)
+
+    [<CLIEvent>]
+    member __.CardSelectedEvent = cardSelectedEvent.Publish

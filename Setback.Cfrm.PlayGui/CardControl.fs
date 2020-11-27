@@ -85,3 +85,13 @@ type CardControl() as this =
     member __.IsTrump
         with set(isTrump) =
             this.Font <- CardControl.GetFont(isTrump)
+
+    /// Indicates whether this control is clickable.
+    member val IsClickable =
+        false
+        with set, get
+
+    /// Allow click?
+    override this.OnClick(e) =
+        if this.IsClickable then
+            base.OnClick(e)

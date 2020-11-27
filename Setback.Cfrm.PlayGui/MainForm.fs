@@ -2,7 +2,6 @@
 
 open System
 open System.Drawing
-open System.Threading
 open System.Windows.Forms
 
 open PlayingCards
@@ -251,50 +250,10 @@ type MainForm() as this =
     let dbPlayer =
         DatabasePlayer.player "Setback.db"
 
-    /// User player.
+    /// User player
     let userPlayer =
-
-        /// User's selected bid.
-        let mutable selectedBidOpt = Option<Bid>.None
-
-        /// User's selected card.
-        let mutable selectedCardOpt = Option<Card>.None
-
-        /// Thread synchronization.
-        let waitEvent = new AutoResetEvent(false)
-
-        /// Allows the user to bid on the given deal. This executes
-        /// on the main thread.
-        let allowBid deal =
-            let legalBids =
-                deal.ClosedDeal.Auction
-                    |> AbstractAuction.legalBids
-                    |> set
-            for bid in Enum.getValues<Bid> do
-                let rb = bidControl.GetBidButton(bid)
-                rb.Checked <- false
-                rb.Enabled <- legalBids.Contains(bid)
-            bidControl.Visible <- true
-
-        /// Obtains user's bid. This executes on the worker thread.
-        let makeBid (_ : AbstractScore) deal =
-            selectedBidOpt <- None
-            actionQueue.Enqueue (fun () -> allowBid deal)
-            waitEvent.WaitOne() |> ignore   // wait for user selection
-            selectedBidOpt.Value
-
-        /// User has selected a bid.
-        let onBidSelected bid =
-            bidControl.Visible <- false
-            selectedBidOpt <- Some bid
-            waitEvent.Set() |> ignore   // allow worker thread to continue
-
-        bidControl.BidSelectedEvent.Add(onBidSelected)
-
-        {
-            MakeBid = makeBid
-            MakePlay = dbPlayer.MakePlay
-        }
+        let handControl = handControlMap.[Seat.South]
+        User.player bidControl handControl actionQueue
 
     /// Underlying session.
     let session =
