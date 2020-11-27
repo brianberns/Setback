@@ -1,5 +1,6 @@
 ﻿namespace Setback.Cfrm
 
+open System
 open System.ComponentModel
 
 open PlayingCards
@@ -24,8 +25,6 @@ module Game =
     /// A new game with no score.
     let zero = { Score = AbstractScore.zero }
 
-type ActionDelegate = delegate of unit -> unit
-
 /// Manages a series of games with the given players.
 type Session
     (playerMap : Map<_, _>,
@@ -46,9 +45,8 @@ type Session
 
     /// Triggers the given event safely.
     let trigger (event : Event<_>) arg =
-        let del =
-            ActionDelegate(fun _ -> event.Trigger(arg))
-        sync.BeginInvoke(del, [||]) |> ignore
+        let del = Action (fun _ -> event.Trigger(arg))
+        sync.Invoke(del, Array.empty) |> ignore
 
     /// Answers the current player's seat.
     let getSeat dealer deal =

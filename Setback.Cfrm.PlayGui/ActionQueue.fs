@@ -1,10 +1,12 @@
 ﻿namespace Setback.Cfrm.PlayGui
 
+open System
 open System.Collections.Generic
+open System.ComponentModel
 open System.Windows.Forms
 
 /// Manages a queue of actions on a timer.
-type ActionQueue(interval) =
+type ActionQueue(interval, sync : ISynchronizeInvoke) =
 
     /// Queue of actions.
     let queue = Queue<unit -> unit>()
@@ -16,8 +18,8 @@ type ActionQueue(interval) =
     /// Executes the top action in the queue.
     let execute _ =
         if queue.Count > 0 then
-            let action = queue.Dequeue()
-            action ()
+            let action = Action (queue.Dequeue())
+            sync.Invoke(action, Array.empty) |> ignore
 
         // initialize
     do
