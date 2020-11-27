@@ -175,6 +175,14 @@ type MainForm() as this =
         delayDisableQueue ()   // pause for Go button
         actionQueue.Enqueue(fun () -> onAuctionFinish args)
 
+    /// A trick has started.
+    let onTrickStart leader =
+        trickControl.Leader <- leader
+
+    /// A trick has started.
+    let delayTrickStart args =
+        actionQueue.Enqueue(fun () -> onTrickStart args)
+
     // A player has played a card.
     let onPlay (seat, card : Card, deal) =
 
@@ -263,6 +271,7 @@ type MainForm() as this =
         session.AuctionStartEvent.Add(delayAuctionStart)
         session.BidEvent.Add(delayBid)
         session.AuctionFinishEvent.Add(delayAuctionFinish)
+        session.TrickStartEvent.Add(delayTrickStart)
         session.PlayEvent.Add(delayPlay)
         session.TrickFinishEvent.Add(delayTrickFinish)
         session.DealFinishEvent.Add(delayDealFinish)

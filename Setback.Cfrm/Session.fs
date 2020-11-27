@@ -85,10 +85,10 @@ type Session
                             | Some playout ->
 
                                 let numPlays = playout.CurrentTrick.NumPlays
-                                if numPlays = 0 then
-                                    trigger trickStartEvent ()
-
                                 let seat = getSeat dealer deal
+                                if numPlays = 0 then
+                                    trigger trickStartEvent seat
+
                                 let card =
                                     let player = playerMap.[seat]
                                     player.MakePlay game.Score deal
