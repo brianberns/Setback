@@ -1,6 +1,7 @@
 ﻿namespace Setback.Cfrm.PlayGui
 
 open System.Drawing
+open System.Reflection
 open System.Windows.Forms
 
 open PlayingCards
@@ -69,10 +70,11 @@ type CardControl() as this =
     /// Sets the card represented by this control.
     member __.Card
         with set(card) =
-            let assembly = System.Reflection.Assembly.GetExecutingAssembly()
-            let name = $"{this.GetType().Namespace}.Images.{Card.toAbbr card}.png"
-            use stream = assembly.GetManifestResourceStream(name)
             cardOpt <- Some card
+            use stream =
+                let assembly = Assembly.GetExecutingAssembly()
+                $"{this.GetType().Namespace}.Images.{Card.toAbbr card}.png"
+                    |> assembly.GetManifestResourceStream
             setImage <| Image.FromStream(stream)
             this.Visible <- true
 
