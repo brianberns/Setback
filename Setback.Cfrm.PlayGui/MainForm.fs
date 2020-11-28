@@ -247,6 +247,7 @@ type MainForm() as this =
 
     /// A game has finished.
     let delayGameFinish args =
+        delayDisableQueue ()   // pause for Go button
         actionQueue.Enqueue(fun () -> onGameFinish args)
 
     /// Computer plays from database.
@@ -270,6 +271,7 @@ type MainForm() as this =
         let rng = Random(0)
         Session(playerMap, rng, this)
 
+    /// Starts a session once form is loaded.
     let onLoad _ =
         async { session.Start() }
             |> Async.Start

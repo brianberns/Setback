@@ -109,7 +109,7 @@ type Session
         game
 
     /// Plays the given game.
-    let playGame rng dealer game =
+    let playGame dealer game =
 
             // play deals with rotating dealer
         let rec loop dealer game =
@@ -136,9 +136,16 @@ type Session
         trigger gameStartEvent ()
         let dealer, score = game |> loop dealer
         trigger gameFinishEvent (dealer, score)
+        dealer
 
+    /// Starts an infinite session. (Never returns.)
     member __.Start() =
-        Game.zero |> playGame rng Seat.South
+        (Seat.South, Seq.initInfinite id)
+            ||> Seq.fold (fun dealer _ ->
+                Game.zero
+                    |> playGame dealer
+                    |> Seat.next)
+            |> ignore
 
     [<CLIEvent>]
     member __.GameStartEvent = gameStartEvent.Publish

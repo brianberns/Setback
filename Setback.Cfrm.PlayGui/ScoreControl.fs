@@ -6,6 +6,7 @@ open System.Windows.Forms
 open Setback
 open Setback.Cfrm
 
+/// Displays absolute scores.
 type ScoreControl() as this =
     inherit TableLayoutPanel(
         Size = Size(180, 75),
@@ -15,6 +16,7 @@ type ScoreControl() as this =
         ForeColor = Color.White,
         CellBorderStyle = TableLayoutPanelCellBorderStyle.Single)
 
+    /// Creates empty labels for each team in the given column.
     let createLabels iColumn =
         Array.init Setback.numTeams (fun iTeam ->
             let label =
@@ -24,15 +26,19 @@ type ScoreControl() as this =
             this.Controls.Add(label, iColumn, iTeam + 1)
             label)
 
+    /// Score of current game.
     let scoreLabels = createLabels 1
 
+    /// Number of games won by each team.
     let gamesWonLabels = createLabels 2
 
+    /// Displays the given score in the given labels.
     let displayScore (AbstractScore points) labels =
         (points, labels)
             ||> Array.iter2 (fun point (label : Label) ->
                 label.Text <- point.ToString())
 
+    /// Number of games won by each team.
     let mutable gamesWon = AbstractScore.zero
 
     do
