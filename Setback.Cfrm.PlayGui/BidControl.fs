@@ -9,8 +9,8 @@ open Setback
 ///    * A panel of buttons, one per possible bid
 type BidControl() as this =
     inherit Panel(
-        Size = Size(120, HandControl.Height),
-        Font = new Font("Calibri", 12.0f),
+        Size = Size(120, 120),
+        Font = new Font("Calibri", 15f),
         BackColor = Color.Transparent,
         ForeColor = Color.White)
 
@@ -20,13 +20,14 @@ type BidControl() as this =
     /// One button per possible bid.
     let buttonMap =
         let xCoord, yCoord = 10, 4
-        let height = 20
+        let height = 30
         PlayingCards.Enum.getValues<Bid>
             |> Seq.mapi (fun iButton bid ->
                 let button =
                     new RadioButton(
                         Text = bid.ToString(),
                         Tag = bid,
+                        Height = height,
                         Location =
                             Point(
                                 xCoord,

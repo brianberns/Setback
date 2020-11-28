@@ -45,7 +45,7 @@ type MainForm() as this =
         new Button(
             Size = Size(100, 30),
             Text = "Go",
-            Font = new Font("Calibri", 12.0f),
+            Font = new Font("Calibri", 12f),
             UseVisualStyleBackColor = true,
             Visible = false)
             |> Control.addTo this

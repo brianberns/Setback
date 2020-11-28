@@ -109,7 +109,7 @@ type HandControl(seat : Seat) as this =
             Text = defaultText,
             TextAlign = ContentAlignment.MiddleCenter,
             Height = labelHeight,
-            Font = new Font("Calibri", 15.0f),
+            Font = new Font("Calibri", 15f),
             ForeColor = Color.White)
             |> Control.addTo this
 

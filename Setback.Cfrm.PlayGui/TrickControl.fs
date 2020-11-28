@@ -31,7 +31,7 @@ type TrickControl() as this =
                 let ctrl =
                     new Label(
                         Size = labelSize,
-                        Font = new Font("Lucida Console", 10.0f),
+                        Font = new Font("Lucida Console", 10f),
                         TextAlign = ContentAlignment.MiddleCenter,
                         ForeColor = Color.White,
                         BackColor = Color.Transparent)

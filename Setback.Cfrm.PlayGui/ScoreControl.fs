@@ -11,7 +11,7 @@ type ScoreControl() as this =
         Size = Size(180, 75),
         ColumnCount = 3,
         RowCount = 2,
-        Font = new Font("Calibri", 12.0f),
+        Font = new Font("Calibri", 12f),
         ForeColor = Color.White,
         CellBorderStyle = TableLayoutPanelCellBorderStyle.Single)
 
