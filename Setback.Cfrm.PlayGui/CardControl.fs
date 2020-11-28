@@ -87,6 +87,7 @@ type CardControl() as this =
     /// Clears this control.
     member __.Clear() =
         cardOpt <- None
+        isTrump <- false
         this.Visible <- false
         setImage null
 
