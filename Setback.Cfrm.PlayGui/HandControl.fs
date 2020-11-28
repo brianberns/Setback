@@ -153,12 +153,18 @@ type HandControl(seat : Seat) as this =
 
     /// Sets trump suit.
     member __.Trump
-        with set (trump : Suit) =
+        with set(trump : Suit) =
             panel.Trump <- trump
 
     /// Removes the given card from this control.
     member __.Remove(card) =
         panel.Remove(card)
+
+    /// Indicates whether to show card fronts or backs.
+    member __.ShowFront
+        with set(value : bool) =
+            for ctrl in panel.CardControls do
+                ctrl.ShowFront <- value
 
     [<CLIEvent>]
     member __.CardSelectedEvent = cardSelectedEvent.Publish

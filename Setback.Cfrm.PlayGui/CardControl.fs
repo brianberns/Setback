@@ -39,11 +39,14 @@ type CardControl() as this =
     /// Card is trump?
     let mutable isTrump = false
 
+    /// Show card front or back?
+    let mutable showFront = true
+
     /// Draw a border for trump.
     let onPaint (args : PaintEventArgs) =
-        if isTrump then
-            let color = Color.Orange
-            let width = 3
+        if isTrump && showFront then
+            let color = Color.Black
+            let width = 2
             let style = ButtonBorderStyle.Solid
             ControlPaint.DrawBorder(
                 args.Graphics,
@@ -73,7 +76,10 @@ type CardControl() as this =
             cardOpt <- Some card
             use stream =
                 let assembly = Assembly.GetExecutingAssembly()
-                $"{this.GetType().Namespace}.Images.{Card.toAbbr card}.png"
+                let imageName =
+                    if showFront then Card.toAbbr card
+                    else "blue_back"
+                $"{this.GetType().Namespace}.Images.{imageName}.png"
                     |> assembly.GetManifestResourceStream
             setImage <| Image.FromStream(stream)
             this.Visible <- true
@@ -89,6 +95,12 @@ type CardControl() as this =
     member __.IsTrump
         with set(value) =
             isTrump <- value
+            this.Invalidate()
+
+    /// Indicates whether to show the card front or back.
+    member __.ShowFront
+        with set(value) =
+            showFront <- value
             this.Invalidate()
 
     /// Indicates whether this control is clickable.

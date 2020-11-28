@@ -24,7 +24,9 @@ type MainForm() as this =
         Enum.getValues<Seat>
             |> Seq.map (fun seat ->
                 let ctrl =
-                    new HandControl(seat)
+                    new HandControl(
+                        seat,
+                        ShowFront = (seat = Seat.South))
                         |> Control.addTo this
                 seat, ctrl)
             |> Map
