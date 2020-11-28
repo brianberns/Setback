@@ -17,6 +17,10 @@ module Suit =
     let toChar suit =
         "♣♦♥♠".[int suit]
 
+    /// Converts the given suit to a letter character.
+    let toLetter suit =
+        "CDHS".[int suit]
+
     /// Converts the given character to a rank.
     let fromChar = function
         | 'C' | '♣' -> Suit.Clubs
@@ -32,3 +36,6 @@ module SuitExt =
 
         /// Character representation of this suit.
         member suit.Char = suit |> Suit.toChar
+
+        /// Letter representation of this suit.
+        member suit.Letter = suit |> Suit.toLetter

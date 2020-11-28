@@ -5,21 +5,11 @@ open System.Windows.Forms
 
 open PlayingCards
 
-module Suit =
-
-    /// Color of the given suit.
-    let color = function
-        | Suit.Spades
-        | Suit.Clubs -> Color.Black
-        | Suit.Hearts
-        | Suit.Diamonds -> Color.DarkRed
-        | _ -> failwith "Unknown suit"
-
 module Card =
 
     /// String representation of the given card.
     let toAbbr (card : Card) =
-        sprintf "%c%c" card.Rank.Char card.Suit.Char
+        sprintf "%c%c" card.Rank.Char card.Suit.Letter
 
 module Control =
 
@@ -30,11 +20,9 @@ module Control =
 
 /// Graphical representation of a single card.
 type CardControl() as this =
-    inherit Label(
+    inherit PictureBox(
         Size = Size(CardControl.Width, CardControl.Height),
-        Font = CardControl.GetFont(false),
-        TextAlign = ContentAlignment.MiddleCenter,
-        BackColor = Color.White,
+        SizeMode = PictureBoxSizeMode.StretchImage,
         Visible = false)
 
     /// Font used for non-trump cards.
@@ -49,10 +37,10 @@ type CardControl() as this =
     let mutable cardOpt = Option<Card>.None
 
     /// Width of this control.
-    static member Width = 36
+    static member Width = 69
 
     /// Height of this control.
-    static member Height = 48
+    static member Height = 106
 
     /// Font to use.
     static member private GetFont(isTrump) =
@@ -66,9 +54,12 @@ type CardControl() as this =
     /// Sets the card represented by this control.
     member __.Card
         with set(card) =
+            let assembly = System.Reflection.Assembly.GetExecutingAssembly()
+            let name = $"{this.GetType().Namespace}.Images.{Card.toAbbr card}.png"
+            use stream = assembly.GetManifestResourceStream(name)
             cardOpt <- Some card
+            this.Image <- Image.FromStream(stream)
             this.Text <- Card.toAbbr card
-            this.ForeColor <- Suit.color card.Suit
             this.Font <- defaultFont
             this.Visible <- true
 

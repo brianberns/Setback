@@ -15,7 +15,8 @@ open Setback.Cfrm
 type MainForm() as this =
     inherit Form(
         Text = "Bernsrite Setback",
-        Size = Size(960, 730),
+        Size = Size(1465, 937),
+        StartPosition = FormStartPosition.CenterScreen,
         BackColor = Color.DarkGreen)
 
     /// Unplayed cards for each seat.
@@ -95,8 +96,8 @@ type MainForm() as this =
             let innerBottom = handControlMap.[Seat.South].Top
             let innerWidth = innerRight - innerLeft
             let innerHeight = innerBottom - innerTop
-            let size = Size(innerWidth, innerHeight) - 2 * Size(CardControl.Width, CardControl.Height)
-            let location = Point(innerLeft, innerTop) + Size(CardControl.Width, CardControl.Height)
+            let size = Size(innerWidth, innerHeight) - 2 * Size(padding, padding)
+            let location = Point(innerLeft, innerTop) + Size(padding, padding)
             size, location
         trickControl.Size <- size
         trickControl.Location <- location
@@ -267,6 +268,10 @@ type MainForm() as this =
         let rng = Random(0)
         Session(playerMap, rng, this)
 
+    let onLoad _ =
+        async { session.Start() }
+            |> Async.Start
+
     do
             // layout controls
         this.Resize.Add(onResize)
@@ -284,7 +289,4 @@ type MainForm() as this =
         session.DealFinishEvent.Add(delayDealFinish)
         session.GameFinishEvent.Add(delayGameFinish)
         goButton.Click.Add(onGo)
-
-            // run
-        async { session.Start() }
-            |> Async.Start
+        this.Load.Add(onLoad)

@@ -109,13 +109,9 @@ type TrickControl() as this =
     member __.ClearTrump() =
         trumpOpt <- None
 
-    /// Numbered seats starting with the leader.
+    /// Identifies the leader's seat.
     member __.Leader
         with set(leader) =
-            for iSeat, seat in leader |> Seat.cycle |> Seq.indexed do
-                labelMap.[seat].Text <- $"{iSeat + 1}"
-
-    /// Clears leader labels.
-    member __.ClearLeader() =
-        for (KeyValue(_, label)) in labelMap do
-            label.Text <- ""
+            for (KeyValue(seat, label)) in labelMap do
+                label.Text <-
+                    if seat = leader then "1" else ""
