@@ -70,7 +70,7 @@ type TrickControl() as this =
             args.Graphics,
             this.ClientRectangle,
             Color.White,
-            ButtonBorderStyle.Inset)
+            ButtonBorderStyle.Solid)
 
     /// Trump suit.
     let mutable trumpOpt = Option<Suit>.None

@@ -25,27 +25,42 @@ type CardControl() as this =
         SizeMode = PictureBoxSizeMode.StretchImage,
         Visible = false)
 
-    /// Font used for non-trump cards.
-    static let defaultFont =
-        new Font("Lucida Console", 15.0f)
-
-    /// Font used for trump cards.
-    static let trumpFont =
-        new Font(defaultFont, FontStyle.Underline)
-
     /// Card represented by this control, if any.
     let mutable cardOpt = Option<Card>.None
+
+    /// Sets the control's current image.
+    let setImage image =
+        let oldImage = this.Image
+        this.Image <- image
+        if oldImage <> null then
+            oldImage.Dispose()
+
+    /// Card is trump?
+    let mutable isTrump = false
+
+    /// Draw a border for trump.
+    let onPaint (args : PaintEventArgs) =
+        if isTrump then
+            let color = Color.Orange
+            let width = 3
+            let style = ButtonBorderStyle.Solid
+            ControlPaint.DrawBorder(
+                args.Graphics,
+                this.ClientRectangle,
+                color, width, style,
+                color, width, style,
+                color, width, style,
+                color, width, style)
+
+    do
+            // initialize handlers
+        this.Paint.Add(onPaint)
 
     /// Width of this control.
     static member Width = 69
 
     /// Height of this control.
     static member Height = 106
-
-    /// Font to use.
-    static member private GetFont(isTrump) =
-        if isTrump then trumpFont
-        else defaultFont
 
     /// Card represented by this control, if any.
     member __.CardOpt
@@ -58,24 +73,21 @@ type CardControl() as this =
             let name = $"{this.GetType().Namespace}.Images.{Card.toAbbr card}.png"
             use stream = assembly.GetManifestResourceStream(name)
             cardOpt <- Some card
-            this.Image <- Image.FromStream(stream)
-            this.Text <- Card.toAbbr card
-            this.Font <- defaultFont
+            setImage <| Image.FromStream(stream)
             this.Visible <- true
 
     /// Clears this control.
     member __.Clear() =
         cardOpt <- None
-        this.Text <- ""
-        this.ForeColor <- Color.Transparent
-        this.Font <- defaultFont
         this.Visible <- false
+        setImage null
 
     /// Indicates whether the card represented by this control
     /// is trump.
     member __.IsTrump
-        with set(isTrump) =
-            this.Font <- CardControl.GetFont(isTrump)
+        with set(value) =
+            isTrump <- value
+            this.Invalidate()
 
     /// Indicates whether this control is clickable.
     member val IsClickable =
