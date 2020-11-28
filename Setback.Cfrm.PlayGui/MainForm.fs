@@ -58,7 +58,7 @@ type MainForm() as this =
             |> Control.addTo this
 
     /// Action queue for delaying event handlers.
-    let actionQueue = ActionQueue(500, this)
+    let actionQueue = ActionQueue(250, this)
 
     /// Lays out controls.
     let onResize _ =

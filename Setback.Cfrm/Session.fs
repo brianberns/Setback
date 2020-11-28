@@ -123,7 +123,7 @@ type Session
 
                 // all done if game is over
             if game.Score |> BootstrapGameState.winningTeamOpt |> Option.isSome then
-                game.Score
+                dealer, game.Score
 
                 // continue this game with next dealer
             else
@@ -134,7 +134,7 @@ type Session
                 game |> loop dealer.Next
 
         trigger gameStartEvent ()
-        let score = game |> loop dealer
+        let dealer, score = game |> loop dealer
         trigger gameFinishEvent (dealer, score)
 
     member __.Start() =
