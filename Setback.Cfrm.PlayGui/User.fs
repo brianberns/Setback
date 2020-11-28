@@ -77,7 +77,8 @@ module User =
 
         /// User has selected a card.
         let onCardSelected card =
-            bidControl.Visible <- false
+            for cardCtrl in handControl.CardControls do
+                cardCtrl.IsClickable <- false
             selectedCardOpt <- Some card
             waitEvent.Set() |> ignore   // allow worker thread to continue
 
