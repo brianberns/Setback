@@ -8,7 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Images\trump.png" />
+    <EmbeddedResource Include="Images\Trump.png" />
+    <EmbeddedResource Include="Images\Back.png" />
     <EmbeddedResource Include="Images\2C.png" />
     <EmbeddedResource Include="Images\2D.png" />
     <EmbeddedResource Include="Images\2H.png" />
@@ -45,7 +46,6 @@
     <EmbeddedResource Include="Images\AD.png" />
     <EmbeddedResource Include="Images\AH.png" />
     <EmbeddedResource Include="Images\AS.png" />
-    <EmbeddedResource Include="Images\blue_back.png" />
     <EmbeddedResource Include="Images\JC.png" />
     <EmbeddedResource Include="Images\JD.png" />
     <EmbeddedResource Include="Images\JH.png" />

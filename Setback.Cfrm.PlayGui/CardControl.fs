@@ -20,6 +20,7 @@ module Control =
         control
 
 /// Graphical representation of a single card.
+/// http://acbl.mybigcommerce.com/52-playing-cards/
 type CardControl() as this =
     inherit Panel(
         Size = Size(CardControl.Width, CardControl.Height),
@@ -57,7 +58,7 @@ type CardControl() as this =
         new PictureBox(
             Size = this.Size,
             SizeMode = PictureBoxSizeMode.StretchImage,
-            Image = getImage "blue_back",
+            Image = getImage "Back",
             Visible = false)
             |> Control.addTo this
 
@@ -117,7 +118,7 @@ type CardControl() as this =
     member __.IsTrump
         with set(value) =
             let image =
-                if value then getImage "trump"
+                if value then getImage "Trump"
                 else null
             image |> assignImage trumpBadge
 
