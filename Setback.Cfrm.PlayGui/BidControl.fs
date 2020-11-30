@@ -20,7 +20,7 @@ type BidControl() as this =
     /// One button per possible bid.
     let buttonMap =
         let xCoord, yCoord = 10, 4
-        let height = 30
+        let height = 27
         PlayingCards.Enum.getValues<Bid>
             |> Seq.mapi (fun iButton bid ->
                 let button =
