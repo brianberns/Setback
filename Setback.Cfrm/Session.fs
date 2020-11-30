@@ -147,32 +147,42 @@ type Session
                     |> Seat.next)
             |> ignore
 
+    /// A game has started.
     [<CLIEvent>]
     member __.GameStartEvent = gameStartEvent.Publish
 
+    /// A deal has started.
     [<CLIEvent>]
     member __.DealStartEvent = dealStartEvent.Publish
 
+    /// An auction has started.
     [<CLIEvent>]
     member __.AuctionStartEvent = auctionStartEvent.Publish
 
+    /// A bid has been made.
     [<CLIEvent>]
     member __.BidEvent = bidEvent.Publish
 
+    /// An auction has finished.
     [<CLIEvent>]
     member __.AuctionFinishEvent = auctionFinishEvent.Publish
 
+    /// A trick has started.
     [<CLIEvent>]
     member __.TrickStartEvent = trickStartEvent.Publish
 
+    /// A card has been played.
     [<CLIEvent>]
     member __.PlayEvent = playEvent.Publish
 
+    /// A trick has finished.
     [<CLIEvent>]
     member __.TrickFinishEvent = trickFinishEvent.Publish
 
+    /// A deal has finished.
     [<CLIEvent>]
     member __.DealFinishEvent = dealFinishEvent.Publish
 
+    /// A game has finished.
     [<CLIEvent>]
     member __.GameFinishEvent = gameFinishEvent.Publish
