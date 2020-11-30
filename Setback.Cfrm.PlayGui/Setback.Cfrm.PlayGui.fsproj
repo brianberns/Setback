@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Images\trump.png" />
     <EmbeddedResource Include="Images\2C.png" />
     <EmbeddedResource Include="Images\2D.png" />
     <EmbeddedResource Include="Images\2H.png" />

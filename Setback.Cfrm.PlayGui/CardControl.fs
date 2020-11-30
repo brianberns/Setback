@@ -21,44 +21,57 @@ module Control =
 
 /// Graphical representation of a single card.
 type CardControl() as this =
-    inherit PictureBox(
+    inherit Panel(
         Size = Size(CardControl.Width, CardControl.Height),
-        SizeMode = PictureBoxSizeMode.StretchImage,
         Visible = false)
 
     /// Card represented by this control, if any.
     let mutable cardOpt = Option<Card>.None
 
-    /// Sets the control's current image.
-    let setImage image =
-        let oldImage = this.Image
-        this.Image <- image
+    /// Gets resource image with the given name.
+    let getImage name =
+        use stream =
+            let assembly = Assembly.GetExecutingAssembly()
+            $"{this.GetType().Namespace}.Images.{name}.png"
+                |> assembly.GetManifestResourceStream
+        Image.FromStream(stream)
+
+    /// Picture of front of card.
+    let frontPicture =
+        new PictureBox(
+            Size = this.Size,
+            SizeMode = PictureBoxSizeMode.StretchImage,
+            Visible = true)
+            |> Control.addTo this
+
+    /// Trump indicator overlay.
+    let trumpBadge =
+        new PictureBox(
+            Size = this.Size,
+            SizeMode = PictureBoxSizeMode.StretchImage,
+            Visible = true)
+            |> Control.addTo frontPicture
+
+    /// Picture of back of card.
+    let backPicture =
+        new PictureBox(
+            Size = this.Size,
+            SizeMode = PictureBoxSizeMode.StretchImage,
+            Image = getImage "blue_back",
+            Visible = false)
+            |> Control.addTo this
+
+    /// Sets the image of a picture box.
+    let assignImage (pictureBox : PictureBox) image =
+        let oldImage = pictureBox.Image
+        pictureBox.Image <- image
         if oldImage <> null then
             oldImage.Dispose()
 
-    /// Card is trump?
-    let mutable isTrump = false
-
-    /// Show card front or back?
-    let mutable showFront = true
-
-    /// Draw a border for trump.
-    let onPaint (args : PaintEventArgs) =
-        if isTrump && showFront then
-            let color = Color.Black
-            let width = 2
-            let style = ButtonBorderStyle.Solid
-            ControlPaint.DrawBorder(
-                args.Graphics,
-                this.ClientRectangle,
-                color, width, style,
-                color, width, style,
-                color, width, style,
-                color, width, style)
-
     do
-            // initialize handlers
-        this.Paint.Add(onPaint)
+        frontPicture.Click.Add(this.TriggerClick)
+        trumpBadge.Click.Add(this.TriggerClick)
+        backPicture.Click.Add(this.TriggerClick)
 
     /// Width of this control.
     static member Width = 69
@@ -73,36 +86,47 @@ type CardControl() as this =
     /// Sets the card represented by this control.
     member __.Card
         with set(card) =
+
+                // remember card
             cardOpt <- Some card
-            use stream =
-                let assembly = Assembly.GetExecutingAssembly()
-                let imageName =
-                    if showFront then Card.toAbbr card
-                    else "blue_back"
-                $"{this.GetType().Namespace}.Images.{imageName}.png"
-                    |> assembly.GetManifestResourceStream
-            setImage <| Image.FromStream(stream)
+
+                // assign corresponding image
+            card
+                |> Card.toAbbr
+                |> getImage
+                |> assignImage frontPicture
+
+                // show control
             this.Visible <- true
 
-    /// Clears this control.
+    /// Clears the card displayed by this control.
     member __.Clear() =
+
+            // forget card
         cardOpt <- None
-        isTrump <- false
+
+            // clear corresponding images
+        assignImage frontPicture null
+        assignImage trumpBadge null
+
+            // hide pictures
         this.Visible <- false
-        setImage null
 
     /// Indicates whether the card represented by this control
     /// is trump.
     member __.IsTrump
         with set(value) =
-            isTrump <- value
-            this.Invalidate()
+            let image =
+                if value then getImage "trump"
+                else null
+            image |> assignImage trumpBadge
 
     /// Indicates whether to show the card front or back.
     member __.ShowFront
         with set(value) =
-            showFront <- value
-            this.Invalidate()
+            frontPicture.Visible <- value
+            trumpBadge.Visible <- value
+            backPicture.Visible <- not value
 
     /// Indicates whether this control is clickable.
     member val IsClickable =
@@ -110,6 +134,10 @@ type CardControl() as this =
         with set, get
 
     /// Allow click?
-    override this.OnClick(e) =
+    override __.OnClick(args) =
         if this.IsClickable then
-            base.OnClick(e)
+            base.OnClick(args)
+
+    /// Allows access to protected override.
+    member private __.TriggerClick(args) =
+        this.OnClick(args)
