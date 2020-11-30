@@ -24,6 +24,7 @@ module Control =
 type CardControl() as this =
     inherit Panel(
         Size = Size(CardControl.Width, CardControl.Height),
+        BackColor = Color.Transparent,
         Visible = false)
 
     /// Card represented by this control, if any.
