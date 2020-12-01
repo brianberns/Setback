@@ -31,7 +31,8 @@ them-need/us-need/high-bid/num-bids/hand
 ```
 
 Where:
-* `them-need`: The 
+* `them-need`: The number of points the other team needs to win, or `x` if the other team needs more than four points (i.e. can't win on this deal).
+* `us-need`: If the other team is ahead and needs four points or less then `!`, else `
 
 | Position | Name | Possible Values | Description |
 |--|--|--|--|
@@ -75,7 +76,7 @@ Trailing dots (`.`) are trimmed from the key to save space.
 2. Copy `Baseline.strategy` into the `TrainBootstrap` project and then run the project to bootstrap a strategy profile (`Bootstrap.strategy`) that is optimized for score-aware bidding (e.g. by bidding more aggressively if the opposing team is close to winning the game). This requires less time and RAM. I recommend 20-30 million CFR iterations.
 3. Copy `Baseline.strategy` and `Bootstrap.strategy` into the `LoadDatabase` project, and then run the project to create a SQLite database that can be used to play Setback (via the `DatabasePlayer` module).
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMjA2MjUyMDkwNiw3ODkzOTEzMDUsNzAyNT
+eyJoaXN0b3J5IjpbMTY3NjgwOTY1MSw3ODkzOTEzMDUsNzAyNT
 cxNTg5LDE1ODYxNTc1MzQsLTY4NjI0MDQ2OCwxMzIxNjUyMjEs
 MjA3NTU4NzA5NywtODEyMDM5MjQwXX0=
 -->
