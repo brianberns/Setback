@@ -25,8 +25,13 @@ Suit strength is determined as follows:
 The second-strongest suit is included iff the difference between its strength and the strength of the strongest suit is less than 2.
 
 #### Bootstrap
-These keys are used when bootstrapping a score-sensitive model from a baseline model. Unlike the baseline keys, these keys are formatted using `/` characters, rather than by absolute position within the string.
-	score/
+These keys are used when bootstrapping a score-sensitive model from a baseline model. Unlike the baseline keys, these keys are formatted using `/` characters, rather than by absolute position within the string, as follows:
+```
+score/auction/hand
+```
+
+Where:
+* `score`: 
 
 | Position | Name | Possible Values | Description |
 |--|--|--|--|
@@ -70,7 +75,7 @@ Trailing dots (`.`) are trimmed from the key to save space.
 2. Copy `Baseline.strategy` into the `TrainBootstrap` project and then run the project to bootstrap a strategy profile (`Bootstrap.strategy`) that is optimized for score-aware bidding (e.g. by bidding more aggressively if the opposing team is close to winning the game). This requires less time and RAM. I recommend 20-30 million CFR iterations.
 3. Copy `Baseline.strategy` and `Bootstrap.strategy` into the `LoadDatabase` project, and then run the project to create a SQLite database that can be used to play Setback (via the `DatabasePlayer` module).
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTY0MTA5OTQ4Niw3ODkzOTEzMDUsNzAyNT
+eyJoaXN0b3J5IjpbMTM4OTA0NDYxMCw3ODkzOTEzMDUsNzAyNT
 cxNTg5LDE1ODYxNTc1MzQsLTY4NjI0MDQ2OCwxMzIxNjUyMjEs
 MjA3NTU4NzA5NywtODEyMDM5MjQwXX0=
 -->
