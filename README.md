@@ -13,7 +13,8 @@ These keys are used when training the baseline (score-insensitive) model.
 | 1-6 | Ranks #1 | 6 rank characters, or `.` placeholders. E.g. `Jxx2..` | Ranks present in hand's strongest suit |
 | 7-12 | Ranks #2 |  | Ranks present in hand's second strongest suit, if any |
 Suit strength is determined as follows:
-* Convert the rank of each card in the suit to an integer by subtracting one from its face value. (E.g. Two 
+* Convert the rank of each card in the suit to an integer by subtracting one from its face value. (E.g. Two → 1, Three → 2, ..., Ten → 9, Jack → 10, ..., Ace → 13).
+* Sum the values.
 
 #### Bootstrap
 ### Playout key
@@ -53,7 +54,7 @@ Trailing dots (`.`) are trimmed from the key to save space.
 2. Copy `Baseline.strategy` into the `TrainBootstrap` project and then run the project to bootstrap a strategy profile (`Bootstrap.strategy`) that is optimized for score-aware bidding (e.g. by bidding more aggressively if the opposing team is close to winning the game). This requires less time and RAM. I recommend 20-30 million CFR iterations.
 3. Copy `Baseline.strategy` and `Bootstrap.strategy` into the `LoadDatabase` project, and then run the project to create a SQLite database that can be used to play Setback (via the `DatabasePlayer` module).
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMzI2Nzg4MTc1LDc4OTM5MTMwNSw3MDI1Nz
+eyJoaXN0b3J5IjpbNjIzOTUxOTI0LDc4OTM5MTMwNSw3MDI1Nz
 E1ODksMTU4NjE1NzUzNCwtNjg2MjQwNDY4LDEzMjE2NTIyMSwy
 MDc1NTg3MDk3LC04MTIwMzkyNDBdfQ==
 -->
