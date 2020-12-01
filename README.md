@@ -3,9 +3,10 @@ This project uses [Counterfactual Regret Minimization](https://github.com/brianb
 ## Approach
 Setback's move tree is not as large as that of some other card games (e.g. Bridge, Hearts), but it is still too large for vanilla CFR on commodity hardware. The approach used here is to create a simpler abstract game that is essentially identical to Setback, but whose move tree is small enough for vanilla CFR. Defining such an abstraction is much more of an art than a science, relying heavily on personal intuition for what information is most salient when playing Setback.
 ## Information set keys
-Keys are only created for infosets with more than one legal action.
+Keys are only created for infosets with more than one legal action. Each key is a string with the layouts described below.
 ### Auction key
 #### Baseline
+These keys are used when training the baseline (score-insensitive) model.
 | Position | Name | Possible Values | Description |
 |--|--|--|--|
 | 0 | High bid | `0` (pass)<br/>`2` (two bid)<br/>`3` (three bid)<br/>`D` (dealer-overridable four bid) | High bid so far. |
@@ -50,7 +51,7 @@ Trailing dots (`.`) are trimmed from the key to save space.
 2. Copy `Baseline.strategy` into the `TrainBootstrap` project and then run the project to bootstrap a strategy profile (`Bootstrap.strategy`) that is optimized for score-aware bidding (e.g. by bidding more aggressively if the opposing team is close to winning the game). This requires less time and RAM. I recommend 20-30 million CFR iterations.
 3. Copy `Baseline.strategy` and `Bootstrap.strategy` into the `LoadDatabase` project, and then run the project to create a SQLite database that can be used to play Setback (via the `DatabasePlayer` module).
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTQ5MTQxMzM2OCw3ODkzOTEzMDUsNzAyNT
+eyJoaXN0b3J5IjpbMTk4NDc4OTU3NCw3ODkzOTEzMDUsNzAyNT
 cxNTg5LDE1ODYxNTc1MzQsLTY4NjI0MDQ2OCwxMzIxNjUyMjEs
 MjA3NTU4NzA5NywtODEyMDM5MjQwXX0=
 -->
