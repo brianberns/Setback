@@ -73,11 +73,12 @@ Trailing dots (`.`) are trimmed from the baseline keys to save space. (There are
 
 ## Usage
 
-1. Run the `TrainBaseline` project to generate a baseline strategy profile (`Baseline.strategy`) that is optimized to play a hand of Setback without regard to the score of the game. *Warning*: This requires a machine with at least 16GB of RAM, and will take several weeks/months. I recommend 10-20 million CFR iterations.
-2. Copy `Baseline.strategy` into the `TrainBootstrap` project and then run the project to bootstrap a strategy profile (`Bootstrap.strategy`) that is optimized for score-aware bidding (e.g. by bidding more aggressively if the opposing team is close to winning the game). This requires less time and RAM. I recommend 20-30 million CFR iterations.
+1. Run the `TrainBaseline` project to generate a baseline strategy profile (`Baseline.strategy`) that is optimized to play a hand of Setback without regard to the score of the game. *Warning*: This requires a machine with at least 16GB of RAM, and will take several weeks/months. I recommend at least 10 million CFR iterations.
+2. Copy `Baseline.strategy` into the `TrainBootstrap` project and then run the project to bootstrap a strategy profile (`Bootstrap.strategy`) that is optimized for score-aware bidding (e.g. by bidding more aggressively if the opposing team is close to winning the game). This requires less time and RAM. I recommend at least 20 million CFR iterations.
 3. Copy `Baseline.strategy` and `Bootstrap.strategy` into the `LoadDatabase` project, and then run the project to create a SQLite database that can be used to play Setback (via the `DatabasePlayer` module).
+4. As simple Windows GUI (`Setback.Cfrm.PlayGui`) is provided as an example
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbNTcyMDI1NzIwLDc4OTM5MTMwNSw3MDI1Nz
-E1ODksMTU4NjE1NzUzNCwtNjg2MjQwNDY4LDEzMjE2NTIyMSwy
-MDc1NTg3MDk3LC04MTIwMzkyNDBdfQ==
+eyJoaXN0b3J5IjpbMTg0MTMzNTAxOCw3ODkzOTEzMDUsNzAyNT
+cxNTg5LDE1ODYxNTc1MzQsLTY4NjI0MDQ2OCwxMzIxNjUyMjEs
+MjA3NTU4NzA5NywtODEyMDM5MjQwXX0=
 -->
