@@ -52,7 +52,6 @@ type TrickControl() as this =
             Point(this.ClientSize.Width - CardControl.Width - padding, yCoord)
         cardControlMap.[Seat.South].Location <-
             Point(xCoord, this.ClientSize.Height - CardControl.Height - padding)
-        this.Invalidate()   // erase any previously drawn borders
 
             // labels
         let xCoord = (this.ClientSize.Width - labelSize.Width) / 2
@@ -63,6 +62,9 @@ type TrickControl() as this =
             Point(this.ClientSize.Width - labelSize.Width, yCoord)
         labelMap.[Seat.South].Location <-
             Point(xCoord, this.ClientSize.Height - labelSize.Height)
+
+            // erase any previously drawn borders
+        this.Invalidate()
 
     /// Draw a border.
     let onPaint (args : PaintEventArgs) =
