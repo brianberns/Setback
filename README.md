@@ -27,6 +27,9 @@ The second-strongest suit is included iff the difference between its strength an
 #### Bootstrap
 These keys are used when bootstrapping a score-sensitive model from a baseline model.
 
+| Position | Name | Possible Values | Description |
+|--|--|--|--|
+
 ### Playout key
 #### Establish trump
 These keys are used by the auction winner to establish trump with the first card played.
@@ -34,6 +37,7 @@ These keys are used by the auction winner to establish trump with the first card
 |--|--|--|--|
 | 0 | Header | `E` | Establish trump. |
 | 1-13 | Auction key | | Corresponding auction key. |
+
 #### Normal playout
 A normal playout key is a string of up to 24 characters, laid out as follows:
 | Position | Name | Possible Values | Description |
@@ -60,11 +64,12 @@ A normal playout key is a string of up to 24 characters, laid out as follows:
 Trailing dots (`.`) are trimmed from the key to save space.
 
 ## Usage
+
 1. Run the `TrainBaseline` project to generate a baseline strategy profile (`Baseline.strategy`) that is optimized to play a hand of Setback without regard to the score of the game. *Warning*: This requires a machine with at least 16GB of RAM, and will take several weeks/months. I recommend 10-20 million CFR iterations.
 2. Copy `Baseline.strategy` into the `TrainBootstrap` project and then run the project to bootstrap a strategy profile (`Bootstrap.strategy`) that is optimized for score-aware bidding (e.g. by bidding more aggressively if the opposing team is close to winning the game). This requires less time and RAM. I recommend 20-30 million CFR iterations.
 3. Copy `Baseline.strategy` and `Bootstrap.strategy` into the `LoadDatabase` project, and then run the project to create a SQLite database that can be used to play Setback (via the `DatabasePlayer` module).
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTUwNDM1NjUyMyw3ODkzOTEzMDUsNzAyNT
+eyJoaXN0b3J5IjpbMTEyMDU1MTIwMCw3ODkzOTEzMDUsNzAyNT
 cxNTg5LDE1ODYxNTc1MzQsLTY4NjI0MDQ2OCwxMzIxNjUyMjEs
 MjA3NTU4NzA5NywtODEyMDM5MjQwXX0=
 -->
