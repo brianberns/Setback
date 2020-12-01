@@ -1,4 +1,5 @@
 # Counterfactual Regret Minimization for Setback
+
 This project uses [Counterfactual Regret Minimization](https://github.com/brianberns/Cfrm) to solve the game of [Setback](https://en.wikipedia.org/wiki/Pitch_%28card_game%29#Auction_Pitch) (aka Auction Pitch).
 ## Approach
 Setback's move tree is not as large as that of some other card games (e.g. Bridge, Hearts), but it is still too large for vanilla CFR on commodity hardware. The approach used here is to create a simpler abstract game that is essentially identical to Setback, but whose move tree is small enough for vanilla CFR. Defining such an abstraction is much more of an art than a science, relying heavily on personal intuition for what information is most salient when playing Setback.
@@ -12,10 +13,13 @@ These keys are used when training the baseline (score-insensitive) model.
 | 0 | High bid | `0` (pass)<br/>`2` (two bid)<br/>`3` (three bid)<br/>`D` (dealer-overridable four bid) | High bid so far. |
 | 1-6 | Ranks #1 | 6 rank characters, or `.` placeholders. E.g. `Jxx2..` | Ranks present in hand's strongest suit |
 | 7-12 | Ranks #2 | Same as above | Ranks present in hand's second-strongest suit, if any, or `.` placeholders |
+
 Suit strength is determined as follows:
+
 * Convert the rank of each card in the suit to an integer by subtracting one from its face value. (E.g. Two → 1, Three → 2, ..., Ten → 9, Jack → 10, ..., Ace → 13).
 * Sum the values.
-The second-strongest suit is included iff its strength is 
+
+The second-strongest suit is included iff the difference between its strength and the strength of the strongest suit is less than 2.
 
 #### Bootstrap
 ### Playout key
@@ -55,7 +59,7 @@ Trailing dots (`.`) are trimmed from the key to save space.
 2. Copy `Baseline.strategy` into the `TrainBootstrap` project and then run the project to bootstrap a strategy profile (`Bootstrap.strategy`) that is optimized for score-aware bidding (e.g. by bidding more aggressively if the opposing team is close to winning the game). This requires less time and RAM. I recommend 20-30 million CFR iterations.
 3. Copy `Baseline.strategy` and `Bootstrap.strategy` into the `LoadDatabase` project, and then run the project to create a SQLite database that can be used to play Setback (via the `DatabasePlayer` module).
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTM3NTY2NjY4NSw3ODkzOTEzMDUsNzAyNT
-cxNTg5LDE1ODYxNTc1MzQsLTY4NjI0MDQ2OCwxMzIxNjUyMjEs
-MjA3NTU4NzA5NywtODEyMDM5MjQwXX0=
+eyJoaXN0b3J5IjpbNTA3MTE4NzIyLDc4OTM5MTMwNSw3MDI1Nz
+E1ODksMTU4NjE1NzUzNCwtNjg2MjQwNDY4LDEzMjE2NTIyMSwy
+MDc1NTg3MDk3LC04MTIwMzkyNDBdfQ==
 -->
