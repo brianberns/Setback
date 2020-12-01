@@ -1,7 +1,7 @@
 # Counterfactual Regret Minimization for Setback
-This repository uses [Counterfactual Regret Minimization](https://github.com/brianberns/Cfrm) to solve the game of [Setback](https://en.wikipedia.org/wiki/Pitch_%28card_game%29#Auction_Pitch) (aka Auction Pitch).
+This project uses [Counterfactual Regret Minimization](https://github.com/brianberns/Cfrm) to solve the game of [Setback](https://en.wikipedia.org/wiki/Pitch_%28card_game%29#Auction_Pitch) (aka Auction Pitch).
 ## Approach
-Setback's move tree is not as large as that of some other card games (e.g. Bridge, Hearts), but it is still too large for vanilla CFR on commodity hardware. The approach used here is to create a simpler, abstract game that is essentially identical to Setback, but whose move tree is small enough for vanilla CFR. Defining such an abstraction is much more of an art than a science, relying heavily on personal intuition for what information is most salient when playing Setback.
+Setback's move tree is not as large as that of some other card games (e.g. Bridge, Hearts), but it is still too large for vanilla CFR on commodity hardware. The approach used here is to create a simpler abstract game that is essentially identical to Setback, but whose move tree is small enough for vanilla CFR. Defining such an abstraction is much more of an art than a science, relying heavily on personal intuition for what information is most salient when playing Setback.
 ## Information set keys
 Keys are only created for infosets with more than one legal action.
 ### Auction key
@@ -50,7 +50,7 @@ Trailing dots (`.`) are trimmed from the key to save space.
 2. Copy `Baseline.strategy` into the `TrainBootstrap` project and then run the project to bootstrap a strategy profile (`Bootstrap.strategy`) that is optimized for score-aware bidding (e.g. by bidding more aggressively if the opposing team is close to winning the game). This requires less time and RAM. I recommend 20-30 million CFR iterations.
 3. Copy `Baseline.strategy` and `Bootstrap.strategy` into the `LoadDatabase` project, and then run the project to create a SQLite database that can be used to play Setback (via the `DatabasePlayer` module).
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbNzg5MzkxMzA1LDcwMjU3MTU4OSwxNTg2MT
-U3NTM0LC02ODYyNDA0NjgsMTMyMTY1MjIxLDIwNzU1ODcwOTcs
-LTgxMjAzOTI0MF19
+eyJoaXN0b3J5IjpbMTQ5MTQxMzM2OCw3ODkzOTEzMDUsNzAyNT
+cxNTg5LDE1ODYxNTc1MzQsLTY4NjI0MDQ2OCwxMzIxNjUyMjEs
+MjA3NTU4NzA5NywtODEyMDM5MjQwXX0=
 -->
