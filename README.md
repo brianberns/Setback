@@ -27,16 +27,14 @@ The second-strongest suit is included iff the difference between its strength an
 #### Bootstrap
 These keys are used when bootstrapping a score-sensitive model from a baseline model. Unlike the baseline keys, these keys are formatted using `/` characters, rather than by absolute position within the string, as follows:
 ```
-them-need/us-need/high-bid/num-bids/hand
+them-need/us-need/high-bid/high-bidder/num-bids/hand
 ```
 
 Where:
 * `them-need`: The number of points the other team needs to win, or `x` if the other team needs more than four points (i.e. can't win on this deal).
 * `us-need`: If the other team is ahead and needs four points or less then `!`, else `.`.
-* `high-bid`: The current high bid (`2`, `3`, or `4`) or `-1` if there is no current high bid.
-
-| Position | Name | Possible Values | Description |
-|--|--|--|--|
+* `high-bid`: The current high bid as an integer: `0`, `2`, `3`, or `4`.
+* `high-bidder`: 0-based index of the current high bidder, relative to the dealer (or `-1 if no current high bidder).
 
 ### Playout key
 #### Establish trump
@@ -77,7 +75,7 @@ Trailing dots (`.`) are trimmed from the key to save space.
 2. Copy `Baseline.strategy` into the `TrainBootstrap` project and then run the project to bootstrap a strategy profile (`Bootstrap.strategy`) that is optimized for score-aware bidding (e.g. by bidding more aggressively if the opposing team is close to winning the game). This requires less time and RAM. I recommend 20-30 million CFR iterations.
 3. Copy `Baseline.strategy` and `Bootstrap.strategy` into the `LoadDatabase` project, and then run the project to create a SQLite database that can be used to play Setback (via the `DatabasePlayer` module).
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMjE0NjU4ODI3NCw3ODkzOTEzMDUsNzAyNT
+eyJoaXN0b3J5IjpbLTk5ODQ2OTIyMCw3ODkzOTEzMDUsNzAyNT
 cxNTg5LDE1ODYxNTc1MzQsLTY4NjI0MDQ2OCwxMzIxNjUyMjEs
 MjA3NTU4NzA5NywtODEyMDM5MjQwXX0=
 -->
