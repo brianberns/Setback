@@ -37,13 +37,13 @@ let onGameFinish (dealer, gameScore) =
     gamesWon <- gamesWon + AbstractScore.forTeam iTeam 1
 
     let nGames = gamesWon.[0] + gamesWon.[1]
-    if nGames % 100 = 0 then
+    if nGames % 1000 = 0 then
         printfn $"{nGames}"
 
 [<EntryPoint>]
 let main argv =
     session.GameFinishEvent.Add(onGameFinish)
-    session.Run(10000)
+    session.Run(100000)
     printfn $"E+W: {gamesWon.[0]}"
     printfn $"N+S: {gamesWon.[1]}"
     0
