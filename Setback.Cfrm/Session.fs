@@ -2,9 +2,29 @@
 
 open System
 open System.ComponentModel
+open System.Reflection
 
 open PlayingCards
 open Setback
+
+module Random =
+
+    /// Saves the state of a random number generator.
+    let save (rng : Random) =
+        rng.GetType().GetFields(BindingFlags.NonPublic ||| BindingFlags.Instance)
+            |> Array.map (fun field ->
+                let value =
+                    match field.GetValue(rng) with
+                        | :? Array as array -> array.Clone()
+                        | value -> value
+                field, value)
+
+    /// Restores the state of a random number generator.
+    let restore state =
+        let rng = Random()
+        for (field : FieldInfo, value) in state do
+            field.SetValue(rng, value)
+        rng
 
 /// A game of Setback is a sequence of deals that ends when the
 /// leading team's score crosses a fixed threshold.
@@ -111,8 +131,8 @@ type Session
         trigger dealFinishEvent (dealer, deal, game.Score)
         game
 
-    /// Plays the given game.
-    let playGame dealer game =
+    /// Plays a game.
+    let playGame rng dealer =
 
             // play deals with rotating dealer
         let rec loop dealer game =
@@ -137,21 +157,28 @@ type Session
                 game |> loop dealer.Next
 
         trigger gameStartEvent ()
-        let dealer, score = game |> loop dealer
+        let dealer, score = Game.zero |> loop dealer
         trigger gameFinishEvent (dealer, score)
         dealer
 
-    /// Runs a session of the given number of games.
-    member __.Run(?nGamesOpt) =
+    /// Runs a session of the given number of duplicate game pairs.
+    member __.Run(?nGamePairsOpt) =
         let init =
-            nGamesOpt
+            nGamePairsOpt
                 |> Option.map Seq.init
                 |> Option.defaultValue Seq.initInfinite
         (Seat.South, init id)
             ||> Seq.fold (fun dealer _ ->
-                Game.zero
-                    |> playGame dealer
-                    |> Seat.next)
+
+                    // game 1: create a fresh series of decks
+                let state = Random.save rng
+                let _ = playGame rng dealer
+
+                    // game 2: repeat same series of decks with dealer shifted
+                let rng = Random.restore(state)
+                let dealer = playGame rng dealer.Next
+
+                dealer.Next)
             |> ignore
 
     /// A game has started.
