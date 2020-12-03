@@ -36,22 +36,29 @@ module AbstractHighBid =
     /// Applies setback penalty to the given deal score, if applicable.
     let finalizeDealScore (dealScore : AbstractScore) highBid =
 
-            // determine amount bid by auction-winning team
-        let iBidderTeam =
-            highBid.BidderIndex % Setback.numTeams
-        let nBid = int highBid.Bid
-        assert(nBid > 0)
+            // did anyone actually bid?
+        if highBid.Bid > Bid.Pass then
 
-            // apply penalty?
-        if dealScore.[iBidderTeam] < nBid then
-            AbstractScore [|
-                for iTeam = 0 to Setback.numTeams - 1 do
-                    if iTeam = iBidderTeam then
-                        yield -nBid
-                    else
-                        yield dealScore.[iTeam]
-            |]
-        else dealScore
+                // determine amount bid by auction-winning team
+            let iBidderTeam =
+                highBid.BidderIndex % Setback.numTeams
+            let nBid = int highBid.Bid
+            assert(nBid > 0)
+
+                // apply penalty?
+            if dealScore.[iBidderTeam] < nBid then
+                AbstractScore [|
+                    for iTeam = 0 to Setback.numTeams - 1 do
+                        if iTeam = iBidderTeam then
+                            yield -nBid
+                        else
+                            yield dealScore.[iTeam]
+                |]
+            else dealScore
+
+        else
+            assert(dealScore = AbstractScore.zero)
+            dealScore
 
     /// String representation of a high bid.
     let layout =

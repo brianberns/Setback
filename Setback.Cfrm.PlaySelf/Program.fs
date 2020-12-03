@@ -43,7 +43,7 @@ let onGameFinish (dealer, gameScore) =
 [<EntryPoint>]
 let main argv =
     session.GameFinishEvent.Add(onGameFinish)
-    session.Run(1000)
+    session.Run(10000)
     printfn $"E+W: {gamesWon.[0]}"
     printfn $"N+S: {gamesWon.[1]}"
     0
