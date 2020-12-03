@@ -294,3 +294,6 @@ type MainForm() as this =
         session.GameFinishEvent.Add(delayGameFinish)
         goButton.Click.Add(onGo)
         this.Load.Add(onLoad)
+
+            // enable logging
+        Log.create "BernsriteSetback.log" session

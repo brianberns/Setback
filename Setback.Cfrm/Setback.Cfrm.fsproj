@@ -27,6 +27,7 @@
     <Compile Include="BootstrapPlayer.fs" />
     <Compile Include="DatabasePlayer.fs" />
     <Compile Include="Session.fs" />
+    <Compile Include="Log.fs" />
   </ItemGroup>
 
   <ItemGroup>
