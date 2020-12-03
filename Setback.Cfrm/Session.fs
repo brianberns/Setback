@@ -45,6 +45,21 @@ module Game =
     /// A new game with no score.
     let zero = { Score = AbstractScore.zero }
 
+    /// Shifts from dealer-relative to absolute score.
+    let shiftScore (dealer : Seat) score =
+        let iDealerTeam =
+            int dealer % Setback.numTeams
+        let iAbsoluteTeam =
+            (Setback.numTeams - iDealerTeam) % Setback.numTeams
+        score |> AbstractScore.shift iAbsoluteTeam
+
+    /// Absolute index of the winning team in the given score, if
+    /// any.
+    let winningTeamIdxOpt dealer score =
+        score
+            |> shiftScore dealer
+            |> BootstrapGameState.winningTeamOpt
+
 /// Manages a series of games with the given players.
 type Session
     (playerMap : Map<_, _>,

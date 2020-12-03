@@ -38,7 +38,7 @@ module Log =
                 wtr.Flush()
             Printf.kfprintf finish wtr format
 
-        let onGameStart () =
+        let onGameStart _ =
             logn "Game start"
 
         let onDealStart (dealer, deal) =
@@ -48,23 +48,43 @@ module Log =
                 let hand = deal.UnplayedCards.[iSeat % Seat.numSeats]
                 logn $"{seat}: {Hand.toString hand}"
 
-        let onAuctionStart (leader : Seat) =
+        let onAuctionStart _ =
             logn ""
 
         let onBid (seat : Seat, bid : Bid, deal : AbstractOpenDeal) =
             logn $"{seat}: {bid}"
 
-        let onAuctionFinish () =
+        let onAuctionFinish _ =
             logn ""
 
-        let onPlay (seat : Seat, card : Card, deal : AbstractOpenDeal) =
+        let onPlay (seat : Seat, card : Card, _) =
             log $"{seat.Char}:{card.Rank.Char}{card.Suit.Char} "
 
-        let onTrickFinish () =
+        let onTrickFinish _ =
             logn ""
 
-        let onGameFinish (dealer, score) =
-            logn "over"
+        let onDealFinish (dealer : Seat, deal : AbstractOpenDeal, gameScore : AbstractScore) =
+
+            let dealScore =
+                deal
+                    |> AbstractOpenDeal.dealScore
+                    |> Game.shiftScore dealer
+            logn ""
+            logn "Deal points:"
+            logn $"   E+W: {dealScore.[0]}"
+            logn $"   N+S: {dealScore.[1]}"
+
+            let gameScore =
+                gameScore
+                    |> Game.shiftScore dealer
+            logn ""
+            logn "Game score:"
+            logn $"   E+W: {gameScore.[0]}"
+            logn $"   N+S: {gameScore.[1]}"
+
+        let onGameFinish (dealer : Seat, score) =
+            logn ""
+            logn "Game over"
 
         session.GameStartEvent.Add(onGameStart)
         session.DealStartEvent.Add(onDealStart)
@@ -73,4 +93,5 @@ module Log =
         session.AuctionFinishEvent.Add(onAuctionFinish)
         session.PlayEvent.Add(onPlay)
         session.TrickFinishEvent.Add(onTrickFinish)
+        session.DealFinishEvent.Add(onDealFinish)
         session.GameFinishEvent.Add(onGameFinish)
