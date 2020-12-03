@@ -26,21 +26,26 @@ module Hand =
 
 module Log =
 
+    /// Creates a log for the given session.
     let create path (session : Session) =
 
         let wtr = new StreamWriter(path : string)
 
+        /// Logs without newline.
         let log = fprintf wtr
 
+        /// Logs with newline.
         let logn format =
             let finish () =
                 wtr.WriteLine()
                 wtr.Flush()
             Printf.kfprintf finish wtr format
 
+        /// A game has started.
         let onGameStart _ =
             logn "Game start"
 
+        /// A deal has started.
         let onDealStart (dealer, deal) =
             logn ""
             for iSeat = 1 to Seat.numSeats do
@@ -48,22 +53,31 @@ module Log =
                 let hand = deal.UnplayedCards.[iSeat % Seat.numSeats]
                 logn $"{seat}: {Hand.toString hand}"
 
+        /// An auction has started.
         let onAuctionStart _ =
             logn ""
 
+        /// A bid has been made.
         let onBid (seat : Seat, bid : Bid, deal : AbstractOpenDeal) =
             logn $"{seat}: {bid}"
 
+        /// An auction has finished.
         let onAuctionFinish _ =
             logn ""
 
+        /// A card has been played.
         let onPlay (seat : Seat, card : Card, _) =
             log $"{seat.Char}:{card.Rank.Char}{card.Suit.Char} "
 
+        /// A trick has finished.
         let onTrickFinish _ =
             logn ""
 
-        let onDealFinish (dealer : Seat, deal : AbstractOpenDeal, gameScore : AbstractScore) =
+        /// A deal has finised.
+        let onDealFinish
+            (dealer : Seat,
+             deal : AbstractOpenDeal,
+             gameScore : AbstractScore) =
 
             let dealScore =
                 deal
@@ -82,10 +96,7 @@ module Log =
             logn $"   E+W: {gameScore.[0]}"
             logn $"   N+S: {gameScore.[1]}"
 
-        let onGameFinish (dealer : Seat, score) =
-            logn ""
-            logn "Game over"
-
+            // setup event handlers
         session.GameStartEvent.Add(onGameStart)
         session.DealStartEvent.Add(onDealStart)
         session.AuctionStartEvent.Add(onAuctionStart)
@@ -94,4 +105,3 @@ module Log =
         session.PlayEvent.Add(onPlay)
         session.TrickFinishEvent.Add(onTrickFinish)
         session.DealFinishEvent.Add(onDealFinish)
-        session.GameFinishEvent.Add(onGameFinish)
