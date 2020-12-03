@@ -271,9 +271,9 @@ type MainForm() as this =
         let rng = Random()
         Session(playerMap, rng, this)
 
-    /// Starts a session once form is loaded.
+    /// Runs the session once form is loaded.
     let onLoad _ =
-        async { session.Start() }
+        async { session.Run() }
             |> Async.Start
 
     do

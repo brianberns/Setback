@@ -29,7 +29,7 @@ module Game =
 type Session
     (playerMap : Map<_, _>,
     rng,
-    sync : ISynchronizeInvoke) =
+    ?syncOpt : ISynchronizeInvoke) =
 
         // initialize events raised by this object
     let gameStartEvent = Event<_>()
@@ -45,8 +45,11 @@ type Session
 
     /// Triggers the given event safely.
     let trigger (event : Event<_>) arg =
-        let del = Action (fun _ -> event.Trigger(arg))
-        sync.Invoke(del, Array.empty) |> ignore
+        match syncOpt with
+            | Some sync ->
+                let del = Action (fun _ -> event.Trigger(arg))
+                sync.Invoke(del, Array.empty) |> ignore
+            | None -> event.Trigger(arg)
 
     /// Answers the current player's seat.
     let getSeat dealer deal =
@@ -138,9 +141,13 @@ type Session
         trigger gameFinishEvent (dealer, score)
         dealer
 
-    /// Starts an infinite session. (Never returns.)
-    member __.Start() =
-        (Seat.South, Seq.initInfinite id)
+    /// Runs a session of the given number of games.
+    member __.Run(?nGamesOpt) =
+        let init =
+            nGamesOpt
+                |> Option.map Seq.init
+                |> Option.defaultValue Seq.initInfinite
+        (Seat.South, init id)
             ||> Seq.fold (fun dealer _ ->
                 Game.zero
                     |> playGame dealer

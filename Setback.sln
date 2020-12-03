@@ -24,6 +24,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Setback.Cfrm.PlayGui", "Setback.Cfrm.PlayGui\Setback.Cfrm.PlayGui.fsproj", "{77A43BFC-0792-4749-89CC-9322216C0437}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Setback.Cfrm.PlaySelf", "Setback.Cfrm.PlaySelf\Setback.Cfrm.PlaySelf.fsproj", "{0ACDD1BA-D5F2-4F3B-8913-1C4C95F0E689}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -96,6 +98,14 @@ Global
 		{77A43BFC-0792-4749-89CC-9322216C0437}.Release|Any CPU.Build.0 = Release|Any CPU
 		{77A43BFC-0792-4749-89CC-9322216C0437}.Release|x64.ActiveCfg = Release|x64
 		{77A43BFC-0792-4749-89CC-9322216C0437}.Release|x64.Build.0 = Release|x64
+		{0ACDD1BA-D5F2-4F3B-8913-1C4C95F0E689}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0ACDD1BA-D5F2-4F3B-8913-1C4C95F0E689}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0ACDD1BA-D5F2-4F3B-8913-1C4C95F0E689}.Debug|x64.ActiveCfg = Debug|x64
+		{0ACDD1BA-D5F2-4F3B-8913-1C4C95F0E689}.Debug|x64.Build.0 = Debug|x64
+		{0ACDD1BA-D5F2-4F3B-8913-1C4C95F0E689}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0ACDD1BA-D5F2-4F3B-8913-1C4C95F0E689}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0ACDD1BA-D5F2-4F3B-8913-1C4C95F0E689}.Release|x64.ActiveCfg = Release|x64
+		{0ACDD1BA-D5F2-4F3B-8913-1C4C95F0E689}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
