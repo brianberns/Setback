@@ -5,14 +5,14 @@ open Setback.Cfrm
 
 /// Session.
 let session =
-    let dbPlayerEW = DatabasePlayer.player "Setback50.db"
-    let dbPlayerNS = DatabasePlayer.player "Setback55.db"
+    let dbPlayerChampion = DatabasePlayer.player "Champion.db"
+    let dbPlayerChallenger = DatabasePlayer.player "Challenger.db"
     let playerMap =
         Map [
-            Seat.West, dbPlayerEW
-            Seat.North, dbPlayerNS
-            Seat.East, dbPlayerEW
-            Seat.South, dbPlayerNS
+            Seat.West, dbPlayerChampion
+            Seat.North, dbPlayerChallenger
+            Seat.East, dbPlayerChampion
+            Seat.South, dbPlayerChallenger
         ]
     let rng = Random(0)
     Session(playerMap, rng)
@@ -38,6 +38,6 @@ let onGameFinish (dealer, score) =
 let main argv =
     session.GameFinishEvent.Add(onGameFinish)
     session.Run(100000)
-    printfn $"E+W: {gamesWon.[0]}"
-    printfn $"N+S: {gamesWon.[1]}"
+    printfn $"Defending champion: {gamesWon.[0]}"
+    printfn $"Challenger: {gamesWon.[1]}"
     0
