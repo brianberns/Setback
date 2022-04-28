@@ -14,7 +14,7 @@ module.exports = {
     devServer: {
         publicPath: "/",
         contentBase: "./public",
-        port: 8080,
+        port: 8081,
         proxy: {
             '/IStudentApi/**': {
                 target: "http://127.0.0.1:5000",// assuming the backend server is hosted on port 5000 during development
