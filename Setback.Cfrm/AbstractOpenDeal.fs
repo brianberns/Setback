@@ -1,6 +1,8 @@
 ﻿namespace Setback.Cfrm
 
+#if !FABLE_COMPILER
 open System.Collections.Immutable
+#endif
 
 open PlayingCards
 open Setback

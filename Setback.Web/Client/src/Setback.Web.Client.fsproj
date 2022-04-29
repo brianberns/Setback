@@ -2,6 +2,12 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;FABLE_COMPILER</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>TRACE;FABLE_COMPILER</DefineConstants>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\..\..\PlayingCards\Prelude.fs" />
     <Compile Include="..\..\..\PlayingCards\Rank.fs" />
@@ -9,6 +15,25 @@
     <Compile Include="..\..\..\PlayingCards\Card.fs" />
     <Compile Include="..\..\..\PlayingCards\Deck.fs" />
     <Compile Include="..\..\..\PlayingCards\Hand.fs" />
+    <Compile Include="..\..\..\Setback\Rank.fs" />
+    <Compile Include="..\..\..\Setback\Bid.fs" />
+    <Compile Include="..\..\..\Setback\Seat.fs" />
+    <Compile Include="..\..\..\Setback\Setback.fs" />
+    <Compile Include="..\..\..\Setback.Cfrm\Prelude.fs" />
+    <Compile Include="..\..\..\Setback.Cfrm\SpanLayout.fs" />
+    <Compile Include="..\..\..\Setback.Cfrm\AbstractScore.fs" />
+    <Compile Include="..\..\..\Setback.Cfrm\AbstractHighBid.fs" />
+    <Compile Include="..\..\..\Setback.Cfrm\AbstractAuction.fs" />
+    <Compile Include="..\..\..\Setback.Cfrm\AbstractTrick.fs" />
+    <Compile Include="..\..\..\Setback.Cfrm\AbstractPlayoutHistory.fs" />
+    <Compile Include="..\..\..\Setback.Cfrm\AbstractPlayout.fs" />
+    <Compile Include="..\..\..\Setback.Cfrm\BidAction.fs" />
+    <Compile Include="..\..\..\Setback.Cfrm\LeadAction.fs" />
+    <Compile Include="..\..\..\Setback.Cfrm\FollowAction.fs" />
+    <Compile Include="..\..\..\Setback.Cfrm\PlayAction.fs" />
+    <Compile Include="..\..\..\Setback.Cfrm\DealAction.fs" />
+    <Compile Include="..\..\..\Setback.Cfrm\AbstractClosedDeal.fs" />
+    <Compile Include="..\..\..\Setback.Cfrm\AbstractOpenDeal.fs" />
     <Compile Include="..\..\Shared\SharedTypes.fs" />
     <Compile Include="App.fs" />
   </ItemGroup>

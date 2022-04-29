@@ -12,11 +12,13 @@ type SpanLayout<'t> =
         ChildPositions : (int * SpanLayout<'t>)[]
     }
 
+#if !FABLE_COMPILER
     /// Answers the slice of the given span that corresponds to
     /// the given child layout.
     member layout.Slice(iChild, span : Span<'t>) =
         let start, child = layout.ChildPositions.[iChild]
         span.Slice(start, child.Length)
+#endif
 
 module SpanLayout =
 

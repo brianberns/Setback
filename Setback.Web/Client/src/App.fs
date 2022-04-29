@@ -3,7 +3,10 @@ module App
 open System
 open Browser.Dom
 open Fable.Remoting.Client
+
 open PlayingCards
+open Setback
+open Setback.Cfrm
 open Setback.Web.Shared
 
 let setbackApi =
@@ -15,9 +18,10 @@ let myButton = document.querySelector(".my-button") :?> Browser.Types.HTMLButton
 let myList = document.querySelector(".my-list") :?> Browser.Types.HTMLUListElement
 
 let rng = Random()
-let deck = Deck.shuffle rng
-for card in deck.Cards do
-    console.log(card.String)
+let deal =
+    Deck.shuffle rng
+        |> AbstractOpenDeal.fromDeck Seat.South
+console.log(deal)
 
 // Register our listener
 myButton.onclick <- fun _ ->

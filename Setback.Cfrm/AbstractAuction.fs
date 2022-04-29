@@ -68,6 +68,7 @@ module AbstractAuction =
                 HighBid = highBid
         }
 
+#if !FABLE_COMPILER
     /// String representation of an auction.
     let layout =
         [|
@@ -86,3 +87,4 @@ module AbstractAuction =
                 && currentBidderIndex auction = 0 then 'D'   // dealer can override?
             else highBid |> int |> Char.fromDigit
         layout.Slice(0, span).Fill(cBid)
+#endif

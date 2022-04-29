@@ -60,6 +60,7 @@ module AbstractHighBid =
             assert(dealScore = AbstractScore.zero)
             dealScore
 
+#if !FABLE_COMPILER
     /// String representation of a high bid.
     let layout =
         [|
@@ -80,3 +81,4 @@ module AbstractHighBid =
             // bid
         let cBid = highBid.Bid |> int |> Char.fromDigit
         layout.Slice(1, span).Fill(cBid)
+#endif

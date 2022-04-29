@@ -1,7 +1,9 @@
 ﻿namespace Setback.Cfrm
 
+#if !FABLE_COMPILER
 open System
 open System.Collections.Immutable
+#endif
 
 open PlayingCards
 open Setback
@@ -38,6 +40,7 @@ module AbstractTrickPlay =
             IsTrump = (card.Suit = trump)
         }
 
+#if !FABLE_COMPILER
     /// String representation of a trick play.
     let layout =
         [|
@@ -74,6 +77,7 @@ module AbstractTrickPlay =
             if play.IsTrump then 't'
             else 'x'
         layout.Slice(1, span).Fill(cSuit)
+#endif
 
 /// Abstract view of the high play in a trick.
 type AbstractHighPlay =
@@ -203,6 +207,7 @@ module AbstractTrick =
             | Some highPlay -> highPlay.PlayerIndex
             | None -> failwith "Unexpected"
 
+#if !FABLE_COMPILER
     module private Plays =
 
         /// String representation of trick plays.
@@ -261,3 +266,4 @@ module AbstractTrick =
                     Char.fromDigit iTrickPlayer)
                 |> Option.defaultValue '.'
         layout.Slice(1, span).Fill(cWinner)
+#endif

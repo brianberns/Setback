@@ -36,6 +36,7 @@ module PlayAction =
         | Follow action ->
             FollowAction.getPlay hand handLowTrumpRankOpt playout action
 
+#if !FABLE_COMPILER
     /// String representation of a play action.
     let layout : SpanLayout<char> =
         assert(LeadAction.layout.Length = FollowAction.layout.Length)
@@ -45,3 +46,4 @@ module PlayAction =
     let copyTo span = function
         | Lead action -> LeadAction.copyTo span action
         | Follow action -> FollowAction.copyTo span action
+#endif
