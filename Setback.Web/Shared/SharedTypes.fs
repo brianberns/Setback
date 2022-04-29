@@ -1,4 +1,4 @@
-﻿namespace Setback.Web.Shared
+﻿namespace Setback.Web
 
 type ISetbackApi =
     {

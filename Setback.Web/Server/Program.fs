@@ -7,7 +7,7 @@ open Suave.Operators
 open Fable.Remoting.Server
 open Fable.Remoting.Suave
 
-open Setback.Web.Shared
+open Setback.Web
 
 module Program =
 
@@ -15,9 +15,7 @@ module Program =
         let getActionIndex =
             Setback.Cfrm.DatabasePlayer.init "Setback.db"
         {
-            GetActionIndex =
-                fun key ->
-                    async.Return(getActionIndex key)
+            GetActionIndex = getActionIndex >> async.Return
         }
 
     let logger = Targets.create LogLevel.Info [||]
