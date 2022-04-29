@@ -1,13 +1,6 @@
-﻿namespace Shared
+﻿namespace Setback.Web.Shared
 
-type Student =
+type ISetbackApi =
     {
-        Name : string
-        Age : int
-    }
-
-type IStudentApi =
-    {
-        StudentByName : string -> Async<Option<Student>>
-        AllStudents : unit -> Async<List<Student>>
+        GetActionIndex : string (*key*) -> Async<Option<int>> (*action index*)
     }

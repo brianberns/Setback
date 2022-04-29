@@ -7,38 +7,28 @@ open Suave.Operators
 open Fable.Remoting.Server
 open Fable.Remoting.Suave
 
-open Shared
+open Setback.Web.Shared
 
 module Program =
 
-    let getStudents() =
-      async {
-        return [
-            { Name = "Mike";  Age = 23; }
-            { Name = "John";  Age = 22; }
-            { Name = "Diana"; Age = 22; }
-        ]
-      }
-
-    let findStudentByName name =
-      async {
-        let! students = getStudents()
-        let student = List.tryFind (fun student -> student.Name = name) students
-        return student
-      }
-
-    let studentApi : IStudentApi =
+    let setbackApi =
+        let getActionIndex =
+            Setback.Cfrm.DatabasePlayer.init "Setback.db"
         {
-            StudentByName = findStudentByName
-            AllStudents = getStudents
+            GetActionIndex =
+                fun key ->
+                    async.Return(getActionIndex key)
         }
 
     let logger = Targets.create LogLevel.Info [||]
     let webApp =
         (Remoting.createApi()
-            |> Remoting.fromValue studentApi
+            |> Remoting.fromValue setbackApi
             |> Remoting.buildWebPart)
-            >=> Filters.logWithLevelStructured LogLevel.Info logger Filters.logFormatStructured
+            >=> Filters.logWithLevelStructured
+                LogLevel.Info
+                logger
+                Filters.logFormatStructured
 
     // start the web server
     let config =

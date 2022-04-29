@@ -9,8 +9,8 @@ open Setback
 /// Load and run player from database.
 module DatabasePlayer =
 
-    /// Database player.
-    let player databasePath =
+    /// Prepares to get the action index for any given key.
+    let init databasePath =
 
         /// Database connection.
         let conn = 
@@ -32,11 +32,20 @@ module DatabasePlayer =
             selectActionIndexCmd.Parameters.Add("Key", DbType.String)
 
         /// Finds the action index for the given key, if any.
-        let getActionIndex key =
+        let getActionIndex (key : string) =
             keyParam.Value <- key
             let value = selectActionIndexCmd.ExecuteScalar()
             if isNull value then None
             else value :?> int64 |> int |> Some
+
+        getActionIndex
+
+    /// Database player.
+    let player databasePath =
+
+        /// Finds the action index for the given key, if any.
+        let getActionIndex =
+            init databasePath
 
         /// Makes a bid in the given deal.
         let makeBid score deal =

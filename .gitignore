@@ -344,3 +344,4 @@ healthchecksdb
 /Setback.Cfrm.TrainBootstrap/Baseline.strategy
 /Setback.Cfrm.PlayGui/Setback*.db
 /Setback.Cfrm.PlaySelf/*.db
+/Setback.Web/Server/Setback.db
