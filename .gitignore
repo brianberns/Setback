@@ -345,3 +345,6 @@ healthchecksdb
 /Setback.Cfrm.PlayGui/Setback*.db
 /Setback.Cfrm.PlaySelf/*.db
 /Setback.Web/Server/Setback.db
+
+# FABLE output
+*.fs.js
