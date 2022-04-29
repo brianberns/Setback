@@ -1,9 +1,10 @@
-import { toIterator, compare, min, getEnumerator } from "../Setback.Web/Client/src/.fable/fable-library.3.2.9/Util.js";
+import { toIterator, stringHash, compare, min, getEnumerator } from "../Setback.Web/Client/src/.fable/fable-library.3.2.9/Util.js";
 import { some } from "../Setback.Web/Client/src/.fable/fable-library.3.2.9/Option.js";
-import { class_type } from "../Setback.Web/Client/src/.fable/fable-library.3.2.9/Reflection.js";
-import { toArray } from "../Setback.Web/Client/src/.fable/fable-library.3.2.9/Seq.js";
+import { union_type, lambda_type, unit_type, class_type } from "../Setback.Web/Client/src/.fable/fable-library.3.2.9/Reflection.js";
+import { Union } from "../Setback.Web/Client/src/.fable/fable-library.3.2.9/Types.js";
+import { addRangeInPlace, replicate } from "../Setback.Web/Client/src/.fable/fable-library.3.2.9/Array.js";
+import { toArray, contains } from "../Setback.Web/Client/src/.fable/fable-library.3.2.9/Seq.js";
 import { Array_clone } from "../PlayingCards/Prelude.fs.js";
-import { addRangeInPlace } from "../Setback.Web/Client/src/.fable/fable-library.3.2.9/Array.js";
 
 export function Seq_tryMin(items) {
     const e = getEnumerator(items);
@@ -73,6 +74,35 @@ export function Span$1__Fill_2B595(_, item) {
     for (let i = 0; i <= _.array.length; i++) {
         _.array[i] = item;
     }
+}
+
+export class SpanAction$2 extends Union {
+    constructor(tag, ...fields) {
+        super();
+        this.tag = (tag | 0);
+        this.fields = fields;
+    }
+    cases() {
+        return ["SpanAction"];
+    }
+}
+
+export function SpanAction$2$reflection(gen0, gen1) {
+    return union_type("Setback.Cfrm.SpanAction`2", [gen0, gen1], SpanAction$2, () => [[["Item", lambda_type(Span$1$reflection(gen0), lambda_type(gen1, unit_type))]]]);
+}
+
+export function System_String__String_Create_Static_43E13F6(length, state, _arg1) {
+    const action = _arg1.fields[0];
+    const array = replicate(length, "?");
+    action(Span$1_$ctor_B867673(array), state);
+    return array.join('');
+}
+
+export function System_String__String_Contains_244C7CD6(str, c) {
+    return contains(c, str.split(""), {
+        Equals: (x, y) => (x === y),
+        GetHashCode: (x) => stringHash(x),
+    });
 }
 
 export class ImmutableArray$1 {

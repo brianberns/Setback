@@ -48,6 +48,22 @@ type Span<'t>(array : 't[]) =
         for i = 0 to array.Length do
             array.[i] <- item
 
+type SpanAction<'t, 'targ> =
+    SpanAction of (Span<'t> -> 'targ -> unit)
+
+[<AutoOpen>]
+module StringExt =
+
+    type System.String with
+
+        static member Create(length, state, SpanAction action) =
+            let array = Array.replicate length '?'
+            action (Span array) state
+            System.String(array)
+
+        member str.Contains(c) =
+            str |> Seq.contains c
+
 open System.Collections
 open System.Collections.Generic
 

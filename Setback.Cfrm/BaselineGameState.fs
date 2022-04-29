@@ -1,9 +1,11 @@
 ﻿namespace Setback.Cfrm
 
 open System
-open System.Buffers
 
+#if !FABLE_COMPILER
+open System.Buffers
 open Cfrm
+#endif
 
 open PlayingCards
 open Setback    
@@ -207,6 +209,7 @@ module BaselineGameState =
         assert(str.Contains('?') |> not)
         str.TrimEnd('.')   // shorten key to save space if possbile
 
+#if !FABLE_COMPILER
 /// State of a Setback game for counterfactual regret minimization.
 /// Score-insensitive.
 type BaselineGameState(openDeal : AbstractOpenDeal) =
@@ -265,3 +268,4 @@ type BaselineGameState(openDeal : AbstractOpenDeal) =
             |> AbstractOpenDeal.addAction action
             |> BaselineGameState
             :> _
+#endif

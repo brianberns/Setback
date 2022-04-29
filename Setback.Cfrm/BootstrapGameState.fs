@@ -1,9 +1,11 @@
 ﻿namespace Setback.Cfrm
 
 open System
-open System.Buffers
 
+#if !FABLE_COMPILER
+open System.Buffers
 open Cfrm
+#endif
 
 open PlayingCards
 open Setback
@@ -96,6 +98,7 @@ module BootstrapGameState =
             (AbstractAuction.toAbbr auction)
             (Hand.toAbbr hand)
 
+#if !FABLE_COMPILER
     /// Plays a card in the given deal using the given baseline strategy
     /// profile.
     let play (baselineProfile : StrategyProfile) deal =
@@ -268,3 +271,4 @@ type BootstrapGameState
             else openDeal, gameScore
 
         BootstrapGameState(baselineProfile, openDeal, gameScore) :> _
+#endif
