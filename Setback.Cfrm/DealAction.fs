@@ -9,7 +9,6 @@ type DealAction =
     /// Playout action
     | DealPlayAction of PlayAction
 
-#if !FABLE_COMPILER
 module DealAction =
 
     /// String representation of a deal action.
@@ -20,4 +19,3 @@ module DealAction =
     let copyTo span = function
         | DealBidAction _ -> failwith "Unexpected"   // bid actions never require explicit representation
         | DealPlayAction action -> PlayAction.copyTo span action
-#endif

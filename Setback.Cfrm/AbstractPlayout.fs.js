@@ -1,11 +1,13 @@
 import { Record } from "../Setback.Web/Client/src/.fable/fable-library.3.2.9/Types.js";
 import { AbstractHighBid$reflection } from "./AbstractHighBid.fs.js";
 import { record_type, option_type, enum_type, int32_type } from "../Setback.Web/Client/src/.fable/fable-library.3.2.9/Reflection.js";
-import { AbstractPlayoutHistoryModule_addTrick, AbstractPlayoutHistoryModule_isComplete, AbstractPlayoutHistoryModule_empty, AbstractPlayoutHistory$reflection } from "./AbstractPlayoutHistory.fs.js";
-import { AbstractTrickModule_highPlayerIndex, AbstractTrickModule_isComplete, AbstractTrickModule_addPlay, AbstractTrick__get_NumPlays, AbstractTrickModule_currentPlayerIndex, AbstractTrickModule_create, AbstractTrick$reflection } from "./AbstractTrick.fs.js";
+import { AbstractPlayoutHistoryModule_copyTo, AbstractPlayoutHistoryModule_layout, AbstractPlayoutHistoryModule_addTrick, AbstractPlayoutHistoryModule_isComplete, AbstractPlayoutHistoryModule_empty, AbstractPlayoutHistory$reflection } from "./AbstractPlayoutHistory.fs.js";
+import { AbstractTrickModule_copyTo, AbstractTrickModule_layout, AbstractTrickModule_highPlayerIndex, AbstractTrickModule_isComplete, AbstractTrickModule_addPlay, AbstractTrick__get_NumPlays, AbstractTrickModule_currentPlayerIndex, AbstractTrickModule_create, AbstractTrick$reflection } from "./AbstractTrick.fs.js";
 import { where, exists } from "../Setback.Web/Client/src/.fable/fable-library.3.2.9/Seq.js";
 import { equals } from "../Setback.Web/Client/src/.fable/fable-library.3.2.9/Util.js";
 import { map, defaultArg } from "../Setback.Web/Client/src/.fable/fable-library.3.2.9/Option.js";
+import { SpanLayout$1__Slice_309E3581, SpanLayout_combine } from "./SpanLayout.fs.js";
+import { Span$1__get_Length } from "./Prelude.fs.js";
 
 export class AbstractPlayout extends Record {
     constructor(HighBid, TrumpOpt, History, CurrentTrick) {
@@ -100,5 +102,21 @@ export function AbstractPlayoutModule_addPlay(card, playout) {
         curTrick = trick_1;
     }
     return new AbstractPlayout(playout.HighBid, trump, history_1, curTrick);
+}
+
+export const AbstractPlayoutModule_layout = SpanLayout_combine([AbstractPlayoutHistoryModule_layout, AbstractTrickModule_layout]);
+
+export function AbstractPlayoutModule_copyTo(span, handLowTrumpRankOpt, playout) {
+    if (!(!AbstractPlayoutModule_isComplete(playout))) {
+        debugger;
+    }
+    if (!(Span$1__get_Length(span) === AbstractPlayoutModule_layout.Length)) {
+        debugger;
+    }
+    const trick = playout.CurrentTrick;
+    const slice = SpanLayout$1__Slice_309E3581(AbstractPlayoutModule_layout, 0, span);
+    AbstractPlayoutHistoryModule_copyTo(slice, handLowTrumpRankOpt, trick, playout.History);
+    const slice_1 = SpanLayout$1__Slice_309E3581(AbstractPlayoutModule_layout, 1, span);
+    AbstractTrickModule_copyTo(slice_1, handLowTrumpRankOpt, trick);
 }
 

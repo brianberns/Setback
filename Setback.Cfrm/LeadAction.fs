@@ -175,7 +175,6 @@ module LeadAction =
                             |> Seq.minBy (fun card -> card.Rank)
                     | _ -> failwith "Unexpected"
 
-#if !FABLE_COMPILER
     /// String representation of a follow action.
     let layout =
         [|
@@ -205,4 +204,3 @@ module LeadAction =
             | LeadWeak ->
                 slice0.Fill('W')
                 slice1.Fill('.')
-#endif

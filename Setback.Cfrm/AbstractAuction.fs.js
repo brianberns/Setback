@@ -4,6 +4,8 @@ import { AbstractHighBidModule_create, AbstractHighBidModule_none, AbstractHighB
 import { SeatModule_numSeats } from "../Setback/Seat.fs.js";
 import { contains } from "../Setback.Web/Client/src/.fable/fable-library.3.2.9/Seq.js";
 import { numberHash } from "../Setback.Web/Client/src/.fable/fable-library.3.2.9/Util.js";
+import { SpanLayout$1__Slice_309E3581, SpanLayout_ofLength, SpanLayout_combine } from "./SpanLayout.fs.js";
+import { Span$1__Fill_2B595, Char_fromDigit, Span$1__get_Length } from "./Prelude.fs.js";
 
 export class AbstractAuction extends Record {
     constructor(NumBids, HighBid) {
@@ -87,5 +89,20 @@ export function AbstractAuctionModule_addBid(bid, auction) {
         highBid = AbstractHighBidModule_create(iBidder, bid);
     }
     return new AbstractAuction(auction.NumBids + 1, highBid);
+}
+
+export const AbstractAuctionModule_layout = SpanLayout_combine([SpanLayout_ofLength(1)]);
+
+export function AbstractAuctionModule_copyTo(span, auction) {
+    if (!(!AbstractAuctionModule_isComplete(auction))) {
+        debugger;
+    }
+    if (!(Span$1__get_Length(span) === AbstractAuctionModule_layout.Length)) {
+        debugger;
+    }
+    let cBid;
+    const highBid = auction.HighBid.Bid | 0;
+    cBid = (((highBid === 4) ? (AbstractAuctionModule_currentBidderIndex(auction) === 0) : false) ? "D" : Char_fromDigit(highBid));
+    Span$1__Fill_2B595(SpanLayout$1__Slice_309E3581(AbstractAuctionModule_layout, 0, span), cBid);
 }
 

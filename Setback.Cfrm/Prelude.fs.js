@@ -43,6 +43,38 @@ export function Char_fromHexDigit(digit) {
     return "0123456789ABCDEF"[digit];
 }
 
+export class Span$1 {
+    constructor(array) {
+        this.array = array;
+    }
+}
+
+export function Span$1$reflection(gen0) {
+    return class_type("Setback.Cfrm.Span`1", [gen0], Span$1);
+}
+
+export function Span$1_$ctor_B867673(array) {
+    return new Span$1(array);
+}
+
+export function Span$1__get_Length(_) {
+    return _.array.length;
+}
+
+export function Span$1__Slice_Z524259A4(_, start) {
+    return Span$1_$ctor_B867673(_.array.slice(start, _.array.length));
+}
+
+export function Span$1__Slice_Z37302880(_, start, length) {
+    return Span$1_$ctor_B867673(_.array.slice(start, ((start + length) - 1) + 1));
+}
+
+export function Span$1__Fill_2B595(_, item) {
+    for (let i = 0; i <= _.array.length; i++) {
+        _.array[i] = item;
+    }
+}
+
 export class ImmutableArray$1 {
     constructor(items) {
         this.items = items;

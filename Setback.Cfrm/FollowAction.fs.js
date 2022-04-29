@@ -8,6 +8,9 @@ import { contains, find, minBy, where, maxBy, map as map_1, sort, toArray } from
 import { distinct } from "../Setback.Web/Client/src/.fable/fable-library.3.2.9/Seq2.js";
 import { AbstractPlayoutModule_legalPlays } from "./AbstractPlayout.fs.js";
 import { Card_$ctor_Z106B7333 } from "../PlayingCards/Card.fs.js";
+import { SpanLayout$1__Slice_309E3581, SpanLayout_ofLength, SpanLayout_combine } from "./SpanLayout.fs.js";
+import { Span$1__Fill_2B595, Char_fromDigit, Span$1__get_Length } from "./Prelude.fs.js";
+import { PlayingCards_Rank__Rank_get_Char } from "../PlayingCards/Rank.fs.js";
 
 export class FollowAction extends Union {
     constructor(tag, ...fields) {
@@ -246,6 +249,71 @@ export function FollowActionModule_getPlay(hand, handLowTrumpRankOpt, playout, a
         }
         case 1: {
             throw (new Error("Unexpected"));
+        }
+    }
+}
+
+export const FollowActionModule_layout = SpanLayout_combine([SpanLayout_ofLength(1), SpanLayout_ofLength(1)]);
+
+export function FollowActionModule_copyTo(span, action) {
+    if (!(Span$1__get_Length(span) === FollowActionModule_layout.Length)) {
+        debugger;
+    }
+    const toChar = (gamePoints) => {
+        if (!((gamePoints >= 0) ? (gamePoints <= 10) : false)) {
+            debugger;
+        }
+        if (gamePoints === 10) {
+            return "T";
+        }
+        else {
+            return Char_fromDigit(gamePoints);
+        }
+    };
+    const slice0 = SpanLayout$1__Slice_309E3581(FollowActionModule_layout, 0, span);
+    const slice1 = SpanLayout$1__Slice_309E3581(FollowActionModule_layout, 1, span);
+    switch (action.tag) {
+        case 1: {
+            Span$1__Fill_2B595(slice0, "W");
+            Span$1__Fill_2B595(slice1, "x");
+            break;
+        }
+        case 2: {
+            Span$1__Fill_2B595(slice0, "L");
+            Span$1__Fill_2B595(slice1, "x");
+            break;
+        }
+        case 3: {
+            const gamePoints_1 = action.fields[0] | 0;
+            Span$1__Fill_2B595(slice0, "w");
+            Span$1__Fill_2B595(slice1, toChar(gamePoints_1));
+            break;
+        }
+        case 4: {
+            const gamePoints_2 = action.fields[0] | 0;
+            Span$1__Fill_2B595(slice0, "l");
+            Span$1__Fill_2B595(slice1, toChar(gamePoints_2));
+            break;
+        }
+        case 5: {
+            Span$1__Fill_2B595(slice0, "N");
+            Span$1__Fill_2B595(slice1, ".");
+            break;
+        }
+        case 6: {
+            Span$1__Fill_2B595(slice0, "G");
+            Span$1__Fill_2B595(slice1, ".");
+            break;
+        }
+        case 7: {
+            Span$1__Fill_2B595(slice0, "D");
+            Span$1__Fill_2B595(slice1, ".");
+            break;
+        }
+        default: {
+            const rank = action.fields[0] | 0;
+            Span$1__Fill_2B595(slice0, "T");
+            Span$1__Fill_2B595(slice1, PlayingCards_Rank__Rank_get_Char(rank));
         }
     }
 }

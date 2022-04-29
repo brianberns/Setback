@@ -114,7 +114,6 @@ module AbstractPlayout =
                 CurrentTrick = curTrick
         }
 
-#if !FABLE_COMPILER
     /// String representation of a playout.
     let layout =
         [|
@@ -142,4 +141,3 @@ module AbstractPlayout =
             slice
             handLowTrumpRankOpt
             trick
-#endif

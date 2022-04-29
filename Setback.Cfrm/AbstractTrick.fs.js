@@ -1,10 +1,14 @@
 import { compare, max, comparePrimitives, min } from "../Setback.Web/Client/src/.fable/fable-library.3.2.9/Util.js";
 import { Record } from "../Setback.Web/Client/src/.fable/fable-library.3.2.9/Types.js";
 import { option_type, record_type, bool_type, enum_type, int32_type } from "../Setback.Web/Client/src/.fable/fable-library.3.2.9/Reflection.js";
+import { SpanLayout$1__Slice_309E3581, SpanLayout_ofLength, SpanLayout_combine } from "./SpanLayout.fs.js";
+import { Char_fromDigit, Span$1__Slice_Z524259A4, ImmutableArray$1__Item_Z524259A4, ImmutableArrayBuilder$1__ToImmutable, ImmutableArrayBuilder$1__Add_2B595, ImmutableArrayBuilder$1__AddRange_BB573A, ImmutableArray_CreateBuilder_Z524259A4, ImmutableArray$1_get_Empty, ImmutableArray$1__get_Length, ImmutableArray$1$reflection, Span$1__Fill_2B595, Span$1__get_Length } from "./Prelude.fs.js";
+import { PlayingCards_Rank__Rank_get_GamePoints } from "../Setback/Rank.fs.js";
+import { map, defaultArg } from "../Setback.Web/Client/src/.fable/fable-library.3.2.9/Option.js";
+import { PlayingCards_Rank__Rank_get_Char } from "../PlayingCards/Rank.fs.js";
 import { Card$reflection } from "../PlayingCards/Card.fs.js";
 import { SeatModule_numSeats } from "../Setback/Seat.fs.js";
-import { ImmutableArrayBuilder$1__ToImmutable, ImmutableArrayBuilder$1__Add_2B595, ImmutableArrayBuilder$1__AddRange_BB573A, ImmutableArray_CreateBuilder_Z524259A4, ImmutableArray$1_get_Empty, ImmutableArray$1__get_Length, ImmutableArray$1$reflection } from "./Prelude.fs.js";
-import { map, defaultArg } from "../Setback.Web/Client/src/.fable/fable-library.3.2.9/Option.js";
+import { replicate } from "../Setback.Web/Client/src/.fable/fable-library.3.2.9/Array.js";
 
 export function Rank_lower(rankOptA, rankOptB) {
     const matchValue = [rankOptA, rankOptB];
@@ -46,6 +50,20 @@ export function AbstractTrickPlay$reflection() {
 
 export function AbstractTrickPlayModule_create(trump, card) {
     return new AbstractTrickPlay(card.Rank, card.Suit === trump);
+}
+
+export const AbstractTrickPlayModule_layout = SpanLayout_combine([SpanLayout_ofLength(1), SpanLayout_ofLength(1)]);
+
+export function AbstractTrickPlayModule_copyTo(span, lowTrumpRankOpt, play) {
+    if (!(Span$1__get_Length(span) === AbstractTrickPlayModule_layout.Length)) {
+        debugger;
+    }
+    let cRank;
+    const isSignificant = (PlayingCards_Rank__Rank_get_GamePoints(play.Rank) > 0) ? true : ((play.IsTrump ? (play.Rank <= 5) : false) ? defaultArg(map((lowTrumpRank) => (play.Rank <= lowTrumpRank), lowTrumpRankOpt), false) : false);
+    cRank = (isSignificant ? PlayingCards_Rank__Rank_get_Char(play.Rank) : "x");
+    Span$1__Fill_2B595(SpanLayout$1__Slice_309E3581(AbstractTrickPlayModule_layout, 0, span), cRank);
+    const cSuit = play.IsTrump ? "t" : "x";
+    Span$1__Fill_2B595(SpanLayout$1__Slice_309E3581(AbstractTrickPlayModule_layout, 1, span), cSuit);
 }
 
 export class AbstractHighPlay extends Record {
@@ -127,5 +145,35 @@ export function AbstractTrickModule_highPlayerIndex(trick) {
         const highPlay = matchValue;
         return highPlay.PlayerIndex | 0;
     }
+}
+
+const AbstractTrickModule_Plays_layout = SpanLayout_combine(replicate(SeatModule_numSeats - 1, AbstractTrickPlayModule_layout));
+
+function AbstractTrickModule_Plays_copyTo(span, lowTrumpRankOpt, plays) {
+    for (let iPlay = 0; iPlay <= (ImmutableArray$1__get_Length(plays) - 1); iPlay++) {
+        const play = ImmutableArray$1__Item_Z524259A4(plays, iPlay);
+        const slice = SpanLayout$1__Slice_309E3581(AbstractTrickModule_Plays_layout, iPlay, span);
+        AbstractTrickPlayModule_copyTo(slice, lowTrumpRankOpt, play);
+    }
+    Span$1__Fill_2B595(Span$1__Slice_Z524259A4(span, ImmutableArray$1__get_Length(plays) * AbstractTrickPlayModule_layout.Length), ".");
+}
+
+export const AbstractTrickModule_layout = SpanLayout_combine([AbstractTrickModule_Plays_layout, SpanLayout_ofLength(1)]);
+
+export function AbstractTrickModule_copyTo(span, handLowTrumpRankOpt, trick) {
+    if (!(!AbstractTrickModule_isComplete(trick))) {
+        debugger;
+    }
+    if (!(Span$1__get_Length(span) === AbstractTrickModule_layout.Length)) {
+        debugger;
+    }
+    const slice = SpanLayout$1__Slice_309E3581(AbstractTrickModule_layout, 0, span);
+    const lowTrumpRankOpt = Rank_lower(trick.LowTrumpRankOpt, handLowTrumpRankOpt);
+    AbstractTrickModule_Plays_copyTo(slice, lowTrumpRankOpt, trick.Plays);
+    const cWinner = defaultArg(map((highPlay) => {
+        const iTrickPlayer = (((highPlay.PlayerIndex - trick.LeaderIndex) + SeatModule_numSeats) % SeatModule_numSeats) | 0;
+        return Char_fromDigit(iTrickPlayer);
+    }, trick.HighPlayOpt), ".");
+    Span$1__Fill_2B595(SpanLayout$1__Slice_309E3581(AbstractTrickModule_layout, 1, span), cWinner);
 }
 

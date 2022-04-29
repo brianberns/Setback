@@ -131,7 +131,6 @@ module AbstractPlayoutHistory =
                         else acc.TrumpVoids
                 })
 
-#if !FABLE_COMPILER
     /// String representation of a playout history.
     let layout =
         [|
@@ -207,4 +206,3 @@ module AbstractPlayoutHistory =
                     acc + (1 <<< iPlayer))
                 |> Char.fromHexDigit
         layout.Slice(4, span).Fill(cPlayers)
-#endif

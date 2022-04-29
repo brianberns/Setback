@@ -5,11 +5,14 @@ import { compareArrays, comparePrimitives, min, safeHash, equals, compare } from
 import { PlayingCards_Rank__Rank_get_GamePoints } from "../Setback/Rank.fs.js";
 import { last, map } from "../Setback.Web/Client/src/.fable/fable-library.3.2.9/Array.js";
 import { BidActionModule_chooseTrumpRanks } from "./BidAction.fs.js";
-import { map as map_1 } from "../Setback.Web/Client/src/.fable/fable-library.3.2.9/Option.js";
+import { defaultArg, map as map_1 } from "../Setback.Web/Client/src/.fable/fable-library.3.2.9/Option.js";
 import { minBy, contains, where, maxBy, pairwise, forAll, choose, sort, toArray } from "../Setback.Web/Client/src/.fable/fable-library.3.2.9/Seq.js";
 import { distinct } from "../Setback.Web/Client/src/.fable/fable-library.3.2.9/Seq2.js";
 import { AbstractPlayoutModule_legalPlays } from "./AbstractPlayout.fs.js";
 import { Card_$ctor_Z106B7333 } from "../PlayingCards/Card.fs.js";
+import { SpanLayout$1__Slice_309E3581, SpanLayout_ofLength, SpanLayout_combine } from "./SpanLayout.fs.js";
+import { Char_fromDigit, Span$1__Fill_2B595, Span$1__get_Length } from "./Prelude.fs.js";
+import { PlayingCards_Rank__Rank_get_Char } from "../PlayingCards/Rank.fs.js";
 
 export class LeadAction extends Union {
     constructor(tag, ...fields) {
@@ -182,6 +185,40 @@ export function LeadActionModule_getPlay(hand, handLowTrumpRankOpt, playout, act
         }
         else {
             throw (new Error("Unexpected"));
+        }
+    }
+}
+
+export const LeadActionModule_layout = SpanLayout_combine([SpanLayout_ofLength(1), SpanLayout_ofLength(1)]);
+
+export function LeadActionModule_copyTo(span, action) {
+    if (!(Span$1__get_Length(span) === LeadActionModule_layout.Length)) {
+        debugger;
+    }
+    const slice0 = SpanLayout$1__Slice_309E3581(LeadActionModule_layout, 0, span);
+    const slice1 = SpanLayout$1__Slice_309E3581(LeadActionModule_layout, 1, span);
+    switch (action.tag) {
+        case 1: {
+            const rankOpt = action.fields[0];
+            Span$1__Fill_2B595(slice0, "T");
+            const cRank = defaultArg(map_1((rank) => PlayingCards_Rank__Rank_get_Char(rank), rankOpt), "x");
+            Span$1__Fill_2B595(slice1, cRank);
+            break;
+        }
+        case 2: {
+            Span$1__Fill_2B595(slice0, "S");
+            Span$1__Fill_2B595(slice1, ".");
+            break;
+        }
+        case 3: {
+            Span$1__Fill_2B595(slice0, "W");
+            Span$1__Fill_2B595(slice1, ".");
+            break;
+        }
+        default: {
+            const iSuit = action.fields[0] | 0;
+            Span$1__Fill_2B595(slice0, "E");
+            Span$1__Fill_2B595(slice1, Char_fromDigit(iSuit));
         }
     }
 }

@@ -7,6 +7,8 @@ import { singleton, collect, delay, toArray } from "../Setback.Web/Client/src/.f
 import { op_UnaryNegation_Int32 } from "../Setback.Web/Client/src/.fable/fable-library.3.2.9/Int32.js";
 import { rangeDouble } from "../Setback.Web/Client/src/.fable/fable-library.3.2.9/Range.js";
 import { equals } from "../Setback.Web/Client/src/.fable/fable-library.3.2.9/Util.js";
+import { SpanLayout$1__Slice_309E3581, SpanLayout_ofLength, SpanLayout_combine } from "./SpanLayout.fs.js";
+import { Span$1__Fill_2B595, Char_fromDigit, Span$1__get_Length } from "./Prelude.fs.js";
 
 export class AbstractHighBid extends Record {
     constructor(BidderIndex, Bid) {
@@ -52,5 +54,17 @@ export function AbstractHighBidModule_finalizeDealScore(dealScore, highBid) {
         }
         return dealScore;
     }
+}
+
+export const AbstractHighBidModule_layout = SpanLayout_combine([SpanLayout_ofLength(1), SpanLayout_ofLength(1)]);
+
+export function AbstractHighBidModule_copyTo(span, highBid) {
+    if (!(Span$1__get_Length(span) === AbstractHighBidModule_layout.Length)) {
+        debugger;
+    }
+    const cIndex = (highBid.BidderIndex === -1) ? "." : Char_fromDigit(highBid.BidderIndex);
+    Span$1__Fill_2B595(SpanLayout$1__Slice_309E3581(AbstractHighBidModule_layout, 0, span), cIndex);
+    const cBid = Char_fromDigit(highBid.Bid);
+    Span$1__Fill_2B595(SpanLayout$1__Slice_309E3581(AbstractHighBidModule_layout, 1, span), cBid);
 }
 

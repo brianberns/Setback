@@ -32,6 +32,22 @@ module Char =
 
 #if FABLE_COMPILER
 
+type Span<'t>(array : 't[]) =
+
+    member _.Length = array.Length
+
+    member _.Slice(start) =
+        array.[start .. ]
+            |> Span
+
+    member _.Slice(start, length) =
+        array.[start .. start + length - 1]
+            |> Span
+
+    member _.Fill(item) =
+        for i = 0 to array.Length do
+            array.[i] <- item
+
 open System.Collections
 open System.Collections.Generic
 
