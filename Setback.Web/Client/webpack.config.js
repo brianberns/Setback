@@ -15,7 +15,7 @@ module.exports = {
         static: "./public",
         port: 8081,
         proxy: {
-            '/IStudentApi/**': {
+            '/ISetbackApi/**': {
                 target: "http://127.0.0.1:5000",// assuming the backend server is hosted on port 5000 during development
                 changeOrigin: true
             }
