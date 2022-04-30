@@ -1,6 +1,9 @@
 namespace Setback.Web.Client
 
+open System
+
 open Browser.Dom
+open Browser.Types
 
 open Fable.Core.JsInterop
 
@@ -17,15 +20,14 @@ module HandDiv =
                     let name = Seat.toString seat
                     let id = $"hand-{name.ToLower()}"
                     document.getElementById(id)
-                        :?> Browser.Types.HTMLDivElement
-                console.log(div)
+                        :?> HTMLDivElement
                 seat, div)
             |> Map
 
     let ofSeat seat =
         divMap.[seat]
 
-    let addCard card (div : Browser.Types.HTMLDivElement) =
+    let addCard card (div : HTMLDivElement) =
         card
             |> Img.ofCard
             |> div.appendChild
@@ -36,42 +38,16 @@ module App =
     importAll "cardsJS/cards.css"
     importAll "cardsJS/cards.js"
 
-    let pairs =
-        [
-            Seat.West, Suit.Spades
-            Seat.North, Suit.Diamonds
-            Seat.East, Suit.Clubs
-            Seat.South, Suit.Hearts
-        ]
-    for (seat, suit) in pairs do
-        let div = HandDiv.ofSeat seat
-        Card.allCards
-            |> Seq.where (fun card -> card.Suit = suit)
-            |> Seq.iter (fun card -> HandDiv.addCard card div)
-
-
-    (*
-    // Get a reference to our button and cast the Element to an HTMLButtonElement
-    let myButton = document.querySelector(".my-button") :?> Browser.Types.HTMLButtonElement
-    let myList = document.querySelector(".my-list") :?> Browser.Types.HTMLUListElement
-
     let rng = Random()
+    let dealer = Seat.South
     let deal =
         Deck.shuffle rng
-            |> AbstractOpenDeal.fromDeck Seat.South
-    console.log(deal)
-
-    // Register our listener
-    myButton.onclick <- fun _ ->
-        async {
-            let! indexOpt =
-                Remoting.api.GetActionIndex("...+03t....0TJTQTKWx")
-            let item =
-                document.createElement("li")
-                    |> myList.appendChild
-            let text = sprintf "%A" indexOpt
-            document.createTextNode(text)
-                |> item.appendChild
-                |> ignore
-        } |> Async.StartImmediate
-    *)
+            |> AbstractOpenDeal.fromDeck dealer
+    for iPlayer = 0 to Seat.numSeats - 1 do
+        let seat = Seat.incr iPlayer dealer
+        let hand =
+            deal.UnplayedCards.[iPlayer]
+                |> Seq.sortDescending
+        let div = HandDiv.ofSeat seat
+        for card in hand do
+            HandDiv.addCard card div

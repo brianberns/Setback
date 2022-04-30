@@ -20,6 +20,7 @@ module Seat =
         "WNES".[int seat]
 
 #if FABLE_COMPILER
+    /// Display name.
     let toString = function
         | Seat.West -> "West"
         | Seat.North -> "North"
