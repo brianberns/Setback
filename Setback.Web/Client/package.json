@@ -3,7 +3,7 @@
   "scripts": {
     "postinstall": "dotnet tool restore",
     "start": "dotnet fable watch src --run webpack-dev-server",
-    "build": "dotnet fable src && webpack"
+    "build": "dotnet fable src --run webpack --mode production"
   },
   "devDependencies": {
     "css-loader": "^6.7.1",
