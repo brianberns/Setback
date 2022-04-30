@@ -23,7 +23,7 @@ module WebPlayer =
             auction |> AbstractAuction.legalBids
         async {
             match legalBids.Length with
-                | 0 -> return failwith "Unexpected"   // why does FABLE require "return" here?
+                | 0 -> return failwith "Unexpected"   // why does Fable require "return" here?
                 | 1 -> return legalBids.[0]           // trivial case
 
                     // must choose between multiple legal bids
@@ -90,7 +90,7 @@ module WebPlayer =
                 | _ -> failwith "Unexpected"
         async {
             match legalPlays.Length with
-                | 0 -> return failwith "Unexpected"   // why does FABLE require "return" here?
+                | 0 -> return failwith "Unexpected"   // why does Fable require "return" here?
                 | 1 -> return legalPlays.[0]          // trivial case
 
                     // must choose between multiple legal plays
