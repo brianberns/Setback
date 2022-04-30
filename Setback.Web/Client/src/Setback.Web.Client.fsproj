@@ -38,6 +38,7 @@
     <Compile Include="..\..\..\Setback.Cfrm\BootstrapGameState.fs" />
     <Compile Include="..\..\Shared\SharedTypes.fs" />
     <Compile Include="WebPlayer.fs" />
+    <Compile Include="Img.fs" />
     <Compile Include="App.fs" />
   </ItemGroup>
   <ItemGroup>
