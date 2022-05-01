@@ -26,6 +26,7 @@ module Seat =
         | Seat.North -> "North"
         | Seat.East -> "East"
         | Seat.South -> "South"
+        | _ -> failwith "Unexpected seat"
 #endif
 
     /// Converts the given character to a seat.
