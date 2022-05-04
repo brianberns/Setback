@@ -1,13 +1,18 @@
 namespace Setback.Web.Client
 
 open Browser.Dom
+open Browser.Types
+
 open Fable.Core.JsInterop
+
 open PlayingCards
 
-module Img =
+type CardImage = HTMLImageElement
+
+module CardImage =
 
     /// Unfortunately, import only works with string literals.
-    let private cardMap =
+    let private srcMap =
         [
             Card.fromString "2C", importDefault "./assets/card_images/2C.svg"
             Card.fromString "2D", importDefault "./assets/card_images/2D.svg"
@@ -73,11 +78,11 @@ module Img =
             Card.fromString "AD", importDefault "./assets/card_images/AD.svg"
             Card.fromString "AH", importDefault "./assets/card_images/AH.svg"
             Card.fromString "AS", importDefault "./assets/card_images/AS.svg"
-        ]
-            |> Seq.map (fun (card, src) ->
-                let img = Image.Create(src = src)
-                card, img)
-            |> Map
+        ] |> Map
 
-    let ofCard card =
-        cardMap.[card]
+    let create card (top : int) (left : int) =
+        let src = srcMap.[card]
+        let img = Image.Create(src = src)
+        img.classList.add("card")
+        img.setAttribute("style", $"position: absolute; top: {top}px; left: {left}px; width: 10%%;")
+        img

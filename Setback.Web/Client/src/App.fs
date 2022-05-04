@@ -17,14 +17,10 @@ module App =
         Deck.shuffle rng
             |> AbstractOpenDeal.fromDeck dealer
 
-    let addCard card (div : HTMLDivElement) =
-        card
-            |> Img.ofCard
-            |> div.appendChild
-            |> ignore
-
     let surface =
         document.getElementById("surface")
             :?> HTMLDivElement
-    for card in Card.allCards do
-        addCard card surface
+    for i = 0 to 51 do
+        let card = Card.allCards.[i]
+        let img = CardImage.create card (20 * i) (20 * i)
+        surface.appendChild(img) |> ignore
