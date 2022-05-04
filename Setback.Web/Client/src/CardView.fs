@@ -1,52 +1,13 @@
 namespace Setback.Web.Client
 
-open Browser.Css
-open Browser.Dom
 open Browser.Types
 
 open Fable.Core.JsInterop
 
+open Feliz
+open Feliz.Styles
+
 open PlayingCards
-
-[<StructuredFormatDisplay("{String}")>]
-type LengthUnit =
-    | Percent
-    | Pixel
-
-    member this.String =
-        match this with
-            | Percent -> "%"
-            | Pixel -> "px"
-
-    override this.ToString() =
-        this.String
-
-[<StructuredFormatDisplay("{String}")>]
-type Length =
-    {
-        Magnitude : int
-        Unit : LengthUnit
-    }
-
-    member this.String =
-        sprintf "%A%A"
-            this.Magnitude
-            this.Unit
-
-    override this.ToString() =
-        this.String
-
-module Length =
-
-    let create magnitude unit =
-        {
-            Magnitude = magnitude
-            Unit = unit
-        }
-
-    let pct = (flip create) LengthUnit.Percent
-
-    let px = (flip create) LengthUnit.Pixel
 
 type CardView = HTMLImageElement
 
@@ -121,12 +82,18 @@ module CardView =
             Card.fromString "AS", importDefault "./assets/card_images/AS.svg"
         ] |> Map
 
-    let create (top : Length) (left : Length) (width : Length) card =
+    [<ReactComponent>]
+    let create (top : ICssUnit) (left : ICssUnit) (width : ICssUnit) card =
         let src = srcMap.[card]
-        let img = Image.Create(src = src)
-        img.classList.add("card")
-        let style =
-            sprintf "position: absolute; top: %A; left: %A; width: %A;"
-                top left width
-        img.setAttribute("style", style)
+        let img =
+            Feliz.Html.img [
+                prop.src src
+                prop.classes ["card"]
+                prop.style [
+                    style.position.absolute
+                    style.top top
+                    style.left left
+                    style.width width
+                ]
+            ]
         img
