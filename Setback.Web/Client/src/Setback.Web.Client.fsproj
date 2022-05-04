@@ -38,12 +38,12 @@
     <Compile Include="..\..\..\Setback.Cfrm\BootstrapGameState.fs" />
     <Compile Include="..\..\Shared\SharedTypes.fs" />
     <Compile Include="WebPlayer.fs" />
-    <Compile Include="CardImage.fs" />
+    <Compile Include="CardView.fs" />
     <Compile Include="App.fs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Fable.Browser.Dom" Version="2.2.0" />
-    <PackageReference Include="Fable.Core" Version="3.2.3" />
+    <PackageReference Include="Fable.Browser.Dom" Version="2.10.0" />
+    <PackageReference Include="Fable.Core" Version="3.7.0" />
     <PackageReference Include="Fable.Remoting.Client" Version="7.19.0" />
   </ItemGroup>
 </Project>

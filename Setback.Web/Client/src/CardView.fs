@@ -1,16 +1,12 @@
 namespace Setback.Web.Client
 
+open Browser.Css
 open Browser.Dom
 open Browser.Types
 
 open Fable.Core.JsInterop
 
 open PlayingCards
-
-[<AutoOpen>]
-module Prelude =
-
-    let inline flip f a b = f b a
 
 [<StructuredFormatDisplay("{String}")>]
 type LengthUnit =
@@ -52,9 +48,9 @@ module Length =
 
     let px = (flip create) LengthUnit.Pixel
 
-type CardImage = HTMLImageElement
+type CardView = HTMLImageElement
 
-module CardImage =
+module CardView =
 
     /// Unfortunately, import only works with string literals.
     let private srcMap =

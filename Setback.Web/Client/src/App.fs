@@ -23,7 +23,7 @@ module App =
     for i = 0 to 51 do
         let card = Card.allCards.[i]
         let img =
-            CardImage.create
+            CardView.create
                 (Length.pct (2 * i)) (Length.pct (2 * i)) (Length.px 75)
                 card
         surface.appendChild(img) |> ignore
