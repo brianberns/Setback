@@ -22,5 +22,8 @@ module App =
             :?> HTMLDivElement
     for i = 0 to 51 do
         let card = Card.allCards.[i]
-        let img = CardImage.create card (20 * i) (20 * i)
+        let img =
+            CardImage.create
+                (Length.pct (2 * i)) (Length.pct (2 * i)) (Length.px 75)
+                card
         surface.appendChild(img) |> ignore

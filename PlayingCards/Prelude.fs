@@ -16,6 +16,7 @@ module Array =
     let clone (items : 'item[]) =
 #if FABLE_COMPILER
         items
+            |> Seq.readonly   // force a copy
             |> Seq.toArray
 #else
         items.Clone()

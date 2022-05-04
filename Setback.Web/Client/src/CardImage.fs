@@ -7,6 +7,51 @@ open Fable.Core.JsInterop
 
 open PlayingCards
 
+[<AutoOpen>]
+module Prelude =
+
+    let inline flip f a b = f b a
+
+[<StructuredFormatDisplay("{String}")>]
+type LengthUnit =
+    | Percent
+    | Pixel
+
+    member this.String =
+        match this with
+            | Percent -> "%"
+            | Pixel -> "px"
+
+    override this.ToString() =
+        this.String
+
+[<StructuredFormatDisplay("{String}")>]
+type Length =
+    {
+        Magnitude : int
+        Unit : LengthUnit
+    }
+
+    member this.String =
+        sprintf "%A%A"
+            this.Magnitude
+            this.Unit
+
+    override this.ToString() =
+        this.String
+
+module Length =
+
+    let create magnitude unit =
+        {
+            Magnitude = magnitude
+            Unit = unit
+        }
+
+    let pct = (flip create) LengthUnit.Percent
+
+    let px = (flip create) LengthUnit.Pixel
+
 type CardImage = HTMLImageElement
 
 module CardImage =
@@ -80,9 +125,12 @@ module CardImage =
             Card.fromString "AS", importDefault "./assets/card_images/AS.svg"
         ] |> Map
 
-    let create card (top : int) (left : int) =
+    let create (top : Length) (left : Length) (width : Length) card =
         let src = srcMap.[card]
         let img = Image.Create(src = src)
         img.classList.add("card")
-        img.setAttribute("style", $"position: absolute; top: {top}px; left: {left}px; width: 10%%;")
+        let style =
+            sprintf "position: absolute; top: %A; left: %A; width: %A;"
+                top left width
+        img.setAttribute("style", style)
         img

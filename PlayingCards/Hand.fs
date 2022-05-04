@@ -21,5 +21,5 @@ module Hand =
                         |> Seq.map (fun card -> card.Rank.Char)
                         |> Seq.toArray
                         |> String
-                $"{sCards}{suit.Char}")
+                sprintf "%s%c" sCards suit.Char)
             |> String.concat " "
