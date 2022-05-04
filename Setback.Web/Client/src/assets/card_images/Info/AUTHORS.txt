@@ -1,0 +1,13 @@
+Vector Playing Card Library 
+VERSION 3.2 - RELEASED 6/27/2020
+
+Licensed under https://www.gnu.org/licenses/lgpl-3.0.html
+
+Chris Aguilar 
+conjurenation@gmail.com         
+https://totalnonsense.com/open-source-vector-playing-cards/
+
+
+Alternate Joker by John Merrill
+john@delirus.net
+Colored version of alternate Joker by Chris Aguilar

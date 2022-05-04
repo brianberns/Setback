@@ -1,0 +1,63 @@
+VECTOR PLAYING CARDS
+
+PROJECT UPDATES
+
+This project is released under and subject to the "GNU Lesser General Public License version 3":
+https://www.gnu.org/licenses/lgpl-3.0.html
+
+6/27/2020  - Version 3.2 Released
+		Colors improved
+		Separated version now available for main color set (i.e. one card per .svg file) for both bordered and printable versions.
+		"Number, Letters, Pips" file has been enhanced with more elements.
+		One Additional Back Added.
+
+6/9/2019  - Version 3.1 Released
+		Printable (bleed sized) versions of all cards, including backs, now available
+		Minor cleanup of bordered backs.
+
+6/5/2019  - Version 3.0 Released
+		New Project Web Page Created : 
+			https://totalnonsense.com/open-source-vector-playing-cards/
+		Court cards updated - "Shiny Happy People" set added.
+		Several New Patterned Backs Added
+		Extraneous Card sets (Multi Color) removed to streamline overall set.
+		Grayscale, B/W, Platinum and Inverted Sets added in both bordered and Printable variant.	
+		Added two "Chimera" rainbow color decks (backs)
+		Printable Color Faces (print bleed) added for simpler printing.
+
+5/18/2015 - Version 2.0.1 Released 
+            Various Bug Fixes (King of Spades bad path fixed, extraneous layers
+            removed)
+
+5/17/2015 - Version 2.0 Released 
+            Two proper Jokers added, one with a colorized version.
+            Eleven alternate decks with filtered faces added (INKSCAPE ONLY)
+                    Blue Faces
+                    Green Faces
+                    Purple Face
+                    Red Faces
+                    Sepia Faces
+                    Scribbled Faces
+                    Worn Face
+                    Worn/Dimpled Faces
+                    Platinum Faces
+                    Dimpled Faces
+                    Oversaturated Faces
+            Many new simple patterned backs added (INKSCAPE ONLY)
+            Major updates to clean up, fix, broken paths
+            Cards resized for consistency (All Cards are now 63mm x 88mm)
+            Pips and number characters cleaned up for proper symmetry
+            Alternate B/W set (with outlines Hearts and Diamonds) added.
+
+10/29/2011 - Version 1.3 Released
+             Additional cleanup/optimization of court cards.
+             Card Back Template added. One can add their own image or pattern. 
+             
+9/11/2011  - Version 1.2 Released
+             Individual cards now offered in two versions (with or without crop                       
+             marks) - A minor grouping error corrected in combined color set.
+             In combined color set, Card names have been updated in xml.
+             
+6/08/2011  - Version 1.1 released - Wrong QH fixed. ESP cards added.
+
+4/24/2011  - Initial 1.0 Release of Vectorized Playing Cards
