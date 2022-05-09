@@ -33,3 +33,10 @@ module JQuery =
     /// Selects a jQuery element.
     [<Emit("$($0)")>]
     let select (_selector : obj) : JQueryElement = jsNative
+
+[<AutoOpen>]
+module JQueryExt =
+
+    /// Selects a jQuery element.
+    let (~~) (selector : obj) =
+        JQuery.select selector

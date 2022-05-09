@@ -1,5 +1,7 @@
 namespace Setback.Web.Client
 
+open System
+
 open Browser.Dom
 open Browser.Types
 
@@ -47,7 +49,33 @@ module Length =
 
     let px = (flip create) LengthUnit.Pixel
 
-type CardView = HTMLImageElement
+    let parse =
+        let pairs =
+            [
+                "%", Percent
+                "px", Pixel
+            ]
+        fun (str : string) ->
+            let suffix, unit =
+                pairs
+                    |> Seq.find (fun (suffix, _) ->
+                        str.EndsWith(suffix))
+            let magnitude =
+                str.Substring(0, str.Length - suffix.Length)
+                    |> Int32.Parse
+            create magnitude unit
+
+/// Values from -1.0 to 1.0.
+type Coord = float
+
+module Coord =
+
+    let toLength (max : int) (coord : Coord) =
+        (0.5 * (float max * (coord + 1.0)))
+            |> int
+            |> Length.px
+
+type CardView = JQueryElement
 
 module CardView =
 
@@ -120,9 +148,21 @@ module CardView =
             Card.fromString "AS", importDefault "./assets/card_images/AS.svg"
         ] |> Map
 
-    let create (top : Length) (left : Length) (width : Length) card =
+    let width = Length.px 75
+
+    let create zIndex card =
         let src = srcMap.[card]
-        let img = Image.Create(src = src) |> JQuery.select
+        let img = ~~Image.Create(src = src)
         img.addClass("card")
-        img.css {| position = "absolute"; top = top; left = left; width = width |}
+        img.css {|
+            position = "absolute"
+            width = width
+            ``z-index`` = zIndex
+        |}
         img
+
+    let moveTo (left : Length) (top : Length) (cardView : CardView) =
+        cardView.animate {|
+            left = left
+            top = top
+        |}
