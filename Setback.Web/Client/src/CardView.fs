@@ -1,6 +1,5 @@
 namespace Setback.Web.Client
 
-open Browser.Css
 open Browser.Dom
 open Browser.Types
 
@@ -123,10 +122,7 @@ module CardView =
 
     let create (top : Length) (left : Length) (width : Length) card =
         let src = srcMap.[card]
-        let img = Image.Create(src = src)
-        img.classList.add("card")
-        let style =
-            sprintf "position: absolute; top: %A; left: %A; width: %A;"
-                top left width
-        img.setAttribute("style", style)
+        let img = Image.Create(src = src) |> JQuery.select
+        img.addClass("card")
+        img.css {| position = "absolute"; top = top; left = left; width = width |}
         img
