@@ -30,16 +30,17 @@ module App =
     (~~document).ready (fun () ->
 
         let surface = JQuery.select "#surface"
+        let border = Pixel 1.0
         let maxWidth =
             let width =
                 surface.css "width"
                     |> Length.parse
-            width - CardView.width
+            width - CardView.width - (2.0 * border)
         let maxHeight =
             let height =
                 surface.css "height"
                     |> Length.parse
-            height - CardView.height
+            height - CardView.height - (2.0 * border)
         let moveCardView x y cardView =
             let left = Coord.toLength maxWidth x
             let top = Coord.toLength maxHeight y
