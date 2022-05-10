@@ -80,6 +80,12 @@ module CardView =
     let width = Pixel 119.0
     let height = 333.0/238.0 * width
 
+    let zIndexIncr =
+        let mutable zIndex = 0
+        fun () ->
+            zIndex <- zIndex + 1
+            zIndex
+
     let create card =
         let src = srcMap.[card]
         let img = ~~Image.Create(src = src, alt = card.String)
@@ -88,6 +94,7 @@ module CardView =
             {|
                 position = "absolute"
                 width = width
+                ``z-index`` = zIndexIncr ()
             |}
         img
 
@@ -104,3 +111,6 @@ module CardView =
                 left = left
                 top = top
             |}
+
+    let bringToFront (cardView : CardView) =
+        cardView.css {| ``z-index`` = zIndexIncr () |}

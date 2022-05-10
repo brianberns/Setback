@@ -2,7 +2,7 @@ namespace Setback.Web.Client
 
 open System
 
-open Fable.Core
+open Fable.Core.JS
 
 open Browser.Dom
 
@@ -19,9 +19,18 @@ module Coord =
         (0.5 * (float max.NumPixels * (coord + 1.0)))
             |> Pixel
 
-module App =
+type CardViewStack = List<CardView>
 
-    let [<Global>] setTimeout (code : unit -> unit, delay : int) : unit = jsNative
+module CardViewStack =
+
+    let ofCards cards =
+        cards
+            |> Seq.rev
+            |> Seq.map CardView.create
+            |> Seq.rev
+            |> Seq.toList
+
+module App =
 
     let run deal =
 
@@ -49,29 +58,29 @@ module App =
             cardView |> CardView.animateTo left top
 
         let rec animateDeal (undealt : List<CardView>) (dealt : List<CardView>) =
-            console.log("animateDeal")
             match undealt with
                 | [] -> ()
                 | head :: undealt' ->
+                    CardView.bringToFront head
                     let dealt' = head :: dealt
+                    let numDealt = dealt'.Length
                     let incr = 0.1
-                    for i = 0 to dealt'.Length - 1 do
+                    for i = 0 to numDealt - 1 do
                         let cardView = dealt'.[i]
-                        let x = incr * (float i - 0.5 * float (dealt'.Length - 1))
+                        let x = incr * (float (numDealt - i - 1) - 0.5 * float (numDealt - 1))
                         cardView |> animate x 0.9
                     let callback () = animateDeal undealt' dealt'
-                    setTimeout(callback, 1000)
+                    setTimeout callback 500 |> ignore
 
-        let cardViews =
+        let stack =
             deal.UnplayedCards.[0]
                 |> Seq.sortByDescending (fun card ->
                     card.Suit, card.Rank)
-                |> Seq.map CardView.create
-                |> Seq.toList
-        for cardView in cardViews do
+                |> CardViewStack.ofCards
+        for cardView in stack do
             cardView |> setPosition 0.0 0.0
             surface.append(cardView)
-        animateDeal cardViews []
+        animateDeal stack []
 
     let rng = Random(0)
     let dealer = Seat.South
