@@ -2,6 +2,8 @@ namespace Setback.Web.Client
 
 open System
 
+open Fable.Core
+
 open Browser.Dom
 
 open PlayingCards
@@ -18,6 +20,8 @@ module Coord =
             |> Pixel
 
 module App =
+
+    let [<Global>] setTimeout (code : unit -> unit, delay : int) : unit = jsNative
 
     let run deal =
 
@@ -45,12 +49,18 @@ module App =
             cardView |> CardView.animateTo left top
 
         let rec animateDeal (undealt : List<CardView>) (dealt : List<CardView>) =
-
-            let incr = 0.1
-            for i = 0 to dealt.Length - 1 do
-                let cardView = dealt.[i]
-                let x = incr * (float i - 0.5 * float dealt.Length)
-                cardView |> animate x 0.5
+            console.log("animateDeal")
+            match undealt with
+                | [] -> ()
+                | head :: undealt' ->
+                    let dealt' = head :: dealt
+                    let incr = 0.1
+                    for i = 0 to dealt'.Length - 1 do
+                        let cardView = dealt'.[i]
+                        let x = incr * (float i - 0.5 * float (dealt'.Length - 1))
+                        cardView |> animate x 0.9
+                    let callback () = animateDeal undealt' dealt'
+                    setTimeout(callback, 1000)
 
         let cardViews =
             deal.UnplayedCards.[0]
@@ -61,9 +71,9 @@ module App =
         for cardView in cardViews do
             cardView |> setPosition 0.0 0.0
             surface.append(cardView)
-        animateDeal [] cardViews
+        animateDeal cardViews []
 
-    let rng = Random()
+    let rng = Random(0)
     let dealer = Seat.South
     let deal =
         Deck.shuffle rng
