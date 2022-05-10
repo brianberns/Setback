@@ -46,17 +46,14 @@ module App =
             let top = Coord.toLength maxHeight y
             cardView |> CardView.moveTo left top
 
-        let init cardStr x y =
-            let cardView =
-                cardStr
-                    |> Card.fromString
-                    |> CardView.create
+        let init cardView x y =
             surface.append(cardView)
             cardView |> moveCardView x y
 
-        init "AC" -1.0 -1.0
-        init "AS" -1.0  1.0
-        init "2D"  0.0  0.0
-        init "AH"  1.0 -1.0
-        init "AD"  1.0  1.0
+        for i = 0 to 51 do
+            let cardView =
+                Card.allCards.[i]
+                    |> CardView.create
+            let angle = (float i) * (2.0 * Math.PI / 52.0)
+            init cardView (cos angle) (sin angle)
     )
