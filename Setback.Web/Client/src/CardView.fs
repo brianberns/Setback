@@ -1,79 +1,8 @@
 namespace Setback.Web.Client
 
-open System
-
 open Browser.Dom
-open Browser.Types
-
 open Fable.Core.JsInterop
-
 open PlayingCards
-
-[<StructuredFormatDisplay("{String}")>]
-type LengthUnit =
-    | Percent
-    | Pixel
-
-    member this.String =
-        match this with
-            | Percent -> "%"
-            | Pixel -> "px"
-
-    override this.ToString() =
-        this.String
-
-[<StructuredFormatDisplay("{String}")>]
-type Length =
-    {
-        Magnitude : int
-        Unit : LengthUnit
-    }
-
-    member this.String =
-        sprintf "%A%A"
-            this.Magnitude
-            this.Unit
-
-    override this.ToString() =
-        this.String
-
-module Length =
-
-    let create magnitude unit =
-        {
-            Magnitude = magnitude
-            Unit = unit
-        }
-
-    let pct = (flip create) LengthUnit.Percent
-
-    let px = (flip create) LengthUnit.Pixel
-
-    let parse =
-        let pairs =
-            [
-                "%", Percent
-                "px", Pixel
-            ]
-        fun (str : string) ->
-            let suffix, unit =
-                pairs
-                    |> Seq.find (fun (suffix, _) ->
-                        str.EndsWith(suffix))
-            let magnitude =
-                str.Substring(0, str.Length - suffix.Length)
-                    |> Int32.Parse
-            create magnitude unit
-
-/// Values from -1.0 to 1.0.
-type Coord = float
-
-module Coord =
-
-    let toLength (max : int) (coord : Coord) =
-        (0.5 * (float max * (coord + 1.0)))
-            |> int
-            |> Length.px
 
 type CardView = JQueryElement
 
@@ -148,16 +77,16 @@ module CardView =
             Card.fromString "AS", importDefault "./assets/card_images/AS.svg"
         ] |> Map
 
-    let width = Length.px 75
+    let width = Pixel 75
+    let height = Pixel 105
 
-    let create zIndex card =
+    let create card =
         let src = srcMap.[card]
         let img = ~~Image.Create(src = src)
         img.addClass("card")
         img.css {|
             position = "absolute"
             width = width
-            ``z-index`` = zIndex
         |}
         img
 

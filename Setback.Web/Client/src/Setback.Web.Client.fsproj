@@ -39,6 +39,7 @@
     <Compile Include="..\..\Shared\SharedTypes.fs" />
     <Compile Include="WebPlayer.fs" />
     <Compile Include="JQuery.fs" />
+    <Compile Include="Length.fs" />
     <Compile Include="CardView.fs" />
     <Compile Include="App.fs" />
   </ItemGroup>

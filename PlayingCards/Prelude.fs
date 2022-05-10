@@ -2,12 +2,6 @@
 
 open System
 
-[<AutoOpen>]
-module Prelude =
-
-    /// Flips the arguments to a function.
-    let inline flip f a b = f b a
-
 module Enum =
 
     /// Answers all values of the given enum type.
