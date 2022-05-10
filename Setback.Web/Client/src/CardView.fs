@@ -91,7 +91,14 @@ module CardView =
             |}
         img
 
-    let moveTo (left : Length) (top : Length) (cardView : CardView) =
+    let setPosition (left : Length) (top : Length) (cardView : CardView) =
+        cardView.css
+            {|
+                left = left
+                top = top
+            |}
+
+    let animateTo (left : Length) (top : Length) (cardView : CardView) =
         cardView.animate
             {|
                 left = left

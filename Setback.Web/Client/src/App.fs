@@ -19,15 +19,7 @@ module Coord =
 
 module App =
 
-    let rng = Random()
-    let dealer = Seat.South
-    let deal =
-        Deck.shuffle rng
-            |> AbstractOpenDeal.fromDeck dealer
-
-    JQuery.init ()
-
-    (~~document).ready (fun () ->
+    let run deal =
 
         let surface = JQuery.select "#surface"
         let border = Pixel 1.0
@@ -41,19 +33,43 @@ module App =
                 surface.css "height"
                     |> Length.parse
             height - CardView.height - (2.0 * border)
-        let moveCardView x y cardView =
+
+        let setPosition x y cardView =
             let left = Coord.toLength maxWidth x
             let top = Coord.toLength maxHeight y
-            cardView |> CardView.moveTo left top
+            cardView |> CardView.setPosition left top
 
-        let init cardView x y =
+        let animate x y cardView =
+            let left = Coord.toLength maxWidth x
+            let top = Coord.toLength maxHeight y
+            cardView |> CardView.animateTo left top
+
+        let rec animateDeal (undealt : List<CardView>) (dealt : List<CardView>) =
+
+            let incr = 0.1
+            for i = 0 to dealt.Length - 1 do
+                let cardView = dealt.[i]
+                let x = incr * (float i - 0.5 * float dealt.Length)
+                cardView |> animate x 0.5
+
+        let cardViews =
+            deal.UnplayedCards.[0]
+                |> Seq.sortByDescending (fun card ->
+                    card.Suit, card.Rank)
+                |> Seq.map CardView.create
+                |> Seq.toList
+        for cardView in cardViews do
+            cardView |> setPosition 0.0 0.0
             surface.append(cardView)
-            cardView |> moveCardView x y
+        animateDeal [] cardViews
 
-        for i = 0 to 51 do
-            let cardView =
-                Card.allCards.[i]
-                    |> CardView.create
-            let angle = (float i) * (2.0 * Math.PI / 52.0)
-            init cardView (cos angle) (sin angle)
-    )
+    let rng = Random()
+    let dealer = Seat.South
+    let deal =
+        Deck.shuffle rng
+            |> AbstractOpenDeal.fromDeck dealer
+
+    JQuery.init ()
+
+    (~~document).ready (fun () ->
+        run deal)

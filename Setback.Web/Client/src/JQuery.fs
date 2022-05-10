@@ -10,7 +10,7 @@ type JQueryElement =
     abstract addClass : className : string -> unit
 
     /// Animates the element towards the given CSS properties.
-    abstract animate : properties : obj -> unit
+    abstract animate : properties : obj * ?duration : int -> unit
 
     /// Appends the given content to the element.
     abstract append : content : JQueryElement -> unit
