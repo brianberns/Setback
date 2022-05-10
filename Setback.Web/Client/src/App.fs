@@ -15,7 +15,6 @@ module Coord =
 
     let toLength (max : Length) (coord : Coord) =
         (0.5 * (float max.NumPixels * (coord + 1.0)))
-            |> int
             |> Pixel
 
 module App =

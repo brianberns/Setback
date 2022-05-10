@@ -77,7 +77,7 @@ module CardView =
             Card.fromString "AS", importDefault "./assets/card_images/AS.svg"
         ] |> Map
 
-    let width = Pixel 119
+    let width = Pixel 119.0
     let height = 333.0/238.0 * width
 
     let create card =

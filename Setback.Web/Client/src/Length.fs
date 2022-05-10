@@ -5,7 +5,7 @@ open System
 /// CSS length. E.g. "100px".
 [<StructuredFormatDisplay("{String}")>]
 type Length =
-    | Pixel of int
+    | Pixel of float
 
     member this.NumPixels =
         let (Pixel px) = this
@@ -23,15 +23,10 @@ type Length =
     static member (-) (a : Length, b : Length) =
         Pixel (a.NumPixels - b.NumPixels)
 
-    static member (*) (n : int, len : Length) =
+    static member (*) (n : float, len : Length) =
         Pixel (n * len.NumPixels)
 
-    static member (*) (n : float, len : Length) =
-        n * float len.NumPixels
-            |> int
-            |> Pixel
-
-    static member (/) (len : Length, n) =
+    static member (/) (len : Length, n : float) =
         Pixel (len.NumPixels / n)
 
 module Length =
@@ -40,5 +35,5 @@ module Length =
         let suffix = "px"
         assert(str.EndsWith(suffix))
         str.Substring(0, str.Length - suffix.Length)
-            |> Int32.Parse
+            |> Double.Parse
             |> Pixel
