@@ -82,7 +82,7 @@ module CardView =
 
     let create card =
         let src = srcMap.[card]
-        let img = ~~Image.Create(src = src)
+        let img = ~~Image.Create(src = src, alt = card.String)
         img.addClass("card")
         img.css
             {|
