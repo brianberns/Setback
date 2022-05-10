@@ -23,8 +23,13 @@ type Length =
     static member (-) (a : Length, b : Length) =
         Pixel (a.NumPixels - b.NumPixels)
 
-    static member (*) (n, len : Length) =
+    static member (*) (n : int, len : Length) =
         Pixel (n * len.NumPixels)
+
+    static member (*) (n : float, len : Length) =
+        n * float len.NumPixels
+            |> int
+            |> Pixel
 
     static member (/) (len : Length, n) =
         Pixel (len.NumPixels / n)
@@ -32,6 +37,8 @@ type Length =
 module Length =
 
     let parse (str : string) =
-        str.Substring(0, str.Length - "px".Length)
+        let suffix = "px"
+        assert(str.EndsWith(suffix))
+        str.Substring(0, str.Length - suffix.Length)
             |> Int32.Parse
             |> Pixel
