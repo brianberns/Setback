@@ -6,22 +6,25 @@ open Fable.Core.JsInterop
 /// jQuery API.
 type JQueryElement =
 
+    /// Adds the given class to the element.
     abstract addClass : className : string -> unit
 
-    /// Animates towards the given CSS properties.
+    /// Animates the element towards the given CSS properties.
     abstract animate : properties : obj -> unit
 
+    /// Appends the given content to the element.
     abstract append : content : JQueryElement -> unit
 
-    /// Handles a click event.
+    /// Handles the element's click event.
     abstract click : handler : (unit -> unit) -> unit
 
-    /// Gets value of CSS property.
+    /// Gets value of the element's given CSS property.
     abstract css : propertyName : string -> string
 
+    /// Sets the element's given CSS properties.
     abstract css : properties : obj -> unit
 
-    /// Handles a document's ready event.
+    /// Handles an element's ready event.
     abstract ready : handler : (unit -> unit) -> unit
 
 module JQuery =

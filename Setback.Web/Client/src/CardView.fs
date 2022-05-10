@@ -84,14 +84,16 @@ module CardView =
         let src = srcMap.[card]
         let img = ~~Image.Create(src = src)
         img.addClass("card")
-        img.css {|
-            position = "absolute"
-            width = width
-        |}
+        img.css
+            {|
+                position = "absolute"
+                width = width
+            |}
         img
 
     let moveTo (left : Length) (top : Length) (cardView : CardView) =
-        cardView.animate {|
-            left = left
-            top = top
-        |}
+        cardView.animate
+            {|
+                left = left
+                top = top
+            |}
