@@ -56,32 +56,20 @@ module DealView =
 
         let createInstr (x, y) cardOffset iCard cv =
             let pos =
-                CardSurface.getPosition (getCoord (iCard + cardOffset) + x, y) surface
+                CardSurface.getPosition
+                    (getCoord (iCard + cardOffset) + x, y)
+                    surface
             AnimationInstruction.create cv pos true
 
-        let west batch1 batch2 =
-            let instr = createInstr (-0.7, 0.0)
+        let generate instr batch1 batch2 =
             let step1 = batch1 |> Seq.mapi (instr 0)
             let step2 = batch2 |> Seq.mapi (instr 3)
             step1, step2
 
-        let north batch1 batch2 =
-            let instr = createInstr (0.0, -0.9)
-            let step1 = batch1 |> Seq.mapi (instr 0)
-            let step2 = batch2 |> Seq.mapi (instr 3)
-            step1, step2
-
-        let east batch1 batch2 =
-            let instr = createInstr (0.7, 0.0)
-            let step1 = batch1 |> Seq.mapi (instr 0)
-            let step2 = batch2 |> Seq.mapi (instr 3)
-            step1, step2
-
-        let south batch1 batch2 =
-            let instr = createInstr (0.0, 0.9)
-            let step1 = batch1 |> Seq.mapi (instr 0)
-            let step2 = batch2 |> Seq.mapi (instr 3)
-            step1, step2
+        let west = createInstr (-0.7, 0.0) |> generate
+        let north = createInstr (0.0, -0.9) |> generate
+        let east = createInstr (0.7, 0.0) |> generate
+        let south = createInstr (0.0, 0.9) |> generate
 
         let deck =
             let pos = surface |> CardSurface.getPosition (0.0, 0.0)
