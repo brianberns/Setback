@@ -18,6 +18,9 @@ type JQueryElement =
     /// Handles the element's click event.
     abstract click : handler : (unit -> unit) -> unit
 
+    /// Gets the element's parent.
+    abstract parent : unit -> JQueryElement
+
     /// Gets value of the element's given CSS property.
     abstract css : propertyName : string -> string
 
@@ -26,6 +29,9 @@ type JQueryElement =
 
     /// Handles an element's ready event.
     abstract ready : handler : (unit -> unit) -> unit
+
+    /// Removes the element from the DOM.
+    abstract remove : unit -> unit
 
 module JQuery =
 
@@ -43,7 +49,6 @@ module JQueryExt =
     /// Selects a jQuery element.
     let (~~) (selector : obj) =
         JQuery.select selector
-
 
 /// HTML element position.
 type Position =
@@ -75,10 +80,18 @@ module JQueryElement =
             zIndex <- zIndex + 1
             zIndex
 
+    /// Gets the z-index of the given element.
+    let getZIndex (elem : JQueryElement) =
+        elem.css("z-index")
+
+    /// Sets the z-index of the given element.
+    let setZIndex zIndex (elem : JQueryElement) =
+        elem.css {| ``z-index`` = zIndex |}
+
     /// Brings the given card view to the front.
     let bringToFront (elem : JQueryElement) =
-        elem.css
-            {| ``z-index`` = zIndexIncr () |}
+        let zIndex = zIndexIncr ()
+        setZIndex zIndex elem
 
     module private Position =
 
@@ -86,14 +99,33 @@ module JQueryElement =
         let toCss pos =
             {| left = pos.Left; top = pos.Top |}
 
-    /// Sets the position of the given element instantly.
+    /// Gets the position of the given element.
+    let getPosition elem =
+        Position.create
+            (length "left" elem)
+            (length "top" elem)
+
+    /// Sets the position of the given element.
     let setPosition pos (elem : JQueryElement) =
         pos
             |> Position.toCss
             |> elem.css
 
     /// Sets and animates the position of the given element.
-    let animateTo pos (elem : JQueryElement) =
-        pos
-            |> Position.toCss
-            |> elem.animate
+    let animateTo pos duration (elem : JQueryElement) =
+        let props = Position.toCss pos
+        elem.animate(props, duration)
+
+    /// Replaces one element with another.
+    let replaceWith (replacementElem : JQueryElement) elem =
+
+            // use same position
+        replacementElem
+            |> setPosition (getPosition elem)
+        replacementElem
+            |> setZIndex (getZIndex elem)
+
+            // switch elements
+        let parent = elem.parent()
+        parent.append(replacementElem)
+        elem.remove()

@@ -11,6 +11,9 @@ type AnimationAction =
     /// Bring element to front.
     | BringToFront
 
+    /// Replace element with another element.
+    | ReplaceWith of JQueryElement
+
 /// An animation action applied to an element.
 type ElementAction =
     {
@@ -31,14 +34,17 @@ module ElementAction =
         }
 
     /// Runs an element action.
-    let run elemAction =
+    let run duration elemAction =
         match elemAction.Action with
             | MoveTo pos ->
                 elemAction.Element
-                    |> JQueryElement.animateTo pos
+                    |> JQueryElement.animateTo pos duration
             | BringToFront ->
                 elemAction.Element
                     |> JQueryElement.bringToFront
+            | ReplaceWith replacementElem ->
+                elemAction.Element
+                    |> JQueryElement.replaceWith replacementElem
 
 /// One step in an animation.
 type AnimationStep = seq<ElementAction>
@@ -46,20 +52,23 @@ type AnimationStep = seq<ElementAction>
 module AnimationStep =
 
     /// Runs an animation step.
-    let run =
-        Seq.iter ElementAction.run
+    let run duration =
+        Seq.iter (ElementAction.run duration)
 
 /// A sequence of steps to be animated.
 type Animation = List<AnimationStep>
 
 module Animation =
 
+    /// Duration of each step, in milliseconds.
+    let duration = 200
+
     /// Runs an animation.
     let run (animation : Animation) =
         let rec loop = function
             | [] -> ()
             | (step : AnimationStep) :: steps ->
-                AnimationStep.run step
+                AnimationStep.run duration step
                 let callback () = loop steps
-                setTimeout callback 500 |> ignore
+                setTimeout callback duration |> ignore   // start the next step at the same moment that animation of the current step finishes
         loop animation

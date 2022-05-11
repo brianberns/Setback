@@ -75,7 +75,7 @@ module DealView =
         let east = generate (0.7, 0.0)
         let south = generate (0.0, 0.9)
 
-        let deck =
+        let backs =
             let pos = surface |> CardSurface.getPosition (0.0, 0.0)
             Seq.init 52 (fun _ ->
                 let cv = CardView.ofBack ()
@@ -85,10 +85,10 @@ module DealView =
                 |> Seq.rev
                 |> Seq.toArray
 
-        let stepW1, stepW2 = west deck.[0..2] deck.[12..14]
-        let stepN1, stepN2 = north deck.[3..5] deck.[15..17]
-        let stepE1, stepE2 = east deck.[6..8] deck.[18..20]
-        let stepS1, stepS2 = south deck.[9..11] deck.[21..23]
+        let stepW1, stepW2 = west backs.[0..2] backs.[12..14]
+        let stepN1, stepN2 = north backs.[3..5] backs.[15..17]
+        let stepE1, stepE2 = east backs.[6..8] backs.[18..20]
+        let stepS1, stepS2 = south backs.[9..11] backs.[21..23]
 
         let hand =
             deal.UnplayedCards.[0]
@@ -101,10 +101,36 @@ module DealView =
                             | Suit.Diamonds -> 1   // red
                             | _ -> failwith "Unexpected"
                     iSuit, card.Rank)
+                |> Seq.map CardView.ofCard
+                |> Seq.toArray
+
+        let replace =
+            [
+                ElementAction.create
+                    backs.[9]
+                    (ReplaceWith hand.[0])
+                ElementAction.create
+                    backs.[10]
+                    (ReplaceWith hand.[1])
+                ElementAction.create
+                    backs.[11]
+                    (ReplaceWith hand.[2])
+
+                ElementAction.create
+                    backs.[21]
+                    (ReplaceWith hand.[3])
+                ElementAction.create
+                    backs.[22]
+                    (ReplaceWith hand.[4])
+                ElementAction.create
+                    backs.[23]
+                    (ReplaceWith hand.[5])
+            ]
 
         [
             stepW1; stepN1; stepE1; stepS1
             stepW2; stepN2; stepE2; stepS2
+            replace
         ]
 
 module App =
