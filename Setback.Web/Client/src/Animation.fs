@@ -2,15 +2,22 @@ namespace Setback.Web.Client
 
 open Fable.Core.JS
 
-type AnimationInstruction =
+/// One action in an animation step.
+type AnimationAction =
     {
+        /// Element being animated.
         Element : JQueryElement
+
+        /// Element's target position.
         Target : Position
+
+        /// Bring element to front?
         BringToFront : bool
     }
 
-module AnimationInstruction =
+module AnimationAction =
 
+    /// Creates an animation action.
     let create elem target bringToFront =
         {
             Element = elem
@@ -18,24 +25,30 @@ module AnimationInstruction =
             BringToFront = bringToFront
         }
 
-    let run instr =
-        if instr.BringToFront then
-            instr.Element |> JQueryElement.bringToFront
-        instr.Element
-            |> JQueryElement.animateTo instr.Target
+    /// Runs an animation action.
+    let run action =
+        if action.BringToFront then
+            action.Element |> JQueryElement.bringToFront
+        action.Element
+            |> JQueryElement.animateTo action.Target
 
-type AnimationStep = seq<AnimationInstruction>
+
+/// One step in an animation.
+type AnimationStep = seq<AnimationAction>
 
 module AnimationStep =
 
-    let run step =
+    /// Runs an animation step.
+    let run (step : AnimationStep) =
         for instr in step do
-            AnimationInstruction.run instr
+            AnimationAction.run instr
 
+/// A sequence of steps to be animated.
 type Animation = List<AnimationStep>
 
 module Animation =
 
+    /// Runs an animation.
     let run (animation : Animation) =
         let rec loop = function
             | [] -> ()
