@@ -45,52 +45,6 @@ module CardSurface =
         let top = Coord.toLength surface.Height y
         Position.create left top
 
-type AnimationInstruction =
-    {
-        Element : JQueryElement
-        Target : Coord * Coord
-        BringToFront : bool
-    }
-
-module AnimationInstruction =
-
-    let create elem target bringToFront =
-        {
-            Element = elem
-            Target = target
-            BringToFront = bringToFront
-        }
-
-    let run surface instr =
-        if instr.BringToFront then
-            instr.Element |> JQueryElement.bringToFront
-        let pos =
-            surface
-                |> CardSurface.getPosition instr.Target
-        instr.Element
-            |> JQueryElement.animateTo pos
-
-type AnimationStep = seq<AnimationInstruction>
-
-module AnimationStep =
-
-    let run surface step =
-        for instr in step do
-            AnimationInstruction.run surface instr
-
-type Animation = List<AnimationStep>
-
-module Animation =
-
-    let run surface (animation : Animation) =
-        let rec loop = function
-            | [] -> ()
-            | (step : AnimationStep) :: steps ->
-                AnimationStep.run surface step
-                let callback () = loop steps
-                setTimeout callback 500 |> ignore
-        loop animation
-
 module App =
 
     let incr = 0.1
@@ -98,39 +52,43 @@ module App =
     let getCoord i =
         (incr * float i) - (0.5 * (6.0 - 1.0) * incr)
 
-    let instrNS y offset i cv =
-        AnimationInstruction.create cv (getCoord (i + offset), y) true
-
-    let instrEW x offset i cv =
-        AnimationInstruction.create cv (x, getCoord (i + offset)) true
-
-    let west batch1 batch2 =
-        let instr = instrEW -0.9
-        let step1 = batch1 |> Seq.mapi (instr 0)
-        let step2 = batch2 |> Seq.mapi (instr 3)
-        step1, step2
-
-    let north batch1 batch2 =
-        let instr = instrNS -0.9
-        let step1 = batch1 |> Seq.mapi (instr 0)
-        let step2 = batch2 |> Seq.mapi (instr 3)
-        step1, step2
-
-    let east batch1 batch2 =
-        let instr = instrEW 0.9
-        let step1 = batch1 |> Seq.mapi (instr 0)
-        let step2 = batch2 |> Seq.mapi (instr 3)
-        step1, step2
-
-    let south batch1 batch2 =
-        let instr = instrNS 0.9
-        let step1 = batch1 |> Seq.mapi (instr 0)
-        let step2 = batch2 |> Seq.mapi (instr 3)
-        step1, step2
-
     let run () =
 
         let surface = CardSurface.init "#surface"
+
+        let instrNS y offset i cv =
+            let pos =
+                CardSurface.getPosition (getCoord (i + offset), y) surface
+            AnimationInstruction.create cv pos true
+
+        let instrEW x offset i cv =
+            let pos =
+                CardSurface.getPosition (x, getCoord (i + offset)) surface
+            AnimationInstruction.create cv pos true
+
+        let west batch1 batch2 =
+            let instr = instrEW -0.9
+            let step1 = batch1 |> Seq.mapi (instr 0)
+            let step2 = batch2 |> Seq.mapi (instr 3)
+            step1, step2
+
+        let north batch1 batch2 =
+            let instr = instrNS -0.9
+            let step1 = batch1 |> Seq.mapi (instr 0)
+            let step2 = batch2 |> Seq.mapi (instr 3)
+            step1, step2
+
+        let east batch1 batch2 =
+            let instr = instrEW 0.9
+            let step1 = batch1 |> Seq.mapi (instr 0)
+            let step2 = batch2 |> Seq.mapi (instr 3)
+            step1, step2
+
+        let south batch1 batch2 =
+            let instr = instrNS 0.9
+            let step1 = batch1 |> Seq.mapi (instr 0)
+            let step2 = batch2 |> Seq.mapi (instr 3)
+            step1, step2
 
         let deck =
             let pos = surface |> CardSurface.getPosition (0.0, 0.0)
@@ -146,16 +104,9 @@ module App =
         let stepN1, stepN2 = north deck.[3..5] deck.[15..17]
         let stepE1, stepE2 = east deck.[6..8] deck.[18..20]
         let stepS1, stepS2 = south deck.[9..11] deck.[21..23]
-        Animation.run surface [
-            stepW1
-            stepN1
-            stepE1
-            stepS1
-
-            stepW2
-            stepN2
-            stepE2
-            stepS2
+        Animation.run [
+            stepW1; stepN1; stepE1; stepS1
+            stepW2; stepN2; stepE2; stepS2
         ]
 
     (~~document).ready (fun () ->
