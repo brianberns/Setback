@@ -47,7 +47,7 @@ module CardSurface =
 
 module DealView =
 
-    let incr = 0.1
+    let incr = 0.05
 
     let getCoord i =
         (incr * float i) - (0.5 * (6.0 - 1.0) * incr)
@@ -90,47 +90,37 @@ module DealView =
         let stepE1, stepE2 = east backs.[6..8] backs.[18..20]
         let stepS1, stepS2 = south backs.[9..11] backs.[21..23]
 
-        let hand =
-            deal.UnplayedCards.[0]
-                |> Seq.sortByDescending (fun card ->
-                    let iSuit =
-                        match card.Suit with
-                            | Suit.Spades   -> 4   // black
-                            | Suit.Hearts   -> 3   // red
-                            | Suit.Clubs    -> 2   // black
-                            | Suit.Diamonds -> 1   // red
-                            | _ -> failwith "Unexpected"
-                    iSuit, card.Rank)
-                |> Seq.map CardView.ofCard
-                |> Seq.toArray
-
-        let replace =
+        let reveal =
+            let hand =
+                deal.UnplayedCards.[0]
+                    |> Seq.sortByDescending (fun card ->
+                        let iSuit =
+                            match card.Suit with
+                                | Suit.Spades   -> 4   // black
+                                | Suit.Hearts   -> 3   // red
+                                | Suit.Clubs    -> 2   // black
+                                | Suit.Diamonds -> 1   // red
+                                | _ -> failwith "Unexpected"
+                        iSuit, card.Rank)
+                    |> Seq.map CardView.ofCard
+                    |> Seq.toArray
             [
-                ElementAction.create
-                    backs.[9]
-                    (ReplaceWith hand.[0])
-                ElementAction.create
-                    backs.[10]
-                    (ReplaceWith hand.[1])
-                ElementAction.create
-                    backs.[11]
-                    (ReplaceWith hand.[2])
-
-                ElementAction.create
-                    backs.[21]
-                    (ReplaceWith hand.[3])
-                ElementAction.create
-                    backs.[22]
-                    (ReplaceWith hand.[4])
-                ElementAction.create
-                    backs.[23]
-                    (ReplaceWith hand.[5])
+                let pairs =
+                    Seq.append
+                        (Seq.zip backs.[9..11] hand.[0..2])
+                        (Seq.zip backs.[21..23] hand.[3..5])
+                for back, front in pairs do
+                    yield ElementAction.create
+                        back (ReplaceWith front)
+                for back in backs.[24..] do
+                    yield ElementAction.create
+                        back Remove
             ]
 
         [
             stepW1; stepN1; stepE1; stepS1
             stepW2; stepN2; stepE2; stepS2
-            replace
+            reveal
         ]
 
 module App =
@@ -142,7 +132,7 @@ module App =
 
     (~~document).ready (fun () ->
 
-        let rng = Random(0)
+        let rng = Random()
         let dealer = Seat.South
         let deal =
             Deck.shuffle rng

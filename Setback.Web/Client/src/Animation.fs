@@ -14,6 +14,9 @@ type AnimationAction =
     /// Replace element with another element.
     | ReplaceWith of JQueryElement
 
+    /// Remove element.
+    | Remove
+
 /// An animation action applied to an element.
 type ElementAction =
     {
@@ -45,6 +48,8 @@ module ElementAction =
             | ReplaceWith replacementElem ->
                 elemAction.Element
                     |> JQueryElement.replaceWith replacementElem
+            | Remove ->
+                elemAction.Element.remove()
 
 /// One step in an animation.
 type AnimationStep = seq<ElementAction>
@@ -68,7 +73,7 @@ module Animation =
         let rec loop = function
             | [] -> ()
             | (step : AnimationStep) :: steps ->
-                AnimationStep.run duration step
+                AnimationStep.run (duration - 20) step   // make sure animation finishes before next step starts
                 let callback () = loop steps
-                setTimeout callback duration |> ignore   // start the next step at the same moment that animation of the current step finishes
+                setTimeout callback duration |> ignore
         loop animation
