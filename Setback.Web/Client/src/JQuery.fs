@@ -44,14 +44,20 @@ module JQueryExt =
     let (~~) (selector : obj) =
         JQuery.select selector
 
+
+/// HTML element position.
 type Position =
     {
+        /// Horizontal position, increasing to the right.
         Left : Length
+
+        /// Vertical position, increasing downward.
         Top : Length
     }
 
 module Position =
 
+    /// Creates a position with the given values.
     let create left top =
         { Left = left; Top = top }
 
@@ -62,7 +68,21 @@ module JQueryElement =
     let length propertyName (elem : JQueryElement) =
         elem.css propertyName |> Length.parse
 
+    /// Increments and returns the next z-index.
+    let zIndexIncr =
+        let mutable zIndex = 0
+        fun () ->
+            zIndex <- zIndex + 1
+            zIndex
+
+    /// Brings the given card view to the front.
+    let bringToFront (elem : JQueryElement) =
+        elem.css
+            {| ``z-index`` = zIndexIncr () |}
+
     module private Position =
+
+        /// Converts the given position to CSS format.
         let toCss pos =
             {| left = pos.Left; top = pos.Top |}
 
@@ -77,15 +97,3 @@ module JQueryElement =
         pos
             |> Position.toCss
             |> elem.animate
-
-    /// Increments and returns the next z-index.
-    let zIndexIncr =
-        let mutable zIndex = 0
-        fun () ->
-            zIndex <- zIndex + 1
-            zIndex
-
-    /// Brings the given card view to the front.
-    let bringToFront (elem : JQueryElement) =
-        elem.css
-            {| ``z-index`` = zIndexIncr () |}

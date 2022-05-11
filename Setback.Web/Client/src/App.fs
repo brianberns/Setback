@@ -52,7 +52,7 @@ module DealView =
     let getCoord i =
         (incr * float i) - (0.5 * (6.0 - 1.0) * incr)
 
-    let create surface : Animation =
+    let create surface deal : Animation =
 
         let createActions (x : Coord, y : Coord) cardOffset iCard cv =
             let pos =
@@ -89,6 +89,19 @@ module DealView =
         let stepN1, stepN2 = north deck.[3..5] deck.[15..17]
         let stepE1, stepE2 = east deck.[6..8] deck.[18..20]
         let stepS1, stepS2 = south deck.[9..11] deck.[21..23]
+
+        let hand =
+            deal.UnplayedCards.[0]
+                |> Seq.sortByDescending (fun card ->
+                    let iSuit =
+                        match card.Suit with
+                            | Suit.Spades   -> 4   // black
+                            | Suit.Hearts   -> 3   // red
+                            | Suit.Clubs    -> 2   // black
+                            | Suit.Diamonds -> 1   // red
+                            | _ -> failwith "Unexpected"
+                    iSuit, card.Rank)
+
         [
             stepW1; stepN1; stepE1; stepS1
             stepW2; stepN2; stepE2; stepS2
@@ -96,10 +109,17 @@ module DealView =
 
 module App =
 
-    let run () =
-        CardSurface.init "#surface"
-            |> DealView.create
+    let run deal =
+        let surface = CardSurface.init "#surface"
+        DealView.create surface deal
             |> Animation.run
 
     (~~document).ready (fun () ->
-        run ())
+
+        let rng = Random(0)
+        let dealer = Seat.South
+        let deal =
+            Deck.shuffle rng
+                |> AbstractOpenDeal.fromDeck dealer
+
+        run deal)
