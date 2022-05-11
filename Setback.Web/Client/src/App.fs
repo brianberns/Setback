@@ -93,13 +93,48 @@ module Animation =
 
 module App =
 
+    let incr = 0.1
+
+    let getCoord i =
+        (incr * float i) - (0.5 * (6.0 - 1.0) * incr)
+
+    let instrNS y offset i cv =
+        AnimationInstruction.create cv (getCoord (i + offset), y) true
+
+    let instrEW x offset i cv =
+        AnimationInstruction.create cv (x, getCoord (i + offset)) true
+
+    let west batch1 batch2 =
+        let instr = instrEW -0.9
+        let step1 = batch1 |> Seq.mapi (instr 0)
+        let step2 = batch2 |> Seq.mapi (instr 3)
+        step1, step2
+
+    let north batch1 batch2 =
+        let instr = instrNS -0.9
+        let step1 = batch1 |> Seq.mapi (instr 0)
+        let step2 = batch2 |> Seq.mapi (instr 3)
+        step1, step2
+
+    let east batch1 batch2 =
+        let instr = instrEW 0.9
+        let step1 = batch1 |> Seq.mapi (instr 0)
+        let step2 = batch2 |> Seq.mapi (instr 3)
+        step1, step2
+
+    let south batch1 batch2 =
+        let instr = instrNS 0.9
+        let step1 = batch1 |> Seq.mapi (instr 0)
+        let step2 = batch2 |> Seq.mapi (instr 3)
+        step1, step2
+
     let run () =
 
         let surface = CardSurface.init "#surface"
 
         let deck =
             let pos = surface |> CardSurface.getPosition (0.0, 0.0)
-            Seq.init 6 (fun _ ->
+            Seq.init 52 (fun _ ->
                 let cv = CardView.ofBack ()
                 JQueryElement.setPosition pos cv
                 surface.Element.append(cv)
@@ -107,25 +142,21 @@ module App =
                 |> Seq.rev
                 |> Seq.toArray
 
-        let incr = 0.1
-        let getX i =
-            (incr * float i) - (0.5 * 6.0 * incr)
+        let stepW1, stepW2 = west deck.[0..2] deck.[12..14]
+        let stepN1, stepN2 = north deck.[3..5] deck.[15..17]
+        let stepE1, stepE2 = east deck.[6..8] deck.[18..20]
+        let stepS1, stepS2 = south deck.[9..11] deck.[21..23]
+        Animation.run surface [
+            stepW1
+            stepN1
+            stepE1
+            stepS1
 
-        let animation : Animation =
-            [
-                [
-                    AnimationInstruction.create deck.[0] (getX 0, 0.9) true
-                    AnimationInstruction.create deck.[1] (getX 1, 0.9) true
-                    AnimationInstruction.create deck.[2] (getX 2, 0.9) true
-                ]
-                [
-                    AnimationInstruction.create deck.[3] (getX 3, 0.9) true
-                    AnimationInstruction.create deck.[4] (getX 4, 0.9) true
-                    AnimationInstruction.create deck.[5] (getX 5, 0.9) true
-                ]
-            ]
-
-        Animation.run surface animation
+            stepW2
+            stepN2
+            stepE2
+            stepS2
+        ]
 
     (~~document).ready (fun () ->
         run ())
