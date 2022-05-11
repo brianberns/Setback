@@ -56,18 +56,18 @@ module App =
 
         let surface = CardSurface.init "#surface"
 
-        let instrNS y offset i cv =
+        let instrNS y cardOffset iCard cv =
             let pos =
-                CardSurface.getPosition (getCoord (i + offset), y) surface
+                CardSurface.getPosition (getCoord (iCard + cardOffset), y) surface
             AnimationInstruction.create cv pos true
 
-        let instrEW x offset i cv =
+        let instrEW x cardOffset iCard cv =
             let pos =
-                CardSurface.getPosition (x, getCoord (i + offset)) surface
+                CardSurface.getPosition (getCoord (iCard + cardOffset) + x, 0.0) surface
             AnimationInstruction.create cv pos true
 
         let west batch1 batch2 =
-            let instr = instrEW -0.9
+            let instr = instrEW -0.7
             let step1 = batch1 |> Seq.mapi (instr 0)
             let step2 = batch2 |> Seq.mapi (instr 3)
             step1, step2
@@ -79,7 +79,7 @@ module App =
             step1, step2
 
         let east batch1 batch2 =
-            let instr = instrEW 0.9
+            let instr = instrEW 0.7
             let step1 = batch1 |> Seq.mapi (instr 0)
             let step2 = batch2 |> Seq.mapi (instr 3)
             step1, step2

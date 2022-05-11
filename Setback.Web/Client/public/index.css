@@ -1,8 +1,12 @@
-#surface {
-    width: 1000px;
-    height: 800px;
+body {
     background-color: lightblue;
+}
+
+#surface {
+    width: 1500px;
+    height: 1000px;
     position: relative;
+    margin: auto;
 }
 
 .card {
