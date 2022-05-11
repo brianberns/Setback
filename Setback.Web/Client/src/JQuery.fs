@@ -77,3 +77,15 @@ module JQueryElement =
         pos
             |> Position.toCss
             |> elem.animate
+
+    /// Increments and returns the next z-index.
+    let zIndexIncr =
+        let mutable zIndex = 0
+        fun () ->
+            zIndex <- zIndex + 1
+            zIndex
+
+    /// Brings the given card view to the front.
+    let bringToFront (elem : JQueryElement) =
+        elem.css
+            {| ``z-index`` = zIndexIncr () |}

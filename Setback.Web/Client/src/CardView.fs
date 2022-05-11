@@ -9,7 +9,29 @@ type CardView = JQueryElement
 
 module CardView =
 
-    /// Unfortunately, import only works with string literals.
+    /// Unscaled card width.
+    let width = Pixel 119.0
+
+    /// Unscaled card height.
+    let height = 333.0/238.0 * width
+
+    /// Size of border around each card.
+    let border = Pixel 1.0
+
+    /// Creates a card view.
+    let private create src alt : CardView =
+        let elem = ~~Image.Create(src = src, alt = alt)
+        elem.addClass("card")
+        elem.css
+            {|
+                position = "absolute"
+                width = width
+                ``z-index`` = JQueryElement.zIndexIncr ()
+            |}
+        elem
+
+    /// Card images. (Unfortunately, import only works with string
+    /// literals.)
     let private srcMap =
         [
             Card.fromString "2C", importDefault "./assets/card_images/2C.svg"
@@ -78,44 +100,14 @@ module CardView =
             Card.fromString "AS", importDefault "./assets/card_images/AS.svg"
         ] |> Map
 
-    /// Unscaled card width.
-    let width = Pixel 119.0
-
-    /// Unscaled card height.
-    let height = 333.0/238.0 * width
-
-    /// Size of border around each card.
-    let border = Pixel 1.0
-
-    /// Increments and returns the next z-index.
-    let zIndexIncr =
-        let mutable zIndex = 0
-        fun () ->
-            zIndex <- zIndex + 1
-            zIndex
-
-    /// Creates a card view.
-    let private create src alt =
-        let img = ~~Image.Create(src = src, alt = alt)
-        img.addClass("card")
-        img.css
-            {|
-                position = "absolute"
-                width = width
-                ``z-index`` = zIndexIncr ()
-            |}
-        img
-
     /// Creates a view of the given card.
     let ofCard card =
         create srcMap.[card] card.String
 
-    /// Creates a view of a card back.
-    let ofBack =
-        let src = importDefault "./assets/card_images/Back.svg"
-        fun () -> create src "Back"
+    /// Image of card back.
+    let private srcBack =
+        importDefault "./assets/card_images/Back.svg"
 
-    /// Brings the given card view to the front.
-    let bringToFront (cardView : CardView) =
-        cardView.css
-            {| ``z-index`` = zIndexIncr () |}
+    /// Creates a view of a card back.
+    let ofBack () =
+        create srcBack "Back"
