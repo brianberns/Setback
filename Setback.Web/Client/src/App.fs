@@ -26,7 +26,7 @@ module CardViewStack =
     let ofCards cards =
         cards
             |> Seq.rev
-            |> Seq.map CardView.create
+            |> Seq.map CardView.ofCard
             |> Seq.rev
             |> Seq.toList
 
@@ -75,7 +75,14 @@ module App =
         let stack =
             deal.UnplayedCards.[0]
                 |> Seq.sortByDescending (fun card ->
-                    card.Suit, card.Rank)
+                    let iSuit =
+                        match card.Suit with
+                            | Suit.Spades   -> 4   // black
+                            | Suit.Hearts   -> 3   // red
+                            | Suit.Clubs    -> 2   // black
+                            | Suit.Diamonds -> 1   // red
+                            | _ -> failwith "Unexpected"
+                    iSuit, card.Rank)
                 |> CardViewStack.ofCards
         for cardView in stack do
             cardView |> setPosition 0.0 0.0

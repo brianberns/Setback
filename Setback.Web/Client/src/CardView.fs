@@ -4,6 +4,7 @@ open Browser.Dom
 open Fable.Core.JsInterop
 open PlayingCards
 
+/// A view of a card.
 type CardView = JQueryElement
 
 module CardView =
@@ -77,18 +78,22 @@ module CardView =
             Card.fromString "AS", importDefault "./assets/card_images/AS.svg"
         ] |> Map
 
+    /// Unscaled card width.
     let width = Pixel 119.0
+
+    /// Unscaled card height.
     let height = 333.0/238.0 * width
 
+    /// Increments and returns the next z-index.
     let zIndexIncr =
         let mutable zIndex = 0
         fun () ->
             zIndex <- zIndex + 1
             zIndex
 
-    let create card =
-        let src = srcMap.[card]
-        let img = ~~Image.Create(src = src, alt = card.String)
+    /// Creates a card view.
+    let private create src alt =
+        let img = ~~Image.Create(src = src, alt = alt)
         img.addClass("card")
         img.css
             {|
@@ -98,19 +103,25 @@ module CardView =
             |}
         img
 
+    /// Creates a view of the given card.
+    let ofCard card =
+        create srcMap.[card] card.String
+
+    /// Creates a view of a card back.
+    let ofBack () =
+        create "./assets/Back.svg" "Back"
+
+    /// Sets the position of the given card view instantly.
     let setPosition (left : Length) (top : Length) (cardView : CardView) =
         cardView.css
-            {|
-                left = left
-                top = top
-            |}
+            {| left = left; top = top |}
 
+    /// Sets and animates the position of the given card view.
     let animateTo (left : Length) (top : Length) (cardView : CardView) =
         cardView.animate
-            {|
-                left = left
-                top = top
-            |}
+            {| left = left; top = top |}
 
+    /// Brings the given card view to the front.
     let bringToFront (cardView : CardView) =
-        cardView.css {| ``z-index`` = zIndexIncr () |}
+        cardView.css
+            {| ``z-index`` = zIndexIncr () |}
