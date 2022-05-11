@@ -4,6 +4,17 @@ open Browser.Dom
 open Fable.Core.JsInterop
 open PlayingCards
 
+type Position =
+    {
+        Left : Length
+        Top : Length
+    }
+
+module Position =
+
+    let create left top =
+        { Left = left; Top = top }
+
 /// A view of a card.
 type CardView = JQueryElement
 
@@ -111,17 +122,23 @@ module CardView =
     let ofBack () =
         create "./assets/Back.svg" "Back"
 
-    /// Sets the position of the given card view instantly.
-    let setPosition (left : Length) (top : Length) (cardView : CardView) =
-        cardView.css
-            {| left = left; top = top |}
-
-    /// Sets and animates the position of the given card view.
-    let animateTo (left : Length) (top : Length) (cardView : CardView) =
-        cardView.animate
-            {| left = left; top = top |}
-
     /// Brings the given card view to the front.
     let bringToFront (cardView : CardView) =
         cardView.css
             {| ``z-index`` = zIndexIncr () |}
+
+    module private Position =
+        let toCss pos =
+            {| left = pos.Left; top = pos.Top |}
+
+    /// Sets the position of the given card view instantly.
+    let setPosition pos (cardView : CardView) =
+        pos
+            |> Position.toCss
+            |> cardView.css
+
+    /// Sets and animates the position of the given card view.
+    let animateTo pos (cardView : CardView) =
+        pos
+            |> Position.toCss
+            |> cardView.animate

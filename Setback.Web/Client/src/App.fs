@@ -30,32 +30,40 @@ module CardViewStack =
             |> Seq.rev
             |> Seq.toList
 
+type CardSurface =
+    {
+        Element : JQueryElement
+        Width : Length
+        Height : Length
+    }
+
+module CardSurface =
+
+    let private border = Pixel 1.0
+
+    let init selector =
+        let elem = JQuery.select selector
+        {
+            Element = elem
+            Width =
+                let width = Length.ofElement "width" elem
+                width - CardView.width - (2.0 * border)
+
+            Height =
+                let height = Length.ofElement "height" elem
+                height - CardView.height - (2.0 * border)
+        }
+
+    let getPosition x y surface =
+        let left = Coord.toLength surface.Width x
+        let top = Coord.toLength surface.Height y
+        Position.create left top
+
 module App =
 
     let run deal =
 
-        let surface = JQuery.select "#surface"
-        let border = Pixel 1.0
-        let maxWidth =
-            let width =
-                surface.css "width"
-                    |> Length.parse
-            width - CardView.width - (2.0 * border)
-        let maxHeight =
-            let height =
-                surface.css "height"
-                    |> Length.parse
-            height - CardView.height - (2.0 * border)
-
-        let setPosition x y cardView =
-            let left = Coord.toLength maxWidth x
-            let top = Coord.toLength maxHeight y
-            cardView |> CardView.setPosition left top
-
-        let animate x y cardView =
-            let left = Coord.toLength maxWidth x
-            let top = Coord.toLength maxHeight y
-            cardView |> CardView.animateTo left top
+        let surface = CardSurface.init "#surface"
 
         let rec animateDeal (undealt : List<CardView>) (dealt : List<CardView>) =
             match undealt with
@@ -68,7 +76,8 @@ module App =
                     for i = 0 to numDealt - 1 do
                         let cardView = dealt'.[i]
                         let x = incr * (float (numDealt - i - 1) - 0.5 * float (numDealt - 1))
-                        cardView |> animate x 0.9
+                        let pos = surface |> CardSurface.getPosition x 0.9
+                        cardView |> CardView.animateTo pos
                     let callback () = animateDeal undealt' dealt'
                     setTimeout callback 500 |> ignore
 
@@ -85,8 +94,9 @@ module App =
                     iSuit, card.Rank)
                 |> CardViewStack.ofCards
         for cardView in stack do
-            cardView |> setPosition 0.0 0.0
-            surface.append(cardView)
+            let pos = surface |> CardSurface.getPosition 0.0 0.0
+            cardView |> CardView.setPosition pos
+            surface.Element.append(cardView)
         animateDeal stack []
 
     let rng = Random(0)
