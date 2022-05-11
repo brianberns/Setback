@@ -51,7 +51,8 @@ module ElementAction =
             | Remove ->
                 elemAction.Element.remove()
 
-/// One step in an animation.
+/// One step in an animation. All the actions in a step
+/// are animated simultaneously in parallel.
 type AnimationStep = seq<ElementAction>
 
 module AnimationStep =
@@ -73,7 +74,7 @@ module Animation =
         let rec loop = function
             | [] -> ()
             | (step : AnimationStep) :: steps ->
-                AnimationStep.run (duration - 20) step   // make sure animation finishes before next step starts
+                AnimationStep.run (duration - 20) step   // make sure each step finishes before next step starts
                 let callback () = loop steps
                 setTimeout callback duration |> ignore
         loop animation

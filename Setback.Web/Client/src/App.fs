@@ -45,35 +45,53 @@ module CardSurface =
         let top = Coord.toLength surface.Height y
         Position.create left top
 
+module HandView =
+
+    /// Target distance between adjacent cards in the hand.
+    let delta : Coord = 0.05
+
+    /// Gets the target x-coord of the given card in a hand containing
+    /// the given total number of cards.
+    let getX numCards =
+
+        /// Left-shift from center of hand.
+        let shift = 0.5 * float (numCards - 1) * delta
+
+        fun iCard ->
+            (delta * float iCard) - shift
+
+    /// Animates the given card view to its target position.
+    let animateCard (xOffset : Coord, y : Coord) surface iCard cardView : AnimationStep =
+        let pos =
+            let x = getX 6 iCard + xOffset
+            CardSurface.getPosition (x, y) surface
+        [
+            MoveTo pos
+            BringToFront
+        ] |> Seq.map (ElementAction.create cardView)
+
+    /// Deals the given batches of cards into their target positions.
+    let deal coords surface cardViews1 cardViews2 =
+
+        let batchSize = Setback.numCardsPerHand / 2
+        assert(cardViews1 |> Seq.length = batchSize)
+        assert(cardViews2 |> Seq.length = batchSize)
+
+        let gen cardOffset =
+            Seq.mapi (fun iCard ->
+                let iCard' = iCard + cardOffset
+                animateCard coords surface iCard')
+                >> Seq.concat
+        gen 0 cardViews1, gen batchSize cardViews2
+
+    let west = deal (-0.7, 0.0)
+    let north = deal (0.0, -0.9)
+    let east = deal (0.7, 0.0)
+    let south = deal (0.0, 0.9)
+
 module DealView =
 
-    let incr = 0.05
-
-    let getCoord i =
-        (incr * float i) - (0.5 * (6.0 - 1.0) * incr)
-
     let create surface deal : Animation =
-
-        let createActions (x : Coord, y : Coord) cardOffset iCard cv =
-            let pos =
-                CardSurface.getPosition
-                    (getCoord (iCard + cardOffset) + x, y)
-                    surface
-            [
-                MoveTo pos
-                BringToFront
-            ] |> Seq.map (ElementAction.create cv)
-
-        let generate coords cvs1 cvs2 : AnimationStep * AnimationStep =
-            let gen cardOffset =
-                Seq.mapi (createActions coords cardOffset)
-                    >> Seq.concat
-            gen 0 cvs1, gen 3 cvs2
-
-        let west = generate (-0.7, 0.0)
-        let north = generate (0.0, -0.9)
-        let east = generate (0.7, 0.0)
-        let south = generate (0.0, 0.9)
 
         let backs =
             let pos = surface |> CardSurface.getPosition (0.0, 0.0)
@@ -85,10 +103,10 @@ module DealView =
                 |> Seq.rev
                 |> Seq.toArray
 
-        let stepW1, stepW2 = west backs.[0..2] backs.[12..14]
-        let stepN1, stepN2 = north backs.[3..5] backs.[15..17]
-        let stepE1, stepE2 = east backs.[6..8] backs.[18..20]
-        let stepS1, stepS2 = south backs.[9..11] backs.[21..23]
+        let stepW1, stepW2 = HandView.west surface backs.[0..2] backs.[12..14]
+        let stepN1, stepN2 = HandView.north surface backs.[3..5] backs.[15..17]
+        let stepE1, stepE2 = HandView.east surface backs.[6..8] backs.[18..20]
+        let stepS1, stepS2 = HandView.south surface backs.[9..11] backs.[21..23]
 
         let reveal =
             let hand =
@@ -104,6 +122,8 @@ module DealView =
                         iSuit, card.Rank)
                     |> Seq.map CardView.ofCard
                     |> Seq.toArray
+            for cv in hand do
+                cv.click (fun () -> cv.remove())
             [
                 let pairs =
                     Seq.append
