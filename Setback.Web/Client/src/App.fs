@@ -49,15 +49,26 @@ type AnimationInstruction =
     {
         Element : JQueryElement
         Target : Coord * Coord
+        BringToFront : bool
     }
 
 module AnimationInstruction =
 
-    let create elem target =
+    let create elem target bringToFront =
         {
             Element = elem
             Target = target
+            BringToFront = bringToFront
         }
+
+    let run surface instr =
+        if instr.BringToFront then
+            instr.Element |> JQueryElement.bringToFront
+        let pos =
+            surface
+                |> CardSurface.getPosition instr.Target
+        instr.Element
+            |> JQueryElement.animateTo pos
 
 type AnimationStep = seq<AnimationInstruction>
 
@@ -65,11 +76,7 @@ module AnimationStep =
 
     let run surface step =
         for instr in step do
-            let pos =
-                surface
-                    |> CardSurface.getPosition instr.Target
-            instr.Element
-                |> JQueryElement.animateTo pos
+            AnimationInstruction.run surface instr
 
 type Animation = List<AnimationStep>
 
@@ -102,19 +109,19 @@ module App =
 
         let incr = 0.1
         let getX i =
-            incr * (float (6 - i - 1) - 0.5 * float (6 - 1))
+            (incr * float i) - (0.5 * 6.0 * incr)
 
         let animation : Animation =
             [
                 [
-                    AnimationInstruction.create deck.[0] (getX 0, 0.9)
-                    AnimationInstruction.create deck.[1] (getX 1, 0.9)
-                    AnimationInstruction.create deck.[2] (getX 2, 0.9)
+                    AnimationInstruction.create deck.[0] (getX 0, 0.9) true
+                    AnimationInstruction.create deck.[1] (getX 1, 0.9) true
+                    AnimationInstruction.create deck.[2] (getX 2, 0.9) true
                 ]
                 [
-                    AnimationInstruction.create deck.[3] (getX 3, 0.9)
-                    AnimationInstruction.create deck.[4] (getX 4, 0.9)
-                    AnimationInstruction.create deck.[5] (getX 5, 0.9)
+                    AnimationInstruction.create deck.[3] (getX 3, 0.9) true
+                    AnimationInstruction.create deck.[4] (getX 4, 0.9) true
+                    AnimationInstruction.create deck.[5] (getX 5, 0.9) true
                 ]
             ]
 
