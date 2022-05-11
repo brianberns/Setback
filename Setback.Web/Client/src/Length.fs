@@ -44,8 +44,3 @@ module Length =
         str.Substring(0, str.Length - suffix.Length)
             |> Double.Parse
             |> Pixel
-
-    /// Gets the length of the given property of the given
-    /// jQuery element.
-    let ofElement propertyName (elem : JQueryElement) =
-        elem.css propertyName |> parse

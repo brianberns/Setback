@@ -19,17 +19,6 @@ module Coord =
         (0.5 * (float max.NumPixels * (coord + 1.0)))
             |> Pixel
 
-type CardViewStack = List<CardView>
-
-module CardViewStack =
-
-    let ofCards cards =
-        cards
-            |> Seq.rev
-            |> Seq.map CardView.ofCard
-            |> Seq.rev
-            |> Seq.toList
-
 type CardSurface =
     {
         Element : JQueryElement
@@ -39,73 +28,97 @@ type CardSurface =
 
 module CardSurface =
 
-    let private border = Pixel 1.0
-
     let init selector =
         let elem = JQuery.select selector
         {
             Element = elem
             Width =
-                let width = Length.ofElement "width" elem
-                width - CardView.width - (2.0 * border)
-
+                let width = JQueryElement.length "width" elem
+                width - CardView.width - (2.0 * CardView.border)
             Height =
-                let height = Length.ofElement "height" elem
-                height - CardView.height - (2.0 * border)
+                let height = JQueryElement.length "height" elem
+                height - CardView.height - (2.0 * CardView.border)
         }
 
-    let getPosition x y surface =
+    let getPosition (x, y) surface =
         let left = Coord.toLength surface.Width x
         let top = Coord.toLength surface.Height y
         Position.create left top
 
+type AnimationInstruction =
+    {
+        Element : JQueryElement
+        Target : Coord * Coord
+    }
+
+module AnimationInstruction =
+
+    let create elem target =
+        {
+            Element = elem
+            Target = target
+        }
+
+type AnimationStep = seq<AnimationInstruction>
+
+module AnimationStep =
+
+    let run surface step =
+        for instr in step do
+            let pos =
+                surface
+                    |> CardSurface.getPosition instr.Target
+            instr.Element
+                |> JQueryElement.animateTo pos
+
+type Animation = List<AnimationStep>
+
+module Animation =
+
+    let run surface (animation : Animation) =
+        let rec loop = function
+            | [] -> ()
+            | (step : AnimationStep) :: steps ->
+                AnimationStep.run surface step
+                let callback () = loop steps
+                setTimeout callback 500 |> ignore
+        loop animation
+
 module App =
 
-    let run deal =
+    let run () =
 
         let surface = CardSurface.init "#surface"
 
-        let rec animateDeal (undealt : List<CardView>) (dealt : List<CardView>) =
-            match undealt with
-                | [] -> ()
-                | head :: undealt' ->
-                    CardView.bringToFront head
-                    let dealt' = head :: dealt
-                    let numDealt = dealt'.Length
-                    let incr = 0.1
-                    for i = 0 to numDealt - 1 do
-                        let cardView = dealt'.[i]
-                        let x = incr * (float (numDealt - i - 1) - 0.5 * float (numDealt - 1))
-                        let pos = surface |> CardSurface.getPosition x 0.9
-                        cardView |> CardView.animateTo pos
-                    let callback () = animateDeal undealt' dealt'
-                    setTimeout callback 500 |> ignore
+        let deck =
+            let pos = surface |> CardSurface.getPosition (0.0, 0.0)
+            Seq.init 6 (fun _ ->
+                let cv = CardView.ofBack ()
+                JQueryElement.setPosition pos cv
+                surface.Element.append(cv)
+                cv)
+                |> Seq.rev
+                |> Seq.toArray
 
-        let stack =
-            deal.UnplayedCards.[0]
-                |> Seq.sortByDescending (fun card ->
-                    let iSuit =
-                        match card.Suit with
-                            | Suit.Spades   -> 4   // black
-                            | Suit.Hearts   -> 3   // red
-                            | Suit.Clubs    -> 2   // black
-                            | Suit.Diamonds -> 1   // red
-                            | _ -> failwith "Unexpected"
-                    iSuit, card.Rank)
-                |> CardViewStack.ofCards
-        for cardView in stack do
-            let pos = surface |> CardSurface.getPosition 0.0 0.0
-            cardView |> CardView.setPosition pos
-            surface.Element.append(cardView)
-        animateDeal stack []
+        let incr = 0.1
+        let getX i =
+            incr * (float (6 - i - 1) - 0.5 * float (6 - 1))
 
-    let rng = Random(0)
-    let dealer = Seat.South
-    let deal =
-        Deck.shuffle rng
-            |> AbstractOpenDeal.fromDeck dealer
+        let animation : Animation =
+            [
+                [
+                    AnimationInstruction.create deck.[0] (getX 0, 0.9)
+                    AnimationInstruction.create deck.[1] (getX 1, 0.9)
+                    AnimationInstruction.create deck.[2] (getX 2, 0.9)
+                ]
+                [
+                    AnimationInstruction.create deck.[3] (getX 3, 0.9)
+                    AnimationInstruction.create deck.[4] (getX 4, 0.9)
+                    AnimationInstruction.create deck.[5] (getX 5, 0.9)
+                ]
+            ]
 
-    JQuery.init ()
+        Animation.run surface animation
 
     (~~document).ready (fun () ->
-        run deal)
+        run ())

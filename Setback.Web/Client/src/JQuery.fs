@@ -43,3 +43,37 @@ module JQueryExt =
     /// Selects a jQuery element.
     let (~~) (selector : obj) =
         JQuery.select selector
+
+type Position =
+    {
+        Left : Length
+        Top : Length
+    }
+
+module Position =
+
+    let create left top =
+        { Left = left; Top = top }
+
+module JQueryElement =
+
+    /// Gets the length of the given property of the given
+    /// jQuery element.
+    let length propertyName (elem : JQueryElement) =
+        elem.css propertyName |> Length.parse
+
+    module private Position =
+        let toCss pos =
+            {| left = pos.Left; top = pos.Top |}
+
+    /// Sets the position of the given element instantly.
+    let setPosition pos (elem : JQueryElement) =
+        pos
+            |> Position.toCss
+            |> elem.css
+
+    /// Sets and animates the position of the given element.
+    let animateTo pos (elem : JQueryElement) =
+        pos
+            |> Position.toCss
+            |> elem.animate
