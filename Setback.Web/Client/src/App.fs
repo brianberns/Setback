@@ -45,47 +45,40 @@ module CardSurface =
         let top = Coord.toLength surface.Height y
         Position.create left top
 
-module App =
+module DealView =
 
     let incr = 0.1
 
     let getCoord i =
         (incr * float i) - (0.5 * (6.0 - 1.0) * incr)
 
-    let run () =
+    let create surface : Animation =
 
-        let surface = CardSurface.init "#surface"
-
-        let instrNS y cardOffset iCard cv =
+        let createInstr (x, y) cardOffset iCard cv =
             let pos =
-                CardSurface.getPosition (getCoord (iCard + cardOffset), y) surface
-            AnimationInstruction.create cv pos true
-
-        let instrEW x cardOffset iCard cv =
-            let pos =
-                CardSurface.getPosition (getCoord (iCard + cardOffset) + x, 0.0) surface
+                CardSurface.getPosition (getCoord (iCard + cardOffset) + x, y) surface
             AnimationInstruction.create cv pos true
 
         let west batch1 batch2 =
-            let instr = instrEW -0.7
+            let instr = createInstr (-0.7, 0.0)
             let step1 = batch1 |> Seq.mapi (instr 0)
             let step2 = batch2 |> Seq.mapi (instr 3)
             step1, step2
 
         let north batch1 batch2 =
-            let instr = instrNS -0.9
+            let instr = createInstr (0.0, -0.9)
             let step1 = batch1 |> Seq.mapi (instr 0)
             let step2 = batch2 |> Seq.mapi (instr 3)
             step1, step2
 
         let east batch1 batch2 =
-            let instr = instrEW 0.7
+            let instr = createInstr (0.7, 0.0)
             let step1 = batch1 |> Seq.mapi (instr 0)
             let step2 = batch2 |> Seq.mapi (instr 3)
             step1, step2
 
         let south batch1 batch2 =
-            let instr = instrNS 0.9
+            let instr = createInstr (0.0, 0.9)
             let step1 = batch1 |> Seq.mapi (instr 0)
             let step2 = batch2 |> Seq.mapi (instr 3)
             step1, step2
@@ -104,10 +97,17 @@ module App =
         let stepN1, stepN2 = north deck.[3..5] deck.[15..17]
         let stepE1, stepE2 = east deck.[6..8] deck.[18..20]
         let stepS1, stepS2 = south deck.[9..11] deck.[21..23]
-        Animation.run [
+        [
             stepW1; stepN1; stepE1; stepS1
             stepW2; stepN2; stepE2; stepS2
         ]
+
+module App =
+
+    let run () =
+        CardSurface.init "#surface"
+            |> DealView.create
+            |> Animation.run
 
     (~~document).ready (fun () ->
         run ())
