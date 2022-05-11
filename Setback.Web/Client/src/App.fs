@@ -64,7 +64,7 @@ module DealView =
                 BringToFront
             ] |> Seq.map (ElementAction.create cv)
 
-        let generate coords cvs1 cvs2 =
+        let generate coords cvs1 cvs2 : AnimationStep * AnimationStep =
             let gen cardOffset =
                 Seq.mapi (createActions coords cardOffset)
                     >> Seq.concat
