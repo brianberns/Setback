@@ -50,8 +50,8 @@ module HandView =
     /// Target distance between adjacent cards in the hand.
     let delta : Coord = 0.05
 
-    /// Gets the target x-coord of the given card in a hand containing
-    /// the given total number of cards.
+    /// Gets the target x-coord of the given card in a hand
+    /// containing the given total number of cards.
     let getX numCards =
 
         /// Left-shift from center of hand.
@@ -61,9 +61,9 @@ module HandView =
             (delta * float iCard) - shift
 
     /// Animates the given card view to its target position.
-    let animateCard (xOffset : Coord, y : Coord) surface iCard cardView : AnimationStep =
+    let animateCard (xOffset : Coord, y : Coord) surface numCards iCard cardView : AnimationStep =
         let pos =
-            let x = getX 6 iCard + xOffset
+            let x = getX numCards iCard + xOffset
             CardSurface.getPosition (x, y) surface
         [
             MoveTo pos
@@ -71,23 +71,70 @@ module HandView =
         ] |> Seq.map (ElementAction.create cardView)
 
     /// Deals the given batches of cards into their target positions.
-    let deal coords surface cardViews1 cardViews2 =
+    let deal coords surface cardViews1 cardViews2 : AnimationStep * AnimationStep =
 
         let batchSize = Setback.numCardsPerHand / 2
         assert(cardViews1 |> Seq.length = batchSize)
         assert(cardViews2 |> Seq.length = batchSize)
 
         let gen cardOffset =
+            let numCards = Setback.numCardsPerHand
             Seq.mapi (fun iCard ->
                 let iCard' = iCard + cardOffset
-                animateCard coords surface iCard')
+                animateCard coords surface numCards iCard')
                 >> Seq.concat
         gen 0 cardViews1, gen batchSize cardViews2
 
-    let west = deal (-0.7, 0.0)
-    let north = deal (0.0, -0.9)
-    let east = deal (0.7, 0.0)
-    let south = deal (0.0, 0.9)
+    let dealWest  = deal (-0.7,  0.0)
+    let dealNorth = deal ( 0.0, -0.9)
+    let dealEast  = deal ( 0.7,  0.0)
+    let dealSouth = deal ( 0.0,  0.9)
+
+    let rec private playSouth surface cardViews =
+        for (cardView : CardView) in cardViews do
+
+            cardView.off("click")
+
+            cardView.click (fun () ->
+
+                cardView.remove()
+
+                let cardViews' =
+                    cardViews
+                        |> Seq.where (fun cv -> cv <> cardView)
+                        |> Seq.toArray
+
+                cardViews'
+                    |> Seq.mapi (fun iCard cv ->
+                        animateCard (0.0, 0.9) surface cardViews'.Length iCard cv)
+                    |> Seq.concat
+                    |> Seq.singleton
+                    |> Animation.run
+
+                playSouth surface cardViews')
+
+    let revealSouth surface cardBacks (hand : Hand) =
+        let cardViews =
+            hand
+                |> Seq.sortByDescending (fun card ->
+                    let iSuit =
+                        match card.Suit with
+                            | Suit.Spades   -> 4   // black
+                            | Suit.Hearts   -> 3   // red
+                            | Suit.Clubs    -> 2   // black
+                            | Suit.Diamonds -> 1   // red
+                            | _ -> failwith "Unexpected"
+                    iSuit, card.Rank)
+                |> Seq.map CardView.ofCard
+                |> Seq.toArray
+        playSouth surface cardViews
+        seq {
+            let pairs =
+                Seq.zip cardBacks cardViews
+            for (back : CardView), front in pairs do
+                yield ElementAction.create
+                    back (ReplaceWith front)
+        }
 
 module DealView =
 
@@ -103,44 +150,31 @@ module DealView =
                 |> Seq.rev
                 |> Seq.toArray
 
-        let stepW1, stepW2 = HandView.west surface backs.[0..2] backs.[12..14]
-        let stepN1, stepN2 = HandView.north surface backs.[3..5] backs.[15..17]
-        let stepE1, stepE2 = HandView.east surface backs.[6..8] backs.[18..20]
-        let stepS1, stepS2 = HandView.south surface backs.[9..11] backs.[21..23]
+        let stepW1, stepW2 = HandView.dealWest  surface backs.[0.. 2] backs.[12..14]
+        let stepN1, stepN2 = HandView.dealNorth surface backs.[3.. 5] backs.[15..17]
+        let stepE1, stepE2 = HandView.dealEast  surface backs.[6.. 8] backs.[18..20]
+        let stepS1, stepS2 = HandView.dealSouth surface backs.[9..11] backs.[21..23]
 
-        let reveal =
-            let hand =
-                deal.UnplayedCards.[0]
-                    |> Seq.sortByDescending (fun card ->
-                        let iSuit =
-                            match card.Suit with
-                                | Suit.Spades   -> 4   // black
-                                | Suit.Hearts   -> 3   // red
-                                | Suit.Clubs    -> 2   // black
-                                | Suit.Diamonds -> 1   // red
-                                | _ -> failwith "Unexpected"
-                        iSuit, card.Rank)
-                    |> Seq.map CardView.ofCard
-                    |> Seq.toArray
-            for cv in hand do
-                cv.click (fun () -> cv.remove())
-            [
-                let pairs =
-                    Seq.append
-                        (Seq.zip backs.[9..11] hand.[0..2])
-                        (Seq.zip backs.[21..23] hand.[3..5])
-                for back, front in pairs do
-                    yield ElementAction.create
-                        back (ReplaceWith front)
-                for back in backs.[24..] do
-                    yield ElementAction.create
-                        back Remove
-            ]
+        let finish : AnimationStep =
+            let southBacks =
+                Seq.append backs.[9..11] backs.[21..23]
+            let reveal =
+                HandView.revealSouth
+                    surface
+                    southBacks
+                    deal.UnplayedCards.[0]
+            let remove =
+                seq {
+                    for back in backs.[24..] do
+                        yield ElementAction.create
+                            back Remove
+                }
+            Seq.append reveal remove
 
         [
             stepW1; stepN1; stepE1; stepS1
             stepW2; stepN2; stepE2; stepS2
-            reveal
+            finish
         ]
 
 module App =

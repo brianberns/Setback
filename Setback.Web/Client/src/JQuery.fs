@@ -18,6 +18,9 @@ type JQueryElement =
     /// Handles the element's click event.
     abstract click : handler : (unit -> unit) -> unit
 
+    /// Removes handlers for the element's event of the given name.
+    abstract off : eventName : string -> unit
+
     /// Gets the element's parent.
     abstract parent : unit -> JQueryElement
 

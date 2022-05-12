@@ -62,7 +62,7 @@ module AnimationStep =
         Seq.iter (ElementAction.run duration)
 
 /// A sequence of steps to be animated.
-type Animation = List<AnimationStep>
+type Animation = seq<AnimationStep>
 
 module Animation =
 
@@ -77,4 +77,6 @@ module Animation =
                 AnimationStep.run (duration - 20) step   // make sure each step finishes before next step starts
                 let callback () = loop steps
                 setTimeout callback duration |> ignore
-        loop animation
+        animation
+            |> Seq.toList
+            |> loop
