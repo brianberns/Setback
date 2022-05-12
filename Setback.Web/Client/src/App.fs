@@ -85,33 +85,34 @@ module HandView =
                 >> Seq.concat
         gen 0 cardViews1, gen batchSize cardViews2
 
-    let dealWest  = deal (-0.7,  0.0)
-    let dealNorth = deal ( 0.0, -0.9)
-    let dealEast  = deal ( 0.7,  0.0)
-    let dealSouth = deal ( 0.0,  0.9)
+    let private coordsWest  = -0.7,  0.0
+    let private coordsNorth =  0.0, -0.9
+    let private coordsEast  =  0.7,  0.0
+    let private coordsSouth =  0.0,  0.9
 
-    let rec private playSouth surface cardViews =
-        for (cardView : CardView) in cardViews do
+    let dealWest  = deal coordsWest
+    let dealNorth = deal coordsNorth
+    let dealEast  = deal coordsEast
+    let dealSouth = deal coordsSouth
 
-            cardView.off("click")
-
+    let private playSouth surface cardViews =
+        let mutable cardViews' = ResizeArray (cardViews : seq<_>)
+        for (cardView : CardView) in cardViews' do
             cardView.click (fun () ->
 
+                    // remove selected card
                 cardView.remove()
+                let flag = cardViews'.Remove(cardView)
+                assert(flag)
 
-                let cardViews' =
-                    cardViews
-                        |> Seq.where (fun cv -> cv <> cardView)
-                        |> Seq.toArray
-
+                    // adjust remaining cards to fill gap
+                let numCards = cardViews'.Count
                 cardViews'
                     |> Seq.mapi (fun iCard cv ->
-                        animateCard (0.0, 0.9) surface cardViews'.Length iCard cv)
+                        animateCard coordsSouth surface numCards iCard cv)
                     |> Seq.concat
                     |> Seq.singleton
-                    |> Animation.run
-
-                playSouth surface cardViews')
+                    |> Animation.run)
 
     let revealSouth surface cardBacks (hand : Hand) =
         let cardViews =
