@@ -2,48 +2,11 @@ namespace Setback.Web.Client
 
 open System
 
-open Fable.Core.JS
-
 open Browser.Dom
 
 open PlayingCards
 open Setback
 open Setback.Cfrm
-
-/// Values from -1.0 to 1.0.
-type Coord = float
-
-module Coord =
-
-    let toLength (max : Length) (coord : Coord) =
-        (0.5 * (float max.NumPixels * (coord + 1.0)))
-            |> Pixel
-
-type CardSurface =
-    {
-        Element : JQueryElement
-        Width : Length
-        Height : Length
-    }
-
-module CardSurface =
-
-    let init selector =
-        let elem = JQuery.select selector
-        {
-            Element = elem
-            Width =
-                let width = JQueryElement.length "width" elem
-                width - CardView.width - (2.0 * CardView.border)
-            Height =
-                let height = JQueryElement.length "height" elem
-                height - CardView.height - (2.0 * CardView.border)
-        }
-
-    let getPosition (x, y) surface =
-        let left = Coord.toLength surface.Width x
-        let top = Coord.toLength surface.Height y
-        Position.create left top
 
 module HandView =
 
