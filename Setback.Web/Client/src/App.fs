@@ -10,42 +10,52 @@ open Setback.Cfrm
 
 module HandView =
 
-    /// Target distance between adjacent cards in the hand.
-    let delta : Coord = 0.05
-
     /// Gets the target x-coord of the given card in a hand
     /// containing the given total number of cards.
-    let getX numCards =
+    let private getX =
 
-        /// Left-shift from center of hand.
-        let shift = 0.5 * float (numCards - 1) * delta
+        /// Target distance between adjacent cards in the hand.
+        let delta : Coord = 0.05
 
-        fun iCard ->
-            (delta * float iCard) - shift
+        fun numCards ->
 
-    /// Animates the given card view to its target position.
-    let animateCard (xOffset : Coord, y : Coord) surface numCards iCard cardView : AnimationStep =
-        let pos =
-            let x = getX numCards iCard + xOffset
-            CardSurface.getPosition (x, y) surface
-        [
-            MoveTo pos
-            BringToFront
-        ] |> Seq.map (ElementAction.create cardView)
+            /// Left-shift from center of hand.
+            let shift = 0.5 * float (numCards - 1) * delta
+
+            fun iCard ->
+                (delta * float iCard) - shift
+
+    /// Animates a card to its target position in a hand.
+    let private animateCard
+        (xOffset : Coord, y : Coord)
+        surface numCards iCard =
+        let x = getX numCards iCard + xOffset
+        CardSurface.getPosition (x, y) surface
+            |> MoveTo
 
     /// Deals the given batches of cards into their target positions.
-    let deal coords surface cardViews1 cardViews2 : AnimationStep * AnimationStep =
+    let private deal coords surface cardViews1 cardViews2 =
 
         let batchSize = Setback.numCardsPerHand / 2
         assert(cardViews1 |> Seq.length = batchSize)
         assert(cardViews2 |> Seq.length = batchSize)
 
-        let gen cardOffset =
+        let gen cardOffset (cardViews : _[]) : AnimationStep =
             let numCards = Setback.numCardsPerHand
-            Seq.mapi (fun iCard ->
-                let iCard' = iCard + cardOffset
-                animateCard coords surface numCards iCard')
-                >> Seq.concat
+            seq {
+                for iCard = 0 to batchSize - 1 do
+
+                    let iCard' = iCard + cardOffset
+                    let actions =
+                        seq {
+                            animateCard coords surface numCards iCard'
+                            BringToFront
+                        }
+
+                    let cardView = cardViews.[iCard]
+                    for action in actions do
+                        yield ElementAction.create cardView action
+            }
         gen 0 cardViews1, gen batchSize cardViews2
 
     let private coordsWest  = -0.7,  0.0
@@ -71,9 +81,9 @@ module HandView =
                     // adjust remaining cards to fill gap
                 let numCards = cardViews'.Count
                 cardViews'
-                    |> Seq.mapi (fun iCard cv ->
-                        animateCard coordsSouth surface numCards iCard cv)
-                    |> Seq.concat
+                    |> Seq.mapi (fun iCard cardView ->
+                        animateCard coordsSouth surface numCards iCard
+                            |> ElementAction.create cardView)
                     |> Seq.singleton
                     |> Animation.run)
 
