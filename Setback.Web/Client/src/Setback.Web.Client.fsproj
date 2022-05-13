@@ -43,6 +43,8 @@
     <Compile Include="Animation.fs" />
     <Compile Include="CardView.fs" />
     <Compile Include="CardSurface.fs" />
+    <Compile Include="HandView.fs" />
+    <Compile Include="DealView.fs" />
     <Compile Include="App.fs" />
   </ItemGroup>
   <ItemGroup>
