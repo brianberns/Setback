@@ -48,6 +48,7 @@ module ElementAction =
                     |> JQueryElement.replaceWith replacementElem
             | Remove ->
                 elemAction.Element.remove()
+        elemAction.Element.promise()
 
 /// One step in an animation. All the actions in a step
 /// are animated simultaneously in parallel.
@@ -57,17 +58,11 @@ module AnimationStep =
 
     /// Runs an animation step.
     let run duration (step : AnimationStep) =
-
-        let rec loop (acc : JQueryElement) = function
-            | [] -> acc.promise()
-            | elemAction :: elemActions ->
-                ElementAction.run duration elemAction
-                let acc' = acc.add(elemAction.Element)
-                loop acc' elemActions
-
         step
-            |> Seq.toList
-            |> loop JQueryElement.empty
+            |> Seq.map (ElementAction.run duration)
+            |> Seq.toArray
+            |> Promise.all
+            |> Promise.map (fun _ -> ())
 
 /// A sequence of steps to be animated.
 type Animation = seq<AnimationStep>
@@ -75,12 +70,12 @@ type Animation = seq<AnimationStep>
 module Animation =
 
     /// Duration of each step, in milliseconds.
-    let duration = 200
+    let duration = 300
 
     /// Runs an animation.
     let run (animation : Animation) =
         let rec loop = function
-            | [] -> promise { return () }
+            | [] -> Promise.lift ()
             | step :: steps ->
                 promise {
                     do! AnimationStep.run duration step

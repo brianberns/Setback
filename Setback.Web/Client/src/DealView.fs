@@ -5,7 +5,7 @@ open Setback.Cfrm
 
 module DealView =
 
-    let create surface deal : Animation =
+    let create surface deal =
 
         let backs =
             let pos = surface |> CardSurface.getPosition (0.0, 0.0)
@@ -38,7 +38,7 @@ module DealView =
                 }
             Seq.append reveal remove
 
-        [
+        Animation.run [
             stepW1; stepN1; stepE1; stepS1
             stepW2; stepN2; stepE2; stepS2
             finish

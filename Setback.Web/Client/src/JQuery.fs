@@ -6,8 +6,6 @@ open Fable.Core.JsInterop
 /// jQuery API.
 type JQueryElement =
 
-    abstract add : selector : obj -> JQueryElement
-
     /// Adds the given class to the element.
     abstract addClass : className : string -> unit
 
@@ -23,6 +21,8 @@ type JQueryElement =
     /// Gets the element's parent.
     abstract parent : unit -> JQueryElement
 
+    /// Create a promise that will be resolved when element
+    /// animation is complete.
     abstract promise : unit -> JS.Promise<unit>
 
     /// Gets value of the element's given CSS property.

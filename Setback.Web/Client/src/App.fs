@@ -20,15 +20,14 @@ module App =
             Deck.shuffle rng
                 |> AbstractOpenDeal.fromDeck dealer
 
-        DealView.create surface deal
-            |> Animation.run
-            |> ignore
+        promise {
+            do! DealView.create surface deal
 
-        let deal = deal |> AbstractOpenDeal.addBid Bid.Pass   // w
-        let deal = deal |> AbstractOpenDeal.addBid Bid.Pass   // n
-        let deal = deal |> AbstractOpenDeal.addBid Bid.Pass   // e
-        let deal = deal |> AbstractOpenDeal.addBid Bid.Two    // s
-
-        ()
+            let deal = deal |> AbstractOpenDeal.addBid Bid.Pass   // w
+            let deal = deal |> AbstractOpenDeal.addBid Bid.Pass   // n
+            let deal = deal |> AbstractOpenDeal.addBid Bid.Pass   // e
+            let deal = deal |> AbstractOpenDeal.addBid Bid.Two    // s
+            ()
+        } |> ignore
 
     (~~document).ready(run)
