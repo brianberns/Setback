@@ -74,13 +74,7 @@ module Animation =
 
     /// Runs an animation.
     let run (animation : Animation) =
-        let rec loop = function
-            | [] -> Promise.lift ()
-            | step :: steps ->
-                promise {
-                    do! AnimationStep.run duration step
-                    return! loop steps
-                }
-        animation
-            |> Seq.toList
-            |> loop
+        promise {
+            for step in animation do
+                do! AnimationStep.run duration step
+        }
