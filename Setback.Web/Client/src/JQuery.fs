@@ -63,8 +63,6 @@ module JQueryElement =
     [<Emit("$($0)")>]
     let select (_selector : obj) : JQueryElement = jsNative
 
-    let empty = select(":empty")
-
     /// Gets the length of the given property of the given
     /// jQuery element.
     let length propertyName (elem : JQueryElement) =
