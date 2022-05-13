@@ -6,6 +6,8 @@ open Fable.Core.JsInterop
 /// jQuery API.
 type JQueryElement =
 
+    abstract add : selector : obj -> JQueryElement
+
     /// Adds the given class to the element.
     abstract addClass : className : string -> unit
 
@@ -21,6 +23,8 @@ type JQueryElement =
     /// Gets the element's parent.
     abstract parent : unit -> JQueryElement
 
+    abstract promise : unit -> JS.Promise<unit>
+
     /// Gets value of the element's given CSS property.
     abstract css : propertyName : string -> string
 
@@ -32,23 +36,6 @@ type JQueryElement =
 
     /// Removes the element from the DOM.
     abstract remove : unit -> unit
-
-module JQuery =
-
-    /// Imports jQuery library.
-    let init () =
-        importDefault<unit> "jquery"
-
-    /// Selects a jQuery element.
-    [<Emit("$($0)")>]
-    let select (_selector : obj) : JQueryElement = jsNative
-
-[<AutoOpen>]
-module JQueryExt =
-
-    /// Selects a jQuery element.
-    let (~~) (selector : obj) =
-        JQuery.select selector
 
 /// HTML element position.
 type Position =
@@ -67,6 +54,16 @@ module Position =
         { Left = left; Top = top }
 
 module JQueryElement =
+
+    /// Imports jQuery library.
+    let init () =
+        importDefault<unit> "jquery"
+
+    /// Selects a jQuery element.
+    [<Emit("$($0)")>]
+    let select (_selector : obj) : JQueryElement = jsNative
+
+    let empty = select(":empty")
 
     /// Gets the length of the given property of the given
     /// jQuery element.
@@ -129,3 +126,10 @@ module JQueryElement =
         let parent = elem.parent()
         parent.append(replacementElem)
         elem.remove()
+
+[<AutoOpen>]
+module JQueryExt =
+
+    /// Selects a jQuery element.
+    let (~~) (selector : obj) =
+        JQueryElement.select selector

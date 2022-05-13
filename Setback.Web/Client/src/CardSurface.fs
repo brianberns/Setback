@@ -33,7 +33,7 @@ module CardSurface =
 
     /// Initializes a card surface using the given element.
     let init selector =
-        let elem = JQuery.select selector
+        let elem = ~~selector
         {
             Element = elem
             Width =

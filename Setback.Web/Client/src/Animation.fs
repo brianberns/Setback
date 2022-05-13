@@ -1,7 +1,5 @@
 namespace Setback.Web.Client
 
-open Fable.Core.JS
-
 /// Animation action.
 type AnimationAction =
 
@@ -58,8 +56,18 @@ type AnimationStep = seq<ElementAction>
 module AnimationStep =
 
     /// Runs an animation step.
-    let run duration =
-        Seq.iter (ElementAction.run duration)
+    let run duration (step : AnimationStep) =
+
+        let rec loop (acc : JQueryElement) = function
+            | [] -> acc.promise()
+            | elemAction :: elemActions ->
+                ElementAction.run duration elemAction
+                let acc' = acc.add(elemAction.Element)
+                loop acc' elemActions
+
+        step
+            |> Seq.toList
+            |> loop JQueryElement.empty
 
 /// A sequence of steps to be animated.
 type Animation = seq<AnimationStep>
@@ -72,11 +80,12 @@ module Animation =
     /// Runs an animation.
     let run (animation : Animation) =
         let rec loop = function
-            | [] -> ()
-            | (step : AnimationStep) :: steps ->
-                AnimationStep.run (duration - 20) step   // make sure each step finishes before next step starts
-                let callback () = loop steps
-                setTimeout callback duration |> ignore
+            | [] -> promise { return () }
+            | step :: steps ->
+                promise {
+                    do! AnimationStep.run duration step
+                    return! loop steps
+                }
         animation
             |> Seq.toList
             |> loop

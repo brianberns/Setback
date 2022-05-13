@@ -81,7 +81,8 @@ module HandView =
                         animateCard coordsSouth surface numCards iCard
                             |> ElementAction.create cardView)
                     |> Seq.singleton
-                    |> Animation.run)
+                    |> Animation.run
+                    |> ignore)
 
     let revealSouth surface cardBacks (hand : Hand) =
         let cardViews =

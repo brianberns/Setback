@@ -10,12 +10,9 @@ open Setback.Cfrm
 
 module App =
 
-    let run deal =
-        let surface = CardSurface.init "#surface"
-        DealView.create surface deal
-            |> Animation.run
+    let run () =
 
-    (~~document).ready (fun () ->
+        let surface = CardSurface.init "#surface"
 
         let rng = Random()
         let dealer = Seat.South
@@ -23,4 +20,15 @@ module App =
             Deck.shuffle rng
                 |> AbstractOpenDeal.fromDeck dealer
 
-        run deal)
+        DealView.create surface deal
+            |> Animation.run
+            |> ignore
+
+        let deal = deal |> AbstractOpenDeal.addBid Bid.Pass   // w
+        let deal = deal |> AbstractOpenDeal.addBid Bid.Pass   // n
+        let deal = deal |> AbstractOpenDeal.addBid Bid.Pass   // e
+        let deal = deal |> AbstractOpenDeal.addBid Bid.Two    // s
+
+        ()
+
+    (~~document).ready(run)
