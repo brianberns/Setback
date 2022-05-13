@@ -60,7 +60,6 @@ module AnimationStep =
     let run duration (step : AnimationStep) =
         step
             |> Seq.map (ElementAction.run duration)
-            |> Seq.toArray
             |> Promise.all
             |> Promise.map (fun _ -> ())
 
