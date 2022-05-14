@@ -65,24 +65,36 @@ module HandView =
     let dealSouth surface cvs1 cvs2 = deal coordsSouth surface cvs1 cvs2
 
     let private playSouth surface cardViews =
-        let mutable cardViews' = ResizeArray (cardViews : seq<_>)
-        for (cardView : CardView) in cardViews' do
+        let mutable cardViewsMut = ResizeArray (cardViews : seq<_>)
+        for (cardView : CardView) in cardViewsMut do
             cardView.click (fun () ->
 
-                    // remove selected card
-                cardView.remove()
-                let flag = cardViews'.Remove(cardView)
+                    // remove selected card from hand
+                let flag = cardViewsMut.Remove(cardView)
                 assert(flag)
 
-                    // adjust remaining cards to fill gap
-                let numCards = cardViews'.Count
-                cardViews'
-                    |> Seq.mapi (fun iCard cardView ->
-                        animateCard coordsSouth surface numCards iCard
-                            |> ElementAction.create cardView)
-                    |> Seq.singleton
-                    |> Animation.run
-                    |> ignore)
+                    // animate selected card
+                let animSelected : Animation =
+                    CardSurface.getPosition (0.0, 0.3) surface
+                        |> MoveTo
+                        |> ElementAction.create cardView 
+                        |> Seq.singleton
+                        |> Seq.singleton
+
+                    // animate adjustment of remaining cards to fill gap
+                let numCards = cardViewsMut.Count
+                let animAdjust =
+                    cardViewsMut
+                        |> Seq.mapi (fun iCard cardView ->
+                            animateCard coordsSouth surface numCards iCard
+                                |> ElementAction.create cardView)
+                        |> Seq.singleton
+
+                    // run animations in parallel
+                Animation.runMany [
+                    animSelected
+                    animAdjust
+                ] |> ignore)
 
     let revealSouth surface cardBacks (hand : Hand) =
         let cardViews =

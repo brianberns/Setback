@@ -77,3 +77,10 @@ module Animation =
             for step in animation do
                 do! AnimationStep.run duration step
         }
+
+    /// Runs multiple animations in parallel.
+    let runMany (animations : seq<Animation>) =
+        animations
+            |> Seq.map run
+            |> Promise.all
+            |> Promise.map (fun _ -> ())
