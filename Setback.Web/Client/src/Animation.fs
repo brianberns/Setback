@@ -50,45 +50,40 @@ module ElementAction =
                 elemAction.Element.remove()
         elemAction.Element.promise()
 
-/// One step in an animation. All the actions in a step
-/// are animated simultaneously in parallel.
-type AnimationStep = seq<ElementAction>
+/// Describes an animation.
+[<RequireQualifiedAccess>]
+type Animation =
 
-module AnimationStep =
+    /// Animation of a single element action.
+    | Unit of ElementAction
 
-    /// Creates an animation step consisting of a single action.
-    let ofAction (elemAction : ElementAction) : AnimationStep =
-        Seq.singleton elemAction
+    /// Parallel animation.
+    | Parallel of seq<Animation>
 
-    /// Runs an animation step.
-    let run duration (step : AnimationStep) =
-        step
-            |> Seq.map (ElementAction.run duration)
-            |> Promise.all
-            |> Promise.map (fun _ -> ())
-
-/// A sequence of steps to be animated.
-type Animation = seq<AnimationStep>
+    /// Sequential animation.
+    | Sequence of seq<Animation>
 
 module Animation =
-
-    /// Creates an animation consisting of a single step.
-    let ofStep (step : AnimationStep) : Animation =
-        Seq.singleton step
 
     /// Duration of each step, in milliseconds.
     let duration = 300
 
-    /// Runs an animation.
-    let run (animation : Animation) =
-        promise {
-            for step in animation do
-                do! AnimationStep.run duration step
-        }
+    /// Creates an animation unit.
+    let create elem action =
+        ElementAction.create elem action
+            |> Animation.Unit
 
-    /// Runs multiple animations in parallel.
-    let runMany (animations : seq<Animation>) =
-        animations
-            |> Seq.map run
-            |> Promise.all
-            |> Promise.map (fun _ -> ())
+    /// Runs an animation.
+    let rec run = function
+        | Animation.Unit elemAction ->
+            elemAction |> ElementAction.run duration
+        | Animation.Parallel anims ->
+            anims
+                |> Seq.map run
+                |> Promise.all
+                |> Promise.map (fun _ -> ())
+        | Animation.Sequence anims ->
+            promise {
+                for anim in anims do
+                    do! run anim
+            }

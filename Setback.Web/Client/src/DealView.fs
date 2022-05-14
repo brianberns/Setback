@@ -22,7 +22,7 @@ module DealView =
         let stepE1, stepE2 = HandView.dealEast  surface backs.[6.. 8] backs.[18..20]
         let stepS1, stepS2 = HandView.dealSouth surface backs.[9..11] backs.[21..23]
 
-        let finish : AnimationStep =
+        let finish =
             let southBacks =
                 Seq.append backs.[9..11] backs.[21..23]
             let reveal =
@@ -33,13 +33,14 @@ module DealView =
             let remove =
                 seq {
                     for back in backs.[24..] do
-                        yield ElementAction.create
-                            back Remove
-                }
-            Seq.append reveal remove
+                        yield Animation.create back Remove
+                } |> Animation.Parallel
+            Animation.Sequence [ reveal; remove ]
 
-        Animation.run [
+        seq {
             stepW1; stepN1; stepE1; stepS1
             stepW2; stepN2; stepE2; stepS2
             finish
-        ]
+        }
+            |> Animation.Sequence 
+            |> Animation.run
