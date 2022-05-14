@@ -73,27 +73,27 @@ module HandView =
                 let flag = cardViewsMut.Remove(cardView)
                 assert(flag)
 
-                    // animate selected card
-                let animSelected : Animation =
+                    // animate card being played
+                let animPlay : Animation =
                     CardSurface.getPosition (0.0, 0.3) surface
                         |> MoveTo
                         |> ElementAction.create cardView 
-                        |> Seq.singleton
-                        |> Seq.singleton
+                        |> AnimationStep.ofAction
+                        |> Animation.ofStep
 
                     // animate adjustment of remaining cards to fill gap
-                let numCards = cardViewsMut.Count
-                let animAdjust =
+                let animRemain : Animation =
+                    let numCards = cardViewsMut.Count
                     cardViewsMut
                         |> Seq.mapi (fun iCard cardView ->
                             animateCard coordsSouth surface numCards iCard
                                 |> ElementAction.create cardView)
-                        |> Seq.singleton
+                        |> Animation.ofStep
 
                     // run animations in parallel
                 Animation.runMany [
-                    animSelected
-                    animAdjust
+                    animPlay
+                    animRemain
                 ] |> ignore)
 
     let revealSouth surface cardBacks (hand : Hand) =

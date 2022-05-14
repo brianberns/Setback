@@ -56,6 +56,10 @@ type AnimationStep = seq<ElementAction>
 
 module AnimationStep =
 
+    /// Creates an animation step consisting of a single action.
+    let ofAction (elemAction : ElementAction) : AnimationStep =
+        Seq.singleton elemAction
+
     /// Runs an animation step.
     let run duration (step : AnimationStep) =
         step
@@ -67,6 +71,10 @@ module AnimationStep =
 type Animation = seq<AnimationStep>
 
 module Animation =
+
+    /// Creates an animation consisting of a single step.
+    let ofStep (step : AnimationStep) : Animation =
+        Seq.singleton step
 
     /// Duration of each step, in milliseconds.
     let duration = 300
