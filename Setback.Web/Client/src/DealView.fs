@@ -22,25 +22,31 @@ module DealView =
         let stepE1, stepE2 = HandView.dealEast  surface backs.[6.. 8] backs.[18..20]
         let stepS1, stepS2 = HandView.dealSouth surface backs.[9..11] backs.[21..23]
 
+        let handView =
+            HandView.create deal.UnplayedCards.[0]
+        let playAnim = handView |> HandView.play surface
+        for cardView in handView do
+            cardView.click(fun () ->
+                playAnim cardView
+                    |> Animation.run
+                    |> ignore)
+
         let finish =
             let southBacks =
                 Seq.append backs.[9..11] backs.[21..23]
             let reveal =
-                HandView.revealSouth
-                    surface
-                    southBacks
-                    deal.UnplayedCards.[0]
+                HandView.reveal southBacks handView
             let remove =
                 seq {
                     for back in backs.[24..] do
                         yield Animation.create back Remove
                 } |> Animation.Parallel
-            Animation.Sequence [ reveal; remove ]
+            Animation.Serial [ reveal; remove ]
 
         seq {
             stepW1; stepN1; stepE1; stepS1
             stepW2; stepN2; stepE2; stepS2
             finish
         }
-            |> Animation.Sequence 
+            |> Animation.Serial 
             |> Animation.run

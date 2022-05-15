@@ -4,6 +4,8 @@ open PlayingCards
 open Setback
 open Setback.Cfrm
 
+type HandView = CardView[]
+
 module HandView =
 
     /// Gets the target x-coord of the given card in a hand
@@ -62,10 +64,34 @@ module HandView =
     let dealEast  surface cvs1 cvs2 = deal coordsEast  surface cvs1 cvs2
     let dealSouth surface cvs1 cvs2 = deal coordsSouth surface cvs1 cvs2
 
-    /// Creates a function that can be called to animate the playing of
+    let create (hand : Hand) : HandView =
+        hand
+            |> Seq.sortByDescending (fun card ->
+                let iSuit =
+                    match card.Suit with
+                        | Suit.Spades   -> 4   // black
+                        | Suit.Hearts   -> 3   // red
+                        | Suit.Clubs    -> 2   // black
+                        | Suit.Diamonds -> 1   // red
+                        | _ -> failwith "Unexpected"
+                iSuit, card.Rank)
+            |> Seq.map CardView.ofCard
+            |> Seq.toArray
+
+    let reveal cardBacks (handView : HandView) =
+        assert(cardBacks |> Seq.length = handView.Length)
+        seq {
+            let pairs =
+                Seq.zip cardBacks handView
+            for (back : CardView), front in pairs do
+                yield Animation.create
+                    back (ReplaceWith front)
+        } |> Animation.Parallel
+
+    /// Answers a function that can be called to animate the playing of
     /// a card.
-    let private playSouth surface cardViews =
-        let mutable cardViewsMut = ResizeArray (cardViews : seq<_>)
+    let play surface (handView : HandView) =
+        let mutable cardViewsMut = ResizeArray(handView)
         fun (cardView : CardView) ->
 
                 // remove selected card from hand
@@ -73,13 +99,17 @@ module HandView =
             assert(flag)
 
                 // animate card being played
-            let animPlay : Animation =
-                CardSurface.getPosition (0.0, 0.3) surface
-                    |> MoveTo
-                    |> Animation.create cardView
+            let animPlay =
+                seq {
+                    BringToFront
+                    CardSurface.getPosition (0.0, 0.3) surface
+                        |> MoveTo
+                }
+                    |> Seq.map (Animation.create cardView)
+                    |> Animation.Serial
 
                 // animate adjustment of remaining cards to fill gap
-            let animRemain : Animation =
+            let animRemain =
                 let numCards = cardViewsMut.Count
                 cardViewsMut
                     |> Seq.mapi (fun iCard cardView ->
@@ -91,34 +121,4 @@ module HandView =
             seq {
                 animPlay
                 animRemain
-            }
-                |> Animation.Parallel
-                |> Animation.run
-
-    let revealSouth surface cardBacks (hand : Hand) =
-
-            // create card views in desired order
-        let cardViews =
-            hand
-                |> Seq.sortByDescending (fun card ->
-                    let iSuit =
-                        match card.Suit with
-                            | Suit.Spades   -> 4   // black
-                            | Suit.Hearts   -> 3   // red
-                            | Suit.Clubs    -> 2   // black
-                            | Suit.Diamonds -> 1   // red
-                            | _ -> failwith "Unexpected"
-                    iSuit, card.Rank)
-                |> Seq.map CardView.ofCard
-                |> Seq.toArray
-
-        playSouth surface cardViews
-            |> ignore
-
-        seq {
-            let pairs =
-                Seq.zip cardBacks cardViews
-            for (back : CardView), front in pairs do
-                yield Animation.create
-                    back (ReplaceWith front)
-        } |> Animation.Parallel
+            } |> Animation.Parallel

@@ -60,8 +60,8 @@ type Animation =
     /// Parallel animation.
     | Parallel of seq<Animation>
 
-    /// Sequential animation.
-    | Sequence of seq<Animation>
+    /// Serial animation.
+    | Serial of seq<Animation>
 
 module Animation =
 
@@ -82,7 +82,7 @@ module Animation =
                 |> Seq.map run
                 |> Promise.all
                 |> Promise.map (fun _ -> ())
-        | Animation.Sequence anims ->
+        | Animation.Serial anims ->
             promise {
                 for anim in anims do
                     do! run anim
