@@ -37,6 +37,7 @@ module Card =
 
     /// Converts a two-character string into a card.
     let fromString (str : string) =
+        assert(str.Length = 2)
         let rank = Rank.fromChar str.[0]
         let suit = Suit.fromChar str.[1]
         Card(rank, suit)

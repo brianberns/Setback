@@ -21,13 +21,25 @@ module App =
                 |> AbstractOpenDeal.fromDeck dealer
 
         promise {
-            do! DealView.create surface deal
+            let! handView = DealView.create surface deal
 
             let deal = deal |> AbstractOpenDeal.addBid Bid.Pass   // w
             let deal = deal |> AbstractOpenDeal.addBid Bid.Pass   // n
             let deal = deal |> AbstractOpenDeal.addBid Bid.Pass   // e
             let deal = deal |> AbstractOpenDeal.addBid Bid.Two    // s
-            ()
+
+                // enable card play
+            let animateCardPlay =
+                handView |> HandView.play surface
+            for cardView in handView do
+                let card = cardView |> CardView.card
+                cardView.click(fun () ->
+                    deal
+                        |> AbstractOpenDeal.addPlay card
+                        |> ignore
+                    animateCardPlay cardView
+                        |> Animation.run
+                        |> ignore)
         } |> ignore
 
     (~~document).ready(run)

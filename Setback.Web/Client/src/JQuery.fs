@@ -15,6 +15,9 @@ type JQueryElement =
     /// Appends the given content to the element.
     abstract append : content : JQueryElement -> unit
 
+    /// Gets the element's attribute of the given name.
+    abstract attr : attributeName : string -> string
+
     /// Handles the element's click event.
     abstract click : handler : (unit -> unit) -> unit
 

@@ -52,18 +52,10 @@ module DealView =
                 finish
             } |> Animation.Serial 
 
-            // create card play animation
-        let animateCardPlay = handView |> HandView.play surface
-
         promise {
 
                 // deal the cards
             do! Animation.run dealAnim
 
-                // enable card play
-            for cardView in handView do
-                cardView.click(fun () ->
-                    animateCardPlay cardView
-                        |> Animation.run
-                        |> ignore)
+            return handView
         }

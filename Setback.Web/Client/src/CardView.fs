@@ -19,8 +19,8 @@ module CardView =
     let border = Pixel 1.0
 
     /// Creates a card view.
-    let private create src alt : CardView =
-        let elem = ~~Image.Create(src = src, alt = alt)
+    let private create src id : CardView =
+        let elem = ~~Image.Create(src = src, id = id, alt = id)
         elem.addClass("card")
         elem.css
             {|
@@ -111,3 +111,8 @@ module CardView =
     /// Creates a view of a card back.
     let ofBack () =
         create srcBack "Back"
+
+    /// Answers the given card view's underlying card.
+    let card (cardView : CardView) =
+        cardView.attr("id")
+            |> Card.fromString
