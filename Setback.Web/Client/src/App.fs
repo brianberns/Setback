@@ -30,7 +30,7 @@ module App =
 
                 // enable card play
             let animateCardPlay =
-                handView |> HandView.playS surface
+                handView |> OpenHandView.playS surface
             for cardView in handView do
                 let card = cardView |> CardView.card
                 cardView.click(fun () ->

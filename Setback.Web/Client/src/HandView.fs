@@ -28,9 +28,18 @@ module HandView =
             |> CardSurface.getPosition (x, y)
             |> MoveTo
 
+    // Coords of the center of each hand.
+    let private handCoordsMap =
+        Map [
+            Seat.West,  (-0.7,  0.0)
+            Seat.North, ( 0.0, -0.9)
+            Seat.East,  ( 0.7,  0.0)
+            Seat.South, ( 0.0,  0.9)
+        ]
+
     /// Deals the cards in the given hand view into their target
     /// position.
-    let private deal surface coords (handView : HandView) =
+    let private deal surface seat (handView : HandView) =
 
         assert(handView.Length = Setback.numCardsPerHand)
         let batchSize = Setback.numCardsPerHand / 2
@@ -44,6 +53,7 @@ module HandView =
                 for iCard = 0 to batchSize - 1 do
                     let cardView = cardViews.[iCard]
                     let actions =
+                        let coords = handCoordsMap.[seat]
                         let iCard' = iCard + cardOffset
                         seq {
                             animateCard surface coords numCards iCard'
@@ -55,64 +65,75 @@ module HandView =
 
         animate 0 batch1, animate batchSize batch2
 
-    // Coords of the center of each hand.
-    let private coordsW = (-0.7,  0.0)
-    let private coordsN = ( 0.0, -0.9)
-    let private coordsE = ( 0.7,  0.0)
-    let private coordsS = ( 0.0,  0.9)
-
     // Deals the given cards to each hand.
-    let dealW surface = deal surface coordsW
-    let dealN surface = deal surface coordsN
-    let dealE surface = deal surface coordsE
-    let dealS surface = deal surface coordsS
+    let dealW surface = deal surface Seat.West
+    let dealN surface = deal surface Seat.North
+    let dealE surface = deal surface Seat.East
+    let dealS surface = deal surface Seat.South
 
-    /// Answers a function that can be called to animate the playing
-    /// of a card from the given hand view
-    let private play surface coords (handView : HandView) =
-        let mutable cardViewsMut = ResizeArray(handView)
-        fun (cardView : CardView) ->
+    /// Animates adjustment of remaining unplayed cards in a hand.
+    let adjust surface seat (handView : HandView) =
+        let numCards = handView.Length
+        handView
+            |> Seq.mapi (fun iCard cardView ->
+                let coords = handCoordsMap.[seat]
+                animateCard surface coords numCards iCard
+                    |> Animation.create cardView)
+            |> Animation.Parallel
 
-                // remove selected card from hand
-            let flag = cardViewsMut.Remove(cardView)
-            assert(flag)
-
-                // animate card being played
-            let animPlay =
-                seq {
-                    BringToFront
-                    surface
-                        |> CardSurface.getPosition coords
-                        |> MoveTo
-                }
-                    |> Seq.map (Animation.create cardView)
-                    |> Animation.Parallel
-
-                // animate adjustment of remaining cards to fill gap
-            let animRemain =
-                let numCards = cardViewsMut.Count
-                cardViewsMut
-                    |> Seq.mapi (fun iCard cardView ->
-                        animateCard surface coordsS numCards iCard
-                            |> Animation.create cardView)
-                    |> Animation.Parallel
-
-                // run animations in parallel
-            seq {
-                animPlay
-                animRemain
-            } |> Animation.Parallel
-
-    let playW surface = play surface (-0.3,  0.0)
-    let playN surface = play surface ( 0.0, -0.3)
-    let playE surface = play surface ( 0.3,  0.0)
-    let playS surface = play surface ( 0.0,  0.3)
+    let playCoordsMap =
+        Map [
+            Seat.West,  (-0.3,  0.0)
+            Seat.North, ( 0.0, -0.3)
+            Seat.East,  ( 0.3,  0.0)
+            Seat.South, ( 0.0,  0.3)
+        ]
 
 module ClosedHandView =
 
     let ofCardViews (cardViews : seq<CardView>) : HandView =
         cardViews
             |> Seq.toArray
+
+    /// Answers a function that can be called to animate the playing
+    /// of a card from the given hand view
+    let private play surface seat (handView : HandView) =
+        let mutable cardViewsMut = ResizeArray(handView)
+        fun (cardView : CardView) ->
+
+                // remove arbitrary card from hand
+            let back = cardViewsMut |> Seq.last
+            let flag = cardViewsMut.Remove(back)
+            assert(flag)
+
+                // animate card being played
+            let animPlay =
+                let coords = HandView.playCoordsMap.[seat]
+                seq {
+                    ReplaceWith cardView
+                        |> Animation.create back
+                    surface
+                        |> CardSurface.getPosition coords
+                        |> MoveTo
+                        |> Animation.create cardView
+                } |> Animation.Serial
+
+                // animate adjustment of remaining cards to fill gap
+            let animAdjust =
+                cardViewsMut
+                    |> Seq.toArray
+                    |> HandView.adjust surface seat
+
+                // run animations in parallel
+            seq {
+                animPlay
+                animAdjust
+            } |> Animation.Parallel
+
+    let playW surface = play surface Seat.West
+    let playN surface = play surface Seat.North
+    let playE surface = play surface Seat.East
+    let playS surface = play surface Seat.South
 
 module OpenHandView =
 
@@ -138,3 +159,42 @@ module OpenHandView =
             ||> Seq.map2 (fun back front ->
                 Animation.create back (ReplaceWith front))
             |> Animation.Parallel
+
+    /// Answers a function that can be called to animate the playing
+    /// of a card from the given open hand view
+    let private play surface seat (handView : HandView) =
+        let mutable cardViewsMut = ResizeArray(handView)
+        fun (cardView : CardView) ->
+
+                // remove selected card from hand
+            let flag = cardViewsMut.Remove(cardView)
+            assert(flag)
+
+                // animate card being played
+            let animPlay =
+                let coords = HandView.playCoordsMap.[seat]
+                seq {
+                    BringToFront
+                    surface
+                        |> CardSurface.getPosition coords
+                        |> MoveTo
+                }
+                    |> Seq.map (Animation.create cardView)
+                    |> Animation.Serial
+
+                // animate adjustment of remaining cards to fill gap
+            let animAdjust =
+                cardViewsMut
+                    |> Seq.toArray
+                    |> HandView.adjust surface seat
+
+                // run animations in parallel
+            seq {
+                animPlay
+                animAdjust
+            } |> Animation.Parallel
+
+    let playW surface = play surface Seat.West
+    let playN surface = play surface Seat.North
+    let playE surface = play surface Seat.East
+    let playS surface = play surface Seat.South
