@@ -46,10 +46,10 @@ module DealView =
 
                 // animate remaining deck removal
             let remove =
-                seq {
-                    for back in backs.[24..] do
-                        yield Animation.create back Remove
-                } |> Animation.Parallel
+                backs.[24..]
+                    |> Seq.map (fun back ->
+                        Animation.create back Remove)
+                    |> Animation.Parallel
 
                 // assemble final animation
             seq {
