@@ -32,30 +32,30 @@ module DealView =
         let openS =
             OpenHandView.create deal.UnplayedCards.[0]
 
-            // create deal animation
+            // deal animation
         let anim =
 
-                // create animations of hands being dealt
+                // animate hands being dealt
             let animW1, animW2 = HandView.dealW surface closedW
             let animN1, animN2 = HandView.dealN surface closedN
             let animE1, animE2 = HandView.dealE surface closedE
             let animS1, animS2 = HandView.dealS surface closedS
 
-                // create animation of south's hand reveal
-            let finish =
-                let reveal = OpenHandView.reveal closedS openS
-                let remove =
-                    seq {
-                        for back in backs.[24..] do
-                            yield Animation.create back Remove
-                    } |> Animation.Parallel
-                seq { reveal; remove } |> Animation.Serial
+                // animate south's hand reveal
+            let reveal = OpenHandView.reveal closedS openS
+
+                // animate remaining deck removal
+            let remove =
+                seq {
+                    for back in backs.[24..] do
+                        yield Animation.create back Remove
+                } |> Animation.Parallel
 
                 // assemble final animation
             seq {
                 animW1; animN1; animE1; animS1
                 animW2; animN2; animE2; animS2
-                finish
+                reveal; remove
             } |> Animation.Serial 
 
         promise {
