@@ -83,9 +83,9 @@ module HandView =
 
     let playCoordsMap =
         Map [
-            Seat.West,  (-0.3,  0.0)
+            Seat.West,  (-0.2,  0.0)
             Seat.North, ( 0.0, -0.3)
-            Seat.East,  ( 0.3,  0.0)
+            Seat.East,  ( 0.2,  0.0)
             Seat.South, ( 0.0,  0.3)
         ]
 

@@ -21,7 +21,7 @@ module App =
                 |> AbstractOpenDeal.fromDeck dealer
 
         promise {
-            let! handView = DealView.create surface deal
+            let! closedW, closedN, closedE, openS = DealView.create surface deal
 
             let deal = deal |> AbstractOpenDeal.addBid Bid.Pass   // w
             let deal = deal |> AbstractOpenDeal.addBid Bid.Pass   // n
@@ -30,8 +30,8 @@ module App =
 
                 // enable card play
             let animateCardPlay =
-                handView |> OpenHandView.playS surface
-            for cardView in handView do
+                openS |> OpenHandView.playS surface
+            for cardView in openS do
                 let card = cardView |> CardView.card
                 cardView.click(fun () ->
                     deal
@@ -40,6 +40,13 @@ module App =
                     animateCardPlay cardView
                         |> Animation.run
                         |> ignore)
+
+            let card = deal.UnplayedCards.[1] |> Seq.head
+            let cardView = CardView.ofCard card
+            let anim =
+                ClosedHandView.playW surface closedW cardView
+            do! Animation.run anim
+
         } |> ignore
 
     (~~document).ready(run)

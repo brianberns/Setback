@@ -63,5 +63,5 @@ module DealView =
                 // deal the cards
             do! Animation.run anim
 
-            return openS
+            return closedW, closedN, closedE, openS
         }
