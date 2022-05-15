@@ -10,18 +10,15 @@ module HandView =
 
     /// Gets the target x-coord of the given card in a hand
     /// containing the given total number of cards.
-    let private getX =
+    let private getX numCards iCard : Coord =
 
         /// Target distance between adjacent cards in the hand.
         let delta : Coord = 0.05
 
-        fun numCards ->
+        /// Left-shift from center of hand.
+        let shift = 0.5 * float (numCards - 1) * delta
 
-            /// Left-shift from center of hand.
-            let shift = 0.5 * float (numCards - 1) * delta
-
-            fun iCard ->
-                (delta * float iCard) - shift
+        (delta * float iCard) - shift
 
     /// Animates a card to its target position in a hand.
     let private animateCard
