@@ -45,7 +45,7 @@ type Span<'t>(array : 't[]) =
             |> Span
 
     member _.Fill(item) =
-        for i = 0 to array.Length do
+        for i = 0 to array.Length - 1 do
             array.[i] <- item
 
 type SpanAction<'t, 'targ> =
