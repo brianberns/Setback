@@ -104,12 +104,20 @@ module ClosedHandView =
             let animPlay =
                 let coords = HandView.playCoordsMap.[seat]
                 seq {
+                        // reveal card
                     ReplaceWith cardView
                         |> Animation.create back
+
+                        // bring revealed card to front
+                    BringToFront
+                        |> Animation.create cardView
+
+                        // slide revealed card to center
                     surface
                         |> CardSurface.getPosition coords
                         |> MoveTo
                         |> Animation.create cardView
+
                 } |> Animation.Serial
 
                 // animate adjustment of remaining cards to fill gap
