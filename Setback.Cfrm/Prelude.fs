@@ -32,22 +32,30 @@ module Char =
 
 #if FABLE_COMPILER
 
-type Span<'t>(array : 't[]) =
+/// Fake span type.
+type Span<'t>(array : 't[], start : int, length : int) =
 
-    member _.Length = array.Length
+    /// Creates a new span on the given array.
+    new(array) = Span(array, 0, array.Length)
 
-    member _.Slice(start) =
-        array.[start .. ]
-            |> Span
+    /// Length of this span.
+    member _.Length = length
 
-    member _.Slice(start, length) =
-        array.[start .. start + length - 1]
-            |> Span
+    /// Creates a new slice with the given starting position.
+    member _.Slice(newStart) =
+        Span(array, start + newStart, length - newStart)
 
+    /// Creates a new slice with the given starting position
+    /// and length.
+    member _.Slice(newStart, newLength) =
+        Span(array, start + newStart, newLength)
+
+    /// Fills the span with the given item.
     member _.Fill(item) =
-        for i = 0 to array.Length - 1 do
-            array.[i] <- item
+        for i = 0 to length - 1 do
+            array.[start + i] <- item
 
+/// Fake span action.
 type SpanAction<'t, 'targ> =
     SpanAction of (Span<'t> -> 'targ -> unit)
 
