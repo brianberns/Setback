@@ -1,6 +1,21 @@
 ﻿namespace Server
 
+module Logging =
+
+    open Suave.Filters
+    open Suave.Logging
+
+    let logger = Log.create "log"
+
+    let webPart =
+        logWithLevelStructured
+            LogLevel.Info
+            logger
+            logFormatStructured
+
 module Remoting =
+
+    open Suave.Logging
 
     open Fable.Remoting.Server
     open Fable.Remoting.Suave
@@ -14,7 +29,10 @@ module Remoting =
             GetActionIndex =
                 fun key ->
                     async {
-                        return getActionIndex key
+                        let actionIndex = getActionIndex key
+                        Logging.logger.info (
+                            Message.eventX $"GetActionIndex(\"{key}\") = {actionIndex}")
+                        return actionIndex
                     }
         }
 
@@ -22,18 +40,6 @@ module Remoting =
         Remoting.createApi()
             |> Remoting.fromValue setbackApi
             |> Remoting.buildWebPart
-
-module Logging =
-
-    open Suave.Filters
-    open Suave.Logging
-
-    let webPart =
-        let logger = Targets.create LogLevel.Info [||]
-        logWithLevelStructured
-            LogLevel.Info
-            logger
-            logFormatStructured
 
 module Program =
 
