@@ -71,20 +71,24 @@ module App =
                 |> AbstractOpenDeal.fromDeck dealer
 
         promise {
-            let! closedW, closedN, closedE, openS = DealView.create surface deal
+
+            let! handViews = DealView.start surface deal
 
             let deal = deal |> AbstractOpenDeal.addBid Bid.Pass   // w
             let deal = deal |> AbstractOpenDeal.addBid Bid.Pass   // n
             let deal = deal |> AbstractOpenDeal.addBid Bid.Pass   // e
             let deal = deal |> AbstractOpenDeal.addBid Bid.Two    // s
-
+                    
             let handViewMap =
-                Map [
-                    Seat.West,  (closedW, closedW |> ClosedHandView.playW surface)
-                    Seat.North, (closedN, closedN |> ClosedHandView.playN surface)
-                    Seat.East,  (closedW, closedE |> ClosedHandView.playE surface)
-                    Seat.South, (openS,   openS |> OpenHandView.playS surface)
-                ]
+                handViews
+                    |> Seq.map (fun (seat, handView) ->
+                        let play =
+                            if seat = Seat.South then
+                                OpenHandView.play
+                            else
+                                ClosedHandView.play
+                        seat, (handView, play surface seat handView))
+                    |> Map
 
             play dealer handViewMap deal
 

@@ -6,7 +6,8 @@ open Setback.Cfrm
 
 module DealView =
 
-    let create surface deal =
+    /// Animates the start of the given deal on the given surface.
+    let start surface deal =
 
             // create card backs
         let backs =
@@ -28,7 +29,7 @@ module DealView =
         let closedE = closedView backs.[6.. 8] backs.[18..20]
         let closedS = closedView backs.[9..11] backs.[21..23]
 
-            // create open hand view
+            // create open hand view for human player
         let openS =
             OpenHandView.create deal.UnplayedCards.[0]
 
@@ -36,10 +37,10 @@ module DealView =
         let anim =
 
                 // animate hands being dealt
-            let animW1, animW2 = HandView.dealW surface closedW
-            let animN1, animN2 = HandView.dealN surface closedN
-            let animE1, animE2 = HandView.dealE surface closedE
-            let animS1, animS2 = HandView.dealS surface closedS
+            let animW1, animW2 = HandView.deal surface Seat.West  closedW
+            let animN1, animN2 = HandView.deal surface Seat.North closedN
+            let animE1, animE2 = HandView.deal surface Seat.East  closedE
+            let animS1, animS2 = HandView.deal surface Seat.South closedS
 
                 // animate south's hand reveal
             let reveal = OpenHandView.reveal closedS openS
@@ -60,8 +61,14 @@ module DealView =
 
         promise {
 
-                // deal the cards
+                // run the animation
             do! Animation.run anim
 
-            return closedW, closedN, closedE, openS
+                // answer the hand views for futher animation
+            return [|
+                Seat.West, closedW
+                Seat.North, closedN
+                Seat.East, closedE
+                Seat.South, openS
+            |]
         }

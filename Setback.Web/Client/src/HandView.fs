@@ -39,7 +39,7 @@ module HandView =
 
     /// Deals the cards in the given hand view into their target
     /// position.
-    let private deal surface seat (handView : HandView) =
+    let deal surface seat (handView : HandView) =
 
         assert(handView.Length = Setback.numCardsPerHand)
         let batchSize = Setback.numCardsPerHand / 2
@@ -64,12 +64,6 @@ module HandView =
             } |> Animation.Parallel
 
         animate 0 batch1, animate batchSize batch2
-
-    // Deals the given cards to each hand.
-    let dealW surface = deal surface Seat.West
-    let dealN surface = deal surface Seat.North
-    let dealE surface = deal surface Seat.East
-    let dealS surface = deal surface Seat.South
 
     /// Animates adjustment of remaining unplayed cards in a hand.
     let adjust surface seat (handView : HandView) =
@@ -97,7 +91,7 @@ module ClosedHandView =
 
     /// Answers a function that can be called to animate the playing
     /// of a card from the given hand closed view.
-    let private play surface seat (handView : HandView) =
+    let play surface seat (handView : HandView) =
         let mutable cardViewsMut = ResizeArray(handView)
         fun (cardView : CardView) ->
 
@@ -130,11 +124,6 @@ module ClosedHandView =
                 animAdjust
             } |> Animation.Parallel
 
-    let playW surface = play surface Seat.West
-    let playN surface = play surface Seat.North
-    let playE surface = play surface Seat.East
-    let playS surface = play surface Seat.South
-
 module OpenHandView =
 
     /// Creates an open view of the given hand.
@@ -162,7 +151,7 @@ module OpenHandView =
 
     /// Answers a function that can be called to animate the playing
     /// of a card from the given open hand view.
-    let private play surface seat (handView : HandView) =
+    let play surface seat (handView : HandView) =
         let mutable cardViewsMut = ResizeArray(handView)
         fun (cardView : CardView) ->
 
@@ -193,8 +182,3 @@ module OpenHandView =
                 animPlay
                 animAdjust
             } |> Animation.Parallel
-
-    let playW surface = play surface Seat.West
-    let playN surface = play surface Seat.North
-    let playE surface = play surface Seat.East
-    let playS surface = play surface Seat.South
