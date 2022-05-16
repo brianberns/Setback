@@ -11,7 +11,11 @@ module Remoting =
         let getActionIndex =
             Setback.Cfrm.DatabasePlayer.init "Setback.db"
         {
-            GetActionIndex = getActionIndex >> async.Return
+            GetActionIndex =
+                fun key ->
+                    async {
+                        return getActionIndex key
+                    }
         }
 
     let webPart =

@@ -19,22 +19,17 @@ module DatabasePlayer =
             conn.Open()
             conn
 
-        /// SQL command.
-        let selectActionIndexCmd =
-            new SQLiteCommand(
-                "select ActionIndex \
-                from Strategy \
-                where Key = @Key",
-                conn)
-
-        /// SQL command parameter.
-        let keyParam =
-            selectActionIndexCmd.Parameters.Add("Key", DbType.String)
-
         /// Finds the action index for the given key, if any.
         let getActionIndex (key : string) =
-            keyParam.Value <- key
-            let value = selectActionIndexCmd.ExecuteScalar()
+            use cmd =   // each invocation has its own command to support multithreading
+                new SQLiteCommand(
+                    "select ActionIndex \
+                    from Strategy \
+                    where Key = @Key",
+                    conn)
+            cmd.Parameters.AddWithValue("Key", key)
+                |> ignore
+            let value = cmd.ExecuteScalar()
             if isNull value then None
             else value :?> int64 |> int |> Some
 
