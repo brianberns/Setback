@@ -21,18 +21,21 @@ type JQueryElement =
     /// Handles the element's click event.
     abstract click : handler : (unit -> unit) -> unit
 
+    /// Gets value of the element's given CSS property.
+    abstract css : propertyName : string -> string
+
+    /// Sets the element's given CSS properties.
+    abstract css : properties : obj -> unit
+
+    /// Removes an event handler.
+    abstract off : eventName : string -> unit
+
     /// Gets the element's parent.
     abstract parent : unit -> JQueryElement
 
     /// Create a promise that will be resolved when element
     /// animation is complete.
     abstract promise : unit -> JS.Promise<unit>
-
-    /// Gets value of the element's given CSS property.
-    abstract css : propertyName : string -> string
-
-    /// Sets the element's given CSS properties.
-    abstract css : properties : obj -> unit
 
     /// Handles an element's ready event.
     abstract ready : handler : (unit -> unit) -> unit

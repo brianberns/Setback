@@ -40,6 +40,11 @@ module App =
                     let card = cardView |> CardView.card
                     if legalPlays.Contains(card) then
                         cardView.click(fun () ->
+
+                                // prevent further clicks at this level
+                            for cardView in handView do
+                                cardView.off("click")
+
                             promise {
                                 do! anim cardView
                                     |> Animation.run
