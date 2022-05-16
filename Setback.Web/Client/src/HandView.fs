@@ -96,7 +96,7 @@ module ClosedHandView =
             |> Seq.toArray
 
     /// Answers a function that can be called to animate the playing
-    /// of a card from the given hand view
+    /// of a card from the given hand closed view.
     let private play surface seat (handView : HandView) =
         let mutable cardViewsMut = ResizeArray(handView)
         fun (cardView : CardView) ->
@@ -161,7 +161,7 @@ module OpenHandView =
             |> Animation.Parallel
 
     /// Answers a function that can be called to animate the playing
-    /// of a card from the given open hand view
+    /// of a card from the given open hand view.
     let private play surface seat (handView : HandView) =
         let mutable cardViewsMut = ResizeArray(handView)
         fun (cardView : CardView) ->
