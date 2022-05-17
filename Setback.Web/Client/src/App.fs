@@ -18,6 +18,7 @@ module App =
             deal |> AbstractOpenDeal.currentPlayerIndex
         dealer |> Seat.incr iPlayer
 
+    /// Answers legal plays in the given hand and deal.
     let getLegalPlays hand closedDeal =
         match closedDeal.PlayoutOpt with
             | Some playout ->
@@ -26,43 +27,71 @@ module App =
                     |> Set.ofSeq
             | _ -> failwith "Unexpected"
 
+    /// Plays the given deal.
     let play dealer handViewMap deal =
-        let rec loop deal =
+
+        /// Plays the given card in the given deal and then recursively
+        /// plays the rest of the deal.
+        let rec addPlay card deal =
+            deal
+                |> AbstractOpenDeal.addPlay card
+                |> loop
+
+        /// Allows user to play a card.
+        and playHuman handView deal anim =
+
+                // determine all legal plays
+            let legalPlays =
+                let hand =
+                    AbstractOpenDeal.currentHand deal
+                getLegalPlays hand deal.ClosedDeal
+
+                // enable user to select one of the corresponding card views
+            for cardView in handView do
+                let card = cardView |> CardView.card
+                if legalPlays.Contains(card) then
+                    cardView.click(fun () ->
+
+                            // prevent further clicks at this level
+                        for cardView in handView do
+                            cardView.off("click")
+
+                        promise {
+
+                                // animate playing the selected card
+                            do! anim cardView
+                                |> Animation.run
+
+                                // move to next player
+                            addPlay card deal
+                        } |> ignore)
+
+        /// Automatically plays a card.
+        and playAuto deal anim =
+            async {
+                    // determine card to play
+                let! card = WebPlayer.makePlay AbstractScore.zero deal
+
+                    // animate playing the selected card
+                let cardView = CardView.ofCard card
+                do! anim cardView
+                    |> Animation.run
+                    |> Async.AwaitPromise
+
+                    // move to next player
+                addPlay card deal
+            } |> Async.StartImmediate
+
+        /// Plays entire deal.
+        and loop deal =
             let seat = getCurrentSeat dealer deal
             let (handView : HandView), anim =
                 handViewMap |> Map.find seat
             if seat = Seat.South then
-                let hand =
-                    AbstractOpenDeal.currentHand deal
-                let legalPlays =
-                    getLegalPlays hand deal.ClosedDeal
-                for cardView in handView do
-                    let card = cardView |> CardView.card
-                    if legalPlays.Contains(card) then
-                        cardView.click(fun () ->
-
-                                // prevent further clicks at this level
-                            for cardView in handView do
-                                cardView.off("click")
-
-                            promise {
-                                do! anim cardView
-                                    |> Animation.run
-                                deal
-                                    |> AbstractOpenDeal.addPlay card
-                                    |> loop
-                            } |> ignore)
+                playHuman handView deal anim
             else
-                async {
-                    let! card = WebPlayer.makePlay AbstractScore.zero deal
-                    let cardView = CardView.ofCard card
-                    do! anim cardView
-                        |> Animation.run
-                        |> Async.AwaitPromise
-                    deal
-                        |> AbstractOpenDeal.addPlay card
-                        |> loop
-                } |> Async.StartImmediate
+                playAuto deal anim
+
         loop deal
 
     let run () =
@@ -87,12 +116,12 @@ module App =
             let handViewMap =
                 handViews
                     |> Seq.map (fun (seat, handView) ->
-                        let play =
+                        let animate =
                             if seat = Seat.South then
                                 OpenHandView.play
                             else
                                 ClosedHandView.play
-                        seat, (handView, play surface seat handView))
+                        seat, (handView, animate surface seat handView))
                     |> Map
 
             play dealer handViewMap deal
