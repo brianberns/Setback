@@ -90,7 +90,7 @@ module ClosedHandView =
             |> Seq.toArray
 
     /// Answers a function that can be called to animate the playing
-    /// of a card from the given hand closed view.
+    /// of a card from the given closed hand view.
     let play surface seat (handView : HandView) =
         let mutable cardViewsMut = ResizeArray(handView)
         fun (cardView : CardView) ->

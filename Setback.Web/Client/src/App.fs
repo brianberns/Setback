@@ -38,7 +38,7 @@ module App =
                 |> loop
 
         /// Allows user to play a card.
-        and playHuman handView deal anim =
+        and playHuman (handView : HandView) deal anim =
 
                 // determine all legal plays
             let legalPlays =
