@@ -85,6 +85,7 @@ module HandView =
 
 module ClosedHandView =
 
+    /// Creates a closed view of the given cards.
     let ofCardViews (cardViews : seq<CardView>) : HandView =
         cardViews
             |> Seq.toArray
@@ -117,7 +118,6 @@ module ClosedHandView =
                         |> CardSurface.getPosition coords
                         |> MoveTo
                         |> Animation.create cardView
-
                 } |> Animation.Serial
 
                 // animate adjustment of remaining cards to fill gap
@@ -135,7 +135,7 @@ module ClosedHandView =
 module OpenHandView =
 
     /// Creates an open view of the given hand.
-    let create (hand : Hand) : HandView =
+    let ofHand (hand : Hand) : HandView =
         hand
             |> Seq.sortByDescending (fun card ->
                 let iSuit =

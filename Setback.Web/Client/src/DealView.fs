@@ -31,7 +31,7 @@ module DealView =
 
             // create open hand view for human player
         let openS =
-            OpenHandView.create deal.UnplayedCards.[0]
+            OpenHandView.ofHand deal.UnplayedCards.[0]
 
             // deal animation
         let anim =
