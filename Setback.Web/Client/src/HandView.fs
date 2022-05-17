@@ -29,7 +29,7 @@ module HandView =
             |> MoveTo
 
     // Coords of the center of each hand.
-    let private handCoordsMap =
+    let private coordsMap =
         Map [
             Seat.West,  (-0.7,  0.0)
             Seat.North, ( 0.0, -0.9)
@@ -53,7 +53,7 @@ module HandView =
                 for iCard = 0 to batchSize - 1 do
                     let cardView = cardViews.[iCard]
                     let actions =
-                        let coords = handCoordsMap.[seat]
+                        let coords = coordsMap.[seat]
                         let iCard' = iCard + cardOffset
                         seq {
                             animateCard surface coords numCards iCard'
@@ -70,18 +70,10 @@ module HandView =
         let numCards = handView.Length
         handView
             |> Seq.mapi (fun iCard cardView ->
-                let coords = handCoordsMap.[seat]
+                let coords = coordsMap.[seat]
                 animateCard surface coords numCards iCard
                     |> Animation.create cardView)
             |> Animation.Parallel
-
-    let playCoordsMap =
-        Map [
-            Seat.West,  (-0.2,  0.0)
-            Seat.North, ( 0.0, -0.3)
-            Seat.East,  ( 0.2,  0.0)
-            Seat.South, ( 0.0,  0.3)
-        ]
 
 module ClosedHandView =
 
@@ -103,21 +95,12 @@ module ClosedHandView =
 
                 // animate card being played
             let animPlay =
-                let coords = HandView.playCoordsMap.[seat]
                 seq {
-                        // reveal card
-                    ReplaceWith cardView
+                    ReplaceWith cardView                   // reveal card
                         |> Animation.create back
-
-                        // bring revealed card to front
-                    BringToFront
+                    BringToFront                           // bring revealed card to front
                         |> Animation.create cardView
-
-                        // slide revealed card to center
-                    surface
-                        |> CardSurface.getPosition coords
-                        |> MoveTo
-                        |> Animation.create cardView
+                    TrickView.play surface seat cardView   // slide revealed card to center
                 } |> Animation.Serial
 
                 // animate adjustment of remaining cards to fill gap
@@ -169,15 +152,11 @@ module OpenHandView =
 
                 // animate card being played
             let animPlay =
-                let coords = HandView.playCoordsMap.[seat]
                 seq {
-                    BringToFront
-                    surface
-                        |> CardSurface.getPosition coords
-                        |> MoveTo
-                }
-                    |> Seq.map (Animation.create cardView)
-                    |> Animation.Serial
+                    BringToFront                           // bring card to front
+                        |> Animation.create cardView
+                    TrickView.play surface seat cardView   // slide revealed card to center
+                } |> Animation.Serial
 
                 // animate adjustment of remaining cards to fill gap
             let animAdjust =
