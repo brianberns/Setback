@@ -13,19 +13,40 @@ open Setback.Cfrm
 module App =
 
     /// Answers the current player's seat.
-    let getCurrentSeat dealer deal =
-        let iPlayer =
-            deal |> AbstractOpenDeal.currentPlayerIndex
-        dealer |> Seat.incr iPlayer
+    let private getCurrentSeat dealer deal =
+        Seat.incr
+            (AbstractOpenDeal.currentPlayerIndex deal)
+            dealer
 
     /// Answers legal plays in the given hand and deal.
-    let getLegalPlays hand closedDeal =
+    let private getLegalPlays hand closedDeal =
         match closedDeal.PlayoutOpt with
             | Some playout ->
                 playout
                     |> AbstractPlayout.legalPlays hand
                     |> Set.ofSeq
             | _ -> failwith "Unexpected"
+
+    /// Plays the given card on the current trick, and returns the
+    /// seat of the resulting trick winner, if any.
+    let private getTrickWinnerOpt dealer deal card =
+        assert(deal.ClosedDeal.PlayoutOpt.IsSome)
+        option {
+                // get trump suit, if any
+            let! playout = deal.ClosedDeal.PlayoutOpt
+            let! trump = playout.TrumpOpt
+
+                // play card on current trick
+            let trick =
+                playout.CurrentTrick
+                    |> AbstractTrick.addPlay trump card
+
+                // if this card completes the trick, determine winner
+            if trick |> AbstractTrick.isComplete then
+                return dealer
+                    |> Seat.incr (
+                        AbstractTrick.highPlayerIndex trick)
+        }
 
     /// Plays the given deal.
     let play dealer handViewMap deal =
@@ -34,25 +55,14 @@ module App =
         /// plays the rest of the deal.
         let rec addPlay card deal animTrickFinish =
             promise {
-
                     // animate if trick is finished
-                match deal.ClosedDeal.PlayoutOpt with
-                    | Some playout ->
-                        match playout.TrumpOpt with
-                            | Some trump ->
-                                let trick' =
-                                    playout.CurrentTrick
-                                        |> AbstractTrick.addPlay trump card
-                                if trick' |> AbstractTrick.isComplete then
-                                    let winner =
-                                        let iPlayer = trick' |> AbstractTrick.highPlayerIndex
-                                        dealer |> Seat.incr iPlayer
-                                    do! animTrickFinish winner
-                                        |> Animation.run
-                                else ()
-                            | None -> ()
-                    | None -> failwith "Unexpected"
+                match getTrickWinnerOpt dealer deal card with
+                    | Some winner ->
+                        do! animTrickFinish winner
+                            |> Animation.run
+                    | None -> ()
 
+                    // play the card and continue
                 deal
                     |> AbstractOpenDeal.addPlay card
                     |> loop
