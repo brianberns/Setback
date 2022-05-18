@@ -58,10 +58,13 @@ type Animation =
     | Unit of ElementAction
 
     /// Parallel animation.
-    | Parallel of seq<Animation>
+    | Parallel of Animation[]
 
     /// Serial animation.
-    | Serial of seq<Animation>
+    | Serial of Animation[]
+
+    /// No animation.
+    | None
 
 module Animation =
 
@@ -87,3 +90,5 @@ module Animation =
                 for anim in anims do
                     do! run anim
             }
+        | Animation.None ->
+            Promise.lift ()

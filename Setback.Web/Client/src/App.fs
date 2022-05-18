@@ -32,13 +32,24 @@ module App =
 
         /// Plays the given card in the given deal and then recursively
         /// plays the rest of the deal.
-        let rec addPlay card deal =
-            deal
-                |> AbstractOpenDeal.addPlay card
-                |> loop
+        let rec addPlay card deal animTrickFinish =
+            promise {
+                let deal' =
+                    deal |> AbstractOpenDeal.addPlay card
+
+                let anim =
+                    match deal'.ClosedDeal.PlayoutOpt with
+                        | Some playout when
+                            playout.CurrentTrick.NumPlays = 0 ->
+                                animTrickFinish ()
+                        | _ -> Animation.None
+                do! Animation.run anim
+
+                loop deal'
+            }
 
         /// Allows user to play a card.
-        and playHuman (handView : HandView) deal anim =
+        and playHuman (handView : HandView) deal animPlay animTrickFinish =
 
                 // determine all legal plays
             let legalPlays =
@@ -59,38 +70,38 @@ module App =
                         promise {
 
                                 // animate playing the selected card
-                            do! anim cardView
-                                |> Animation.run
+                            do! animPlay cardView |> Animation.run
 
                                 // move to next player
-                            addPlay card deal
+                            do! addPlay card deal animTrickFinish
                         } |> ignore)
 
         /// Automatically plays a card.
-        and playAuto deal anim =
+        and playAuto deal animPlay animTrickFinish =
             async {
                     // determine card to play
                 let! card = WebPlayer.makePlay AbstractScore.zero deal
 
                     // animate playing the selected card
                 let cardView = CardView.ofCard card
-                do! anim cardView
+                do! animPlay cardView
                     |> Animation.run
                     |> Async.AwaitPromise
 
                     // move to next player
-                addPlay card deal
+                do! addPlay card deal animTrickFinish
+                    |> Async.AwaitPromise
             } |> Async.StartImmediate
 
         /// Plays entire deal.
         and loop deal =
             let seat = getCurrentSeat dealer deal
-            let (handView : HandView), anim =
+            let (handView : HandView), animPlay, animTrickFinish =
                 handViewMap |> Map.find seat
             if seat = Seat.South then
-                playHuman handView deal anim
+                playHuman handView deal animPlay animTrickFinish
             else
-                playAuto deal anim
+                playAuto deal animPlay animTrickFinish
 
         loop deal
 
@@ -116,12 +127,19 @@ module App =
             let handViewMap =
                 handViews
                     |> Seq.map (fun (seat, handView) ->
-                        let animate =
-                            if seat = Seat.South then
-                                OpenHandView.play
-                            else
-                                ClosedHandView.play
-                        seat, (handView, animate surface seat handView))
+
+                        let animPlay =
+                            let play =
+                                if seat = Seat.South then
+                                    OpenHandView.play
+                                else
+                                    ClosedHandView.play
+                            play surface seat handView
+
+                        let animTrickFinish =
+                            fun () -> TrickView.finish surface seat
+
+                        seat, (handView, animPlay, animTrickFinish))
                     |> Map
 
             play dealer handViewMap deal

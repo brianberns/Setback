@@ -49,7 +49,7 @@ module HandView =
         /// Animate the given batch of cards.
         let animate cardOffset (cardViews : CardView[]) =
             let numCards = Setback.numCardsPerHand
-            seq {
+            [|
                 for iCard = 0 to batchSize - 1 do
                     let cardView = cardViews.[iCard]
                     let actions =
@@ -61,7 +61,7 @@ module HandView =
                         }
                     for action in actions do
                         yield Animation.create cardView action
-            } |> Animation.Parallel
+            |] |> Animation.Parallel
 
         animate 0 batch1, animate batchSize batch2
 
@@ -69,7 +69,7 @@ module HandView =
     let adjust surface seat (handView : HandView) =
         let numCards = handView.Length
         handView
-            |> Seq.mapi (fun iCard cardView ->
+            |> Array.mapi (fun iCard cardView ->
                 let coords = coordsMap.[seat]
                 animateCard surface coords numCards iCard
                     |> Animation.create cardView)
@@ -95,13 +95,13 @@ module ClosedHandView =
 
                 // animate card being played
             let animPlay =
-                seq {
+                [|
                     ReplaceWith cardView                   // reveal card
                         |> Animation.create back
                     BringToFront                           // bring revealed card to front
                         |> Animation.create cardView
                     TrickView.play surface seat cardView   // slide revealed card to center
-                } |> Animation.Serial
+                |] |> Animation.Serial
 
                 // animate adjustment of remaining cards to fill gap
             let animAdjust =
@@ -109,11 +109,11 @@ module ClosedHandView =
                     |> Seq.toArray
                     |> HandView.adjust surface seat
 
-                // run animations in parallel
-            seq {
+                // animate in parallel
+            [|
                 animPlay
                 animAdjust
-            } |> Animation.Parallel
+            |] |> Animation.Parallel
 
 module OpenHandView =
 
@@ -136,7 +136,7 @@ module OpenHandView =
     let reveal (closedHandView : HandView) (openHandView : HandView) =
         assert(closedHandView.Length = openHandView.Length)
         (closedHandView, openHandView)
-            ||> Seq.map2 (fun back front ->
+            ||> Array.map2 (fun back front ->
                 Animation.create back (ReplaceWith front))
             |> Animation.Parallel
 
@@ -152,11 +152,11 @@ module OpenHandView =
 
                 // animate card being played
             let animPlay =
-                seq {
+                [|
                     BringToFront                           // bring card to front
                         |> Animation.create cardView
                     TrickView.play surface seat cardView   // slide revealed card to center
-                } |> Animation.Serial
+                |] |> Animation.Serial
 
                 // animate adjustment of remaining cards to fill gap
             let animAdjust =
@@ -164,8 +164,8 @@ module OpenHandView =
                     |> Seq.toArray
                     |> HandView.adjust surface seat
 
-                // run animations in parallel
-            seq {
+                // animate in parallel
+            [|
                 animPlay
                 animAdjust
-            } |> Animation.Parallel
+            |] |> Animation.Parallel
