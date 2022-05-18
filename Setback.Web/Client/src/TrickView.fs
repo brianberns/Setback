@@ -8,7 +8,7 @@ module TrickView =
     let mutable private cardViewMap =
         System.Collections.Generic.Dictionary<Seat, CardView>()
 
-    /// Center point of each card in a trick.
+    /// Center point of each card played in a trick.
     let private playPointMap =
         Map [
             Seat.West,  Pt (-0.2,  0.0)

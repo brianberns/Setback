@@ -34,18 +34,28 @@ module App =
         /// plays the rest of the deal.
         let rec addPlay card deal animTrickFinish =
             promise {
-                let deal' =
-                    deal |> AbstractOpenDeal.addPlay card
 
-                let anim =
-                    match deal'.ClosedDeal.PlayoutOpt with
-                        | Some playout when
-                            playout.CurrentTrick.NumPlays = 0 ->
-                                animTrickFinish ()
-                        | _ -> Animation.None
-                do! Animation.run anim
+                    // animate if trick is finished
+                match deal.ClosedDeal.PlayoutOpt with
+                    | Some playout ->
+                        match playout.TrumpOpt with
+                            | Some trump ->
+                                let trick' =
+                                    playout.CurrentTrick
+                                        |> AbstractTrick.addPlay trump card
+                                if trick' |> AbstractTrick.isComplete then
+                                    let winner =
+                                        let iPlayer = trick' |> AbstractTrick.highPlayerIndex
+                                        dealer |> Seat.incr iPlayer
+                                    do! animTrickFinish winner
+                                        |> Animation.run
+                                else ()
+                            | None -> ()
+                    | None -> failwith "Unexpected"
 
-                loop deal'
+                deal
+                    |> AbstractOpenDeal.addPlay card
+                    |> loop
             }
 
         /// Allows user to play a card.
@@ -137,7 +147,7 @@ module App =
                             play surface seat handView
 
                         let animTrickFinish =
-                            fun () -> TrickView.finish surface seat
+                            TrickView.finish surface
 
                         seat, (handView, animPlay, animTrickFinish))
                     |> Map

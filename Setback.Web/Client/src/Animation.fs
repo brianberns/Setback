@@ -63,9 +63,6 @@ type Animation =
     /// Serial animation.
     | Serial of Animation[]
 
-    /// No animation.
-    | None
-
 module Animation =
 
     /// Duration of each step, in milliseconds.
@@ -91,5 +88,3 @@ module Animation =
                 for anim in anims do
                     do! run anim
             }
-        | Animation.None ->
-            Promise.lift ()
