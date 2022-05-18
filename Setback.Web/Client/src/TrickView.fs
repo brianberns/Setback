@@ -27,26 +27,28 @@ module TrickView =
         let pt = playPointMap.[seat]
         surface
             |> CardSurface.getPosition pt
-            |> MoveTo
+            |> AnimationAction.moveTo
             |> Animation.create cardView
 
     /// Center point of cards taken in a trick.
     let private finishPointMap =
+        let offset = 0.4
         Map [
-            Seat.West,  Pt (-0.7,  0.1)
-            Seat.North, Pt (-0.1, -0.9)
-            Seat.East,  Pt ( 0.7, -0.1)
-            Seat.South, Pt ( 0.1,  0.9)
+            Seat.West,  Pt (   -0.7,  offset)
+            Seat.North, Pt (-offset,    -0.9)
+            Seat.East,  Pt (    0.7, -offset)
+            Seat.South, Pt ( offset,     0.9)
         ]
 
     /// Offset from center of each card taken in a trick.
     let private finishOffsetMap =
-        let offset = 0.05
+        let offsetX = 0.05
+        let offsetY = 0.1
         Map [
-            Seat.West,  Pt (-offset,    0.0)
-            Seat.North, Pt (   0.0, -offset)
-            Seat.East,  Pt ( offset,    0.0)
-            Seat.South, Pt (   0.0,  offset)
+            Seat.West,  Pt (-offsetX,      0.0)
+            Seat.North, Pt (     0.0, -offsetY)
+            Seat.East,  Pt ( offsetX,      0.0)
+            Seat.South, Pt (     0.0,  offsetY)
         ]
 
     /// Finishes a trick by sending its card to the winner.
@@ -62,13 +64,16 @@ module TrickView =
                         centerPt + finishOffsetMap.[seat]
                     surface
                         |> CardSurface.getPosition pt
-                        |> MoveTo
+                        |> AnimationAction.moveTo
                         |> Animation.create cardView)
                 |> Seq.toArray
                 |> Animation.Parallel
 
+            // wait
+        let step2 = Animation.Sleep 2000
+
             // remove cards from surface
-        let step2 =
+        let step3 =
             cardViewMap
                 |> Seq.map (fun (KeyValue(_, cardView)) ->
                     Animation.create cardView Remove)
@@ -78,5 +83,5 @@ module TrickView =
             // reset to new trick
         cardViewMap.Clear()
 
-        [| step1; step2 |]
+        [| step1; step2; step3 |]
             |> Animation.Serial

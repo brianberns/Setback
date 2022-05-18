@@ -26,7 +26,7 @@ module HandView =
         let x = getX numCards iCard + xCenter
         surface
             |> CardSurface.getPosition (Pt (x, y))
-            |> MoveTo
+            |> AnimationAction.moveTo
 
     // Center point of each hand.
     let private centerPointMap =

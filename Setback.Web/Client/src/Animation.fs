@@ -4,7 +4,7 @@ namespace Setback.Web.Client
 type AnimationAction =
 
     /// Move element to position.
-    | MoveTo of Position
+    | MoveTo of Position * duration : int
 
     /// Bring element to front.
     | BringToFront
@@ -14,6 +14,15 @@ type AnimationAction =
 
     /// Remove element.
     | Remove
+
+module AnimationAction =
+
+    /// Default duration of a move, in milliseconds.
+    let private duration = 300
+
+    /// Moves to the given position with the default duration.
+    let moveTo position =
+        MoveTo (position, duration)
 
 /// An animation action applied to an element.
 type ElementAction =
@@ -35,9 +44,9 @@ module ElementAction =
         }
 
     /// Runs an element action.
-    let run duration elemAction =
+    let run elemAction =
         match elemAction.Action with
-            | MoveTo pos ->
+            | MoveTo (pos, duration) ->
                 elemAction.Element
                     |> JQueryElement.animateTo pos duration
             | BringToFront ->
@@ -63,10 +72,10 @@ type Animation =
     /// Serial animation.
     | Serial of Animation[]
 
-module Animation =
+    /// Sleeps for the given number of milliseconds.
+    | Sleep of duration : int
 
-    /// Duration of each step, in milliseconds.
-    let duration = 300
+module Animation =
 
     /// Creates an animation unit.
     let create elem action =
@@ -76,8 +85,7 @@ module Animation =
     /// Runs an animation.
     let rec run = function
         | Animation.Unit elemAction ->
-            elemAction
-                |> ElementAction.run duration
+            ElementAction.run elemAction
         | Animation.Parallel anims ->
             anims
                 |> Seq.map run
@@ -88,3 +96,5 @@ module Animation =
                 for anim in anims do
                     do! run anim
             }
+        | Animation.Sleep duration ->
+            Promise.sleep duration
