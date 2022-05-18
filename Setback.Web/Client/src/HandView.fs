@@ -21,20 +21,20 @@ module HandView =
         (delta * float iCard) - shift
 
     /// Animates a card to its target position in a hand.
-    let private animateCard surface (xOffset : Coord, y : Coord)
+    let private animateCard surface (Pt (xCenter, y))
         numCards iCard =
-        let x = getX numCards iCard + xOffset
+        let x = getX numCards iCard + xCenter
         surface
-            |> CardSurface.getPosition (x, y)
+            |> CardSurface.getPosition (Pt (x, y))
             |> MoveTo
 
-    // Coords of the center of each hand.
-    let private coordsMap =
+    // Center point of each hand.
+    let private centerPointMap =
         Map [
-            Seat.West,  (-0.7,  0.0)
-            Seat.North, ( 0.0, -0.9)
-            Seat.East,  ( 0.7,  0.0)
-            Seat.South, ( 0.0,  0.9)
+            Seat.West,  Pt (-0.7,  0.0)
+            Seat.North, Pt ( 0.0, -0.9)
+            Seat.East,  Pt ( 0.7,  0.0)
+            Seat.South, Pt ( 0.0,  0.9)
         ]
 
     /// Deals the cards in the given hand view into their target
@@ -53,10 +53,10 @@ module HandView =
                 for iCard = 0 to batchSize - 1 do
                     let cardView = cardViews.[iCard]
                     let actions =
-                        let coords = coordsMap.[seat]
+                        let centerPt = centerPointMap.[seat]
                         let iCard' = iCard + cardOffset
                         seq {
-                            animateCard surface coords numCards iCard'
+                            animateCard surface centerPt numCards iCard'
                             BringToFront
                         }
                     for action in actions do
@@ -70,8 +70,8 @@ module HandView =
         let numCards = handView.Length
         handView
             |> Array.mapi (fun iCard cardView ->
-                let coords = coordsMap.[seat]
-                animateCard surface coords numCards iCard
+                let centerPt = centerPointMap.[seat]
+                animateCard surface centerPt numCards iCard
                     |> Animation.create cardView)
             |> Animation.Parallel
 

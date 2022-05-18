@@ -14,6 +14,22 @@ module Coord =
         (0.5 * (float max.NumPixels * (coord + 1.0)))
             |> Pixel
 
+/// 2D point.
+type Point = Pt of Coord * Coord with
+
+    /// Point addition.
+    static member (+)(Pt (ax, ay), Pt (bx, by)) =
+        Pt (ax + bx, ay + by)
+
+    /// Point subtraction.
+    static member (-)(Pt (ax, ay), Pt (bx, by)) =
+        Pt (ax - bx, ay - by)
+
+module Point =
+
+    /// Origin point.
+    let origin = Pt (0.0, 0.0)
+
 /// Surface on which cards are played. The width and height
 /// are constrained so that cards are always fully contained
 /// by the surface.
@@ -46,7 +62,7 @@ module CardSurface =
 
     /// Converts the given -1..1 coordinates into an HTML
     /// position on the surface.
-    let getPosition (x, y) surface =
+    let getPosition (Pt (x, y)) surface =
         let left = Coord.toLength surface.Width x
         let top = Coord.toLength surface.Height y
         Position.create left top

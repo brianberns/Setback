@@ -1,19 +1,20 @@
 namespace Setback.Web.Client
 
-open System.Collections.Generic
 open Setback
 
 module TrickView =
 
-    let mutable private cardViewMap = Dictionary<Seat, CardView>()
+    /// Cards played on the current trick.
+    let mutable private cardViewMap =
+        System.Collections.Generic.Dictionary<Seat, CardView>()
 
-    /// Coordinates of each card in a trick.
-    let private playCoordsMap =
+    /// Center point of each card in a trick.
+    let private playPointMap =
         Map [
-            Seat.West,  (-0.2,  0.0)
-            Seat.North, ( 0.0, -0.3)
-            Seat.East,  ( 0.2,  0.0)
-            Seat.South, ( 0.0,  0.3)
+            Seat.West,  Pt (-0.2,  0.0)
+            Seat.North, Pt ( 0.0, -0.3)
+            Seat.East,  Pt ( 0.2,  0.0)
+            Seat.South, Pt ( 0.0,  0.3)
         ]
 
     /// Animates a card being played on a trick.
@@ -23,47 +24,50 @@ module TrickView =
         cardViewMap.Add(seat, cardView)
 
             // animate playing the card
-        let coords = playCoordsMap.[seat]
+        let pt = playPointMap.[seat]
         surface
-            |> CardSurface.getPosition coords
+            |> CardSurface.getPosition pt
             |> MoveTo
             |> Animation.create cardView
 
-    let private finishCoordsMap =
+    /// Center point of cards taken in a trick.
+    let private finishPointMap =
         Map [
-            Seat.West,  (-0.7,  0.1)
-            Seat.North, (-0.1, -0.9)
-            Seat.East,  ( 0.7, -0.1)
-            Seat.South, ( 0.1,  0.9)
+            Seat.West,  Pt (-0.7,  0.1)
+            Seat.North, Pt (-0.1, -0.9)
+            Seat.East,  Pt ( 0.7, -0.1)
+            Seat.South, Pt ( 0.1,  0.9)
         ]
 
-    let private finishDeltaMap =
-        let delta = 0.05
+    /// Offset from center of each card taken in a trick.
+    let private finishOffsetMap =
+        let offset = 0.05
         Map [
-            Seat.West,  (-delta,    0.0)
-            Seat.North, (   0.0, -delta)
-            Seat.East,  ( delta,    0.0)
-            Seat.South, (   0.0,  delta)
+            Seat.West,  Pt (-offset,    0.0)
+            Seat.North, Pt (   0.0, -offset)
+            Seat.East,  Pt ( offset,    0.0)
+            Seat.South, Pt (   0.0,  offset)
         ]
 
+    /// Finishes a trick by sending its card to the winner.
     let finish surface winnerSeat =
         assert(cardViewMap.Count = Seat.numSeats)
 
+            // move cards to trick winner
         let step1 =
-            let coords = finishCoordsMap.[winnerSeat]
+            let centerPt = finishPointMap.[winnerSeat]
             cardViewMap
                 |> Seq.map (fun (KeyValue(seat, cardView)) ->
-                    let coords' =
-                        let deltaCoords = finishDeltaMap.[seat]
-                        fst coords + fst deltaCoords,
-                        snd coords + snd deltaCoords
+                    let pt =
+                        centerPt + finishOffsetMap.[seat]
                     surface
-                        |> CardSurface.getPosition coords'
+                        |> CardSurface.getPosition pt
                         |> MoveTo
                         |> Animation.create cardView)
                 |> Seq.toArray
                 |> Animation.Parallel
 
+            // remove cards from surface
         let step2 =
             cardViewMap
                 |> Seq.map (fun (KeyValue(_, cardView)) ->
@@ -71,6 +75,7 @@ module TrickView =
                 |> Seq.toArray
                 |> Animation.Parallel
 
+            // reset to new trick
         cardViewMap.Clear()
 
         [| step1; step2 |]

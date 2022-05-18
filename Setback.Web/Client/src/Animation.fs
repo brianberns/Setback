@@ -79,7 +79,8 @@ module Animation =
     /// Runs an animation.
     let rec run = function
         | Animation.Unit elemAction ->
-            elemAction |> ElementAction.run duration
+            elemAction
+                |> ElementAction.run duration
         | Animation.Parallel anims ->
             anims
                 |> Seq.map run

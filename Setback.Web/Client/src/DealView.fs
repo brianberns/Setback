@@ -11,7 +11,7 @@ module DealView =
 
             // create card backs
         let backs =
-            let pos = surface |> CardSurface.getPosition (0.0, 0.0)
+            let pos = surface |> CardSurface.getPosition Point.origin
             Seq.init Card.numCards (fun _ ->
                 let cv = CardView.ofBack ()
                 JQueryElement.setPosition pos cv
