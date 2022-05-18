@@ -48,82 +48,97 @@ module App =
                         AbstractTrick.highPlayerIndex trick)
         }
 
+    /// Plays the given card in the given deal and then continues
+    /// the rest of the deal.
+    let private playCard
+        dealer
+        deal
+        card
+        animTrickFinish
+        cont =
+
+        promise {
+
+                // animate if trick is finished
+            match getTrickWinnerOpt dealer deal card with
+                | Some winner ->
+                    do! animTrickFinish winner
+                        |> Animation.run
+                | None -> ()
+
+                // play the card and continue
+            deal
+                |> AbstractOpenDeal.addPlay card
+                |> cont
+        }
+
+    /// Allows user to play a card.
+    let private playHuman
+        (handView : HandView)
+        dealer
+        deal
+        animPlay
+        animTrickFinish
+        cont =
+
+            // determine all legal plays
+        let legalPlays =
+            let hand =
+                AbstractOpenDeal.currentHand deal
+            getLegalPlays hand deal.ClosedDeal
+
+            // enable user to select one of the corresponding card views
+        for cardView in handView do
+            let card = cardView |> CardView.card
+            if legalPlays.Contains(card) then
+                cardView.addClass("active")
+                cardView.click(fun () ->
+
+                        // prevent further clicks at this level
+                    for cardView in handView do
+                        cardView.removeClass("active")
+                        cardView.off("click")
+
+                    promise {
+
+                            // animate playing the selected card
+                        do! animPlay cardView |> Animation.run
+
+                            // move to next player
+                        do! playCard dealer deal card animTrickFinish cont
+                    } |> ignore)
+
+    /// Automatically plays a card.
+    let playAuto dealer deal animPlay animTrickFinish cont =
+        async {
+                // determine card to play
+            let! card = WebPlayer.makePlay AbstractScore.zero deal
+
+                // animate playing the selected card
+            let cardView = CardView.ofCard card
+            do! animPlay cardView
+                |> Animation.run
+                |> Async.AwaitPromise
+
+                // move to next player
+            do! playCard dealer deal card animTrickFinish cont
+                |> Async.AwaitPromise
+        } |> Async.StartImmediate
+
     /// Plays the given deal.
-    let play dealer handViewMap deal =
-
-        /// Plays the given card in the given deal and then recursively
-        /// plays the rest of the deal.
-        let rec addPlay card deal animTrickFinish =
-            promise {
-                    // animate if trick is finished
-                match getTrickWinnerOpt dealer deal card with
-                    | Some winner ->
-                        do! animTrickFinish winner
-                            |> Animation.run
-                    | None -> ()
-
-                    // play the card and continue
-                deal
-                    |> AbstractOpenDeal.addPlay card
-                    |> loop
-            }
-
-        /// Allows user to play a card.
-        and playHuman (handView : HandView) deal animPlay animTrickFinish =
-
-                // determine all legal plays
-            let legalPlays =
-                let hand =
-                    AbstractOpenDeal.currentHand deal
-                getLegalPlays hand deal.ClosedDeal
-
-                // enable user to select one of the corresponding card views
-            for cardView in handView do
-                let card = cardView |> CardView.card
-                if legalPlays.Contains(card) then
-                    cardView.addClass("active")
-                    cardView.click(fun () ->
-
-                            // prevent further clicks at this level
-                        for cardView in handView do
-                            cardView.removeClass("active")
-                            cardView.off("click")
-
-                        promise {
-
-                                // animate playing the selected card
-                            do! animPlay cardView |> Animation.run
-
-                                // move to next player
-                            do! addPlay card deal animTrickFinish
-                        } |> ignore)
-
-        /// Automatically plays a card.
-        and playAuto deal animPlay animTrickFinish =
-            async {
-                    // determine card to play
-                let! card = WebPlayer.makePlay AbstractScore.zero deal
-
-                    // animate playing the selected card
-                let cardView = CardView.ofCard card
-                do! animPlay cardView
-                    |> Animation.run
-                    |> Async.AwaitPromise
-
-                    // move to next player
-                do! addPlay card deal animTrickFinish
-                    |> Async.AwaitPromise
-            } |> Async.StartImmediate
+    let private play dealer handViewMap deal =
 
         /// Plays entire deal.
-        and loop deal =
+        let rec loop deal =
             let seat = getCurrentSeat dealer deal
             let (handView : HandView), animPlay, animTrickFinish =
                 handViewMap |> Map.find seat
-            if seat = Seat.South then
-                playHuman handView deal animPlay animTrickFinish
-            else
-                playAuto deal animPlay animTrickFinish
+            let player =
+                if seat = Seat.South then
+                    playHuman handView
+                else
+                    playAuto
+            player dealer deal animPlay animTrickFinish loop
 
         loop deal
 
