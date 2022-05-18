@@ -71,10 +71,12 @@ module App =
             for cardView in handView do
                 let card = cardView |> CardView.card
                 if legalPlays.Contains(card) then
+                    cardView.addClass("active")
                     cardView.click(fun () ->
 
                             // prevent further clicks at this level
                         for cardView in handView do
+                            cardView.removeClass("active")
                             cardView.off("click")
 
                         promise {

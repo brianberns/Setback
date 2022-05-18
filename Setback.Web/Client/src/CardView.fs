@@ -20,15 +20,15 @@ module CardView =
 
     /// Creates a card view.
     let private create src id : CardView =
-        let elem = ~~Image.Create(src = src, id = id, alt = id)
-        elem.addClass("card")
-        elem.css
+        let cardView = ~~Image.Create(src = src, id = id, alt = id)
+        cardView.addClass("card")
+        cardView.css
             {|
                 position = "absolute"
                 width = width
                 ``z-index`` = JQueryElement.zIndexIncr ()
             |}
-        elem
+        cardView
 
     /// Card images. (Unfortunately, import only works with string
     /// literals.)

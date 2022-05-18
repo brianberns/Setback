@@ -32,12 +32,13 @@ module TrickView =
 
     /// Center point of cards taken in a trick.
     let private finishPointMap =
-        let offset = 0.4
+        let offsetX = 0.4
+        let offsetY = 0.6
         Map [
-            Seat.West,  Pt (   -0.7,  offset)
-            Seat.North, Pt (-offset,    -0.9)
-            Seat.East,  Pt (    0.7, -offset)
-            Seat.South, Pt ( offset,     0.9)
+            Seat.West,  Pt (    -0.7,  offsetY)
+            Seat.North, Pt (-offsetX,     -0.9)
+            Seat.East,  Pt (     0.7, -offsetY)
+            Seat.South, Pt ( offsetX,      0.9)
         ]
 
     /// Offset from center of each card taken in a trick.
@@ -70,7 +71,7 @@ module TrickView =
                 |> Animation.Parallel
 
             // wait
-        let step2 = Animation.Sleep 2000
+        let step2 = Animation.Sleep 1500
 
             // remove cards from surface
         let step3 =
