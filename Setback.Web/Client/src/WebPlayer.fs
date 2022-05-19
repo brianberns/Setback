@@ -6,7 +6,7 @@ module ExceptionExt =
     /// Make sure to at least log failures
     /// See https://github.com/fable-compiler/Fable/issues/2115.
     let failwith msg =
-        Browser.Dom.console.log($"Failing with message: {msg}")
+        Browser.Dom.console.trace($"Failing with message: {msg}")
         assert(false)   // attempt to trigger browser's debugger
         failwith msg
 

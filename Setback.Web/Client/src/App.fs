@@ -11,11 +11,12 @@ open Setback.Cfrm
 module App =
 
     let private auction surface dealer deal handViews =
-        let deal = deal |> AbstractOpenDeal.addBid Bid.Pass
-        let deal = deal |> AbstractOpenDeal.addBid Bid.Pass
-        let deal = deal |> AbstractOpenDeal.addBid Bid.Pass
-        let deal = deal |> AbstractOpenDeal.addBid Bid.Two
-        deal
+        let auctionMap =
+            handViews
+                |> Seq.map (fun (seat : Seat, handView) ->
+                    seat, handView)
+                |> Map
+        Auction.run dealer deal auctionMap
 
     let private playout surface dealer deal handViews =
         let playoutMap =
@@ -39,7 +40,7 @@ module App =
 
         let surface = CardSurface.init "#surface"
 
-        let rng = Random()
+        let rng = Random(0)
         let dealer = Seat.West
         let deal =
             Deck.shuffle rng
@@ -47,8 +48,8 @@ module App =
 
         promise {
             let! handViews = DealView.start surface dealer deal
-            let deal' = auction surface dealer deal handViews
-            playout surface dealer deal' handViews
+            auction surface dealer deal handViews (fun deal' ->
+                playout surface dealer deal' handViews)
         } |> ignore
 
         // start the game when the browser is ready

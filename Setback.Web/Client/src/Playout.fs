@@ -38,7 +38,7 @@ module Playout =
             /// Animation of winning a trick.
             AnimTrickFinish : Seat -> Animation
 
-            /// Contines the playout.
+            /// Continues the playout.
             Continuation : AbstractOpenDeal -> unit
         }
 

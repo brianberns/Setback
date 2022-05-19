@@ -46,6 +46,7 @@
     <Compile Include="TrickView.fs" />
     <Compile Include="HandView.fs" />
     <Compile Include="DealView.fs" />
+    <Compile Include="Auction.fs" />
     <Compile Include="Playout.fs" />
     <Compile Include="App.fs" />
   </ItemGroup>
