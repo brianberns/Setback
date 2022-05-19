@@ -1,7 +1,5 @@
 ﻿namespace Setback.Cfrm
 
-open System
-
 open PlayingCards
 open Setback
 

@@ -81,9 +81,14 @@ module Playout =
                 | None -> ()
 
                 // play the card and continue
-            context.Deal
-                |> AbstractOpenDeal.addPlay card
-                |> context.Continuation
+            let deal' =
+                context.Deal
+                    |> AbstractOpenDeal.addPlay card
+            match deal'.ClosedDeal.PlayoutOpt with
+                | Some playout ->
+                    if playout |> AbstractPlayout.isComplete |> not then
+                        deal' |> context.Continuation
+                | None -> failwith "Unexpected"
         }
 
     /// Allows user to play a card.
