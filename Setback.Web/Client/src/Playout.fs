@@ -132,7 +132,7 @@ module Playout =
         } |> Async.StartImmediate
 
     /// Plays the given deal.
-    let play dealer (playoutMap : Map<_, _>) deal =
+    let play dealer deal (playoutMap : Map<_, _>) =
         assert(
             deal.ClosedDeal.Auction
                 |> AbstractAuction.isComplete)
