@@ -1,7 +1,3 @@
-// Note this only includes basic configuration for development mode.
-// For a more comprehensive configuration check:
-// https://github.com/fable-compiler/webpack-config-template
-
 var path = require("path");
 
 module.exports = {
@@ -16,14 +12,14 @@ module.exports = {
         port: 8081,
         proxy: {
             '/ISetbackApi/**': {
-                target: "http://127.0.0.1:5000",// assuming the backend server is hosted on port 5000 during development
+                target: "http://127.0.0.1:5000",
                 changeOrigin: true
             }
         }
     },
     resolve: {
         alias: {
-            jquery: "jquery/src/jquery"
+            jquery: "jquery/src/jquery"   // important - can't import jQuery from dist folder
         }
     },
     module: {

@@ -49,13 +49,13 @@ module WebPlayer =
 
     /// Chooses a play action.
     let private chooseAction (legalPlayActions : _[]) deal =
-        async {
-            match legalPlayActions.Length with
-                | 0 -> return failwith "Unexpected"
-                | 1 -> return legalPlayActions.[0]   // trivial case
+        match legalPlayActions.Length with
+            | 0 -> failwith "Unexpected"
+            | 1 -> async.Return(legalPlayActions.[0])   // trivial case
 
-                    // choose action
-                | _ ->
+                // choose action
+            | _ ->
+                async {
                         // determine key for this situation
                     let key =
                         let legalDealActions =
@@ -69,7 +69,7 @@ module WebPlayer =
                             return legalPlayActions.[iAction]
                         | None ->
                             return legalPlayActions.[0]
-        }
+                }
 
     /// Plays a card in the given deal.
     let makePlay (_ : AbstractScore) (deal : AbstractOpenDeal) =
@@ -88,14 +88,13 @@ module WebPlayer =
                             |> Seq.toArray
                     playout, legalPlays
                 | _ -> failwith "Unexpected"
-        async {
-            match legalPlays.Length with
-                | 0 -> return failwith "Unexpected"   // why does Fable require "return" here?
-                | 1 -> return legalPlays.[0]          // trivial case
+        match legalPlays.Length with
+            | 0 -> failwith "Unexpected"
+            | 1 -> async.Return(legalPlays.[0])          // trivial case
 
-                    // must choose between multiple legal plays
-                | _ ->
-
+                // must choose between multiple legal plays
+            | _ ->
+                async {
                         // get legal actions (not usually 1:1 with legal plays)
                     let legalPlayActions =
                         PlayAction.getActions hand handLowTrumpRankOpt playout
@@ -109,4 +108,4 @@ module WebPlayer =
                         handLowTrumpRankOpt
                         playout
                         action
-        }
+                }

@@ -133,7 +133,11 @@ module Playout =
 
     /// Plays the given deal.
     let play dealer (playoutMap : Map<_, _>) deal =
+        assert(
+            deal.ClosedDeal.Auction
+                |> AbstractAuction.isComplete)
 
+        /// Plays a single card and then loops recursively.
         let rec loop deal =
 
                 // prepare current player
