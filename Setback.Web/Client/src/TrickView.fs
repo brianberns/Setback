@@ -5,6 +5,7 @@ open Setback
 module TrickView =
 
     /// Cards played on the current trick.
+    /// ASSUMPTION: Only one trick view per app.
     let mutable private cardViewMap =
         System.Collections.Generic.Dictionary<Seat, CardView>()
 
@@ -52,7 +53,8 @@ module TrickView =
             Seat.South, Pt (     0.0,  offsetY)
         ]
 
-    /// Finishes a trick by sending its card to the winner.
+    /// Animates the end of a trick by sending its cards to the
+    /// trick winner.
     let finish surface winnerSeat =
         assert(cardViewMap.Count = Seat.numSeats)
 
