@@ -35,7 +35,7 @@ module App =
 
                         let animPlay =
                             let play =
-                                if seat = Seat.South then
+                                if seat.IsUser then
                                     OpenHandView.play
                                 else
                                     ClosedHandView.play

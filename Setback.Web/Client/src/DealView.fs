@@ -29,7 +29,7 @@ module DealView =
         let closedE = closedView backs.[6.. 8] backs.[18..20]
         let closedS = closedView backs.[9..11] backs.[21..23]
 
-            // create open hand view for human player
+            // create open hand view for user
         let openS =
             OpenHandView.ofHand deal.UnplayedCards.[0]
 

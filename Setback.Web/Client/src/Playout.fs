@@ -6,6 +6,13 @@ open PlayingCards
 open Setback
 open Setback.Cfrm
 
+[<AutoOpen>]
+module SeatExt =
+    type Seat with
+
+        /// Indicates whether the given seat is played by the user.
+        member seat.IsUser = (seat = Seat.South)
+
 module Playout =
 
     /// Answers the current player's seat.
@@ -74,7 +81,7 @@ module Playout =
                     let animate () =
                         context.AnimTrickFinish winner
                             |> Animation.run
-                    if winner = Seat.South then   // don't force user to wait for animation to finish
+                    if winner.IsUser then   // don't force user to wait for animation to finish
                         animate () |> ignore
                     else
                         do! animate ()
@@ -87,7 +94,7 @@ module Playout =
         }
 
     /// Allows user to play a card.
-    let private playHuman (handView : HandView) context =
+    let private playUser (handView : HandView) context =
 
             // determine all legal plays
         let legalPlays =
@@ -141,8 +148,8 @@ module Playout =
             let (handView : HandView), animCardPlay, animTrickFinish =
                 playoutMap.[seat]
             let player =
-                if seat = Seat.South then
-                    playHuman handView
+                if seat.IsUser then
+                    playUser handView
                 else
                     playAuto
 
