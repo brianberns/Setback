@@ -6,13 +6,6 @@ open PlayingCards
 open Setback
 open Setback.Cfrm
 
-[<AutoOpen>]
-module SeatExt =
-    type Seat with
-
-        /// Indicates whether the given seat is played by the user.
-        member seat.IsUser = (seat = Seat.South)
-
 module Playout =
 
     /// Answers the current player's seat.
