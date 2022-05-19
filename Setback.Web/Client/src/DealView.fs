@@ -7,16 +7,16 @@ open Setback.Cfrm
 module DealView =
 
     /// Animates the start of the given deal on the given surface.
-    let start surface deal =
+    let start surface dealer deal =
 
             // create card backs
         let backs =
             let pos = surface |> CardSurface.getPosition Point.origin
             Seq.init Card.numCards (fun _ ->
-                let cv = CardView.ofBack ()
-                JQueryElement.setPosition pos cv
-                surface.Element.append(cv)
-                cv)
+                let cardView = CardView.ofBack ()
+                JQueryElement.setPosition pos cardView
+                surface.Element.append(cardView)
+                cardView)
                 |> Seq.rev
                 |> Seq.toArray
 
@@ -24,26 +24,27 @@ module DealView =
         let closedView backs1 backs2 =
             Array.append backs1 backs2
                 |> ClosedHandView.ofCardViews
-        let closedW = closedView backs.[0.. 2] backs.[12..14]
-        let closedN = closedView backs.[3.. 5] backs.[15..17]
-        let closedE = closedView backs.[6.. 8] backs.[18..20]
-        let closedS = closedView backs.[9..11] backs.[21..23]
+        let closed1 = closedView backs.[0.. 2] backs.[12..14]
+        let closed2 = closedView backs.[3.. 5] backs.[15..17]
+        let closed3 = closedView backs.[6.. 8] backs.[18..20]
+        let closed0 = closedView backs.[9..11] backs.[21..23]   // dealer receives cards last
 
             // create open hand view for user
         let openS =
-            OpenHandView.ofHand deal.UnplayedCards.[0]
+            let cards = deal.UnplayedCards.[0]
+            OpenHandView.ofHand cards
 
             // deal animation
         let anim =
 
                 // animate hands being dealt
-            let animW1, animW2 = HandView.deal surface Seat.West  closedW
-            let animN1, animN2 = HandView.deal surface Seat.North closedN
-            let animE1, animE2 = HandView.deal surface Seat.East  closedE
-            let animS1, animS2 = HandView.deal surface Seat.South closedS
+            let anim1a, anim1b = HandView.deal surface Seat.West  closed1
+            let anim2a, anim2b = HandView.deal surface Seat.North closed2
+            let anim3a, anim3b = HandView.deal surface Seat.East  closed3
+            let anim0a, anim0b = HandView.deal surface Seat.South closed0
 
                 // animate south's hand reveal
-            let reveal = OpenHandView.reveal closedS openS
+            let reveal = OpenHandView.reveal closed0 openS
 
                 // animate remaining deck removal
             let remove =
@@ -54,21 +55,22 @@ module DealView =
 
                 // assemble final animation
             [|
-                animW1; animN1; animE1; animS1
-                animW2; animN2; animE2; animS2
+                anim1a; anim2a; anim3a; anim0a
+                anim1b; anim2b; anim3b; anim0b
                 reveal; remove
             |] |> Animation.Serial 
 
         promise {
 
-                // run the animation
+                // run the initial animation
             do! Animation.run anim
 
                 // answer the hand views for futher animation
             return [|
-                Seat.West, closedW
-                Seat.North, closedN
-                Seat.East, closedE
-                Seat.South, openS
-            |]
+                0, openS
+                1, closed1
+                2, closed2
+                3, closed3
+            |] |> Array.map (fun (iPlayer, handView) ->
+                Seat.incr iPlayer dealer, handView)
         }

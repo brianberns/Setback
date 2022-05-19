@@ -22,7 +22,7 @@ module App =
 
         promise {
 
-            let! handViews = DealView.start surface deal
+            let! handViews = DealView.start surface dealer deal
 
             let deal = deal |> AbstractOpenDeal.addBid Bid.Pass   // w
             let deal = deal |> AbstractOpenDeal.addBid Bid.Pass   // n
