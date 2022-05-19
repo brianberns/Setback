@@ -1,9 +1,5 @@
 namespace Setback.Web.Client
 
-open System
-
-open Browser.Dom
-
 open Fable.Core
 
 open PlayingCards
@@ -75,8 +71,13 @@ module Playout =
                 // animate if trick is finished
             match getTrickWinnerOpt context card with
                 | Some winner ->
-                    do! context.AnimTrickFinish winner
-                        |> Animation.run
+                    let animate () =
+                        context.AnimTrickFinish winner
+                            |> Animation.run
+                    if winner = Seat.South then   // don't force user to wait for animation to finish
+                        animate () |> ignore
+                    else
+                        do! animate ()
                 | None -> ()
 
                 // play the card and continue
