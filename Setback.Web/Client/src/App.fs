@@ -15,7 +15,7 @@ module App =
         let surface = CardSurface.init "#surface"
 
         let rng = Random()
-        let dealer = Seat.South
+        let dealer = Seat.West
         let deal =
             Deck.shuffle rng
                 |> AbstractOpenDeal.fromDeck dealer
@@ -24,31 +24,30 @@ module App =
 
             let! handViews = DealView.start surface dealer deal
 
-            let deal = deal |> AbstractOpenDeal.addBid Bid.Pass   // w
             let deal = deal |> AbstractOpenDeal.addBid Bid.Pass   // n
             let deal = deal |> AbstractOpenDeal.addBid Bid.Pass   // e
             let deal = deal |> AbstractOpenDeal.addBid Bid.Two    // s
+            let deal = deal |> AbstractOpenDeal.addBid Bid.Pass   // w
                     
-            let handViewMap =
+            let playoutMap =
                 handViews
                     |> Seq.map (fun (seat, handView) ->
 
-                        let animPlay =
+                        let animCardPlay =
                             let play =
-                                if seat.IsUser then
-                                    OpenHandView.play
-                                else
-                                    ClosedHandView.play
+                                if seat.IsUser then OpenHandView.play
+                                else ClosedHandView.play
                             play surface seat handView
 
                         let animTrickFinish =
                             TrickView.finish surface
 
-                        seat, (handView, animPlay, animTrickFinish))
+                        seat, (handView, animCardPlay, animTrickFinish))
                     |> Map
 
-            Playout.play dealer handViewMap deal
+            Playout.play dealer playoutMap deal
 
         } |> ignore
 
+        // start the game when the browser is ready
     (~~document).ready(run)

@@ -93,7 +93,7 @@ module DealView =
 
         promise {
 
-                // run the initial animation
+                // run the deal start animation
             do! Animation.run anim
 
                 // answer the hand views for futher animation
