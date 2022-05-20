@@ -15,3 +15,13 @@ module Bid =
     /// Total number of bids.
     let numBids =
         Enum.getValues<Bid>.Length
+
+#if FABLE_COMPILER
+    /// Display name.
+    let toString = function
+        | Bid.Pass -> "Pass"
+        | Bid.Two -> "Two"
+        | Bid.Three -> "Three"
+        | Bid.Four -> "Four"
+        | _ -> failwith "Unexpected bid"
+#endif

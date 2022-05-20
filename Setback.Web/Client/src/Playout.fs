@@ -1,5 +1,7 @@
 namespace Setback.Web.Client
 
+open Browser.Dom
+
 open Fable.Core
 
 open PlayingCards
@@ -7,12 +9,6 @@ open Setback
 open Setback.Cfrm
 
 module Playout =
-
-    /// Answers the current player's seat.
-    let private getCurrentSeat dealer deal =
-        Seat.incr
-            (AbstractOpenDeal.currentPlayerIndex deal)
-            dealer
 
     /// Answers legal plays in the given hand and deal.
     let private getLegalPlays hand closedDeal =
@@ -67,6 +63,13 @@ module Playout =
     /// the rest of the deal.
     let private playCard context card =
         promise {
+
+            do
+                let seat =
+                    AbstractOpenDeal.getCurrentSeat
+                        context.Dealer
+                        context.Deal
+                console.log($"{seat |> Seat.toString} plays {card}")
 
                 // animate if trick is finished
             match getTrickWinnerOpt context card with
@@ -146,7 +149,8 @@ module Playout =
         let rec loop deal =
 
                 // prepare current player
-            let seat = getCurrentSeat dealer deal
+            let seat =
+                AbstractOpenDeal.getCurrentSeat dealer deal
             let (handView : HandView), animCardPlay, animTrickFinish =
                 playoutMap.[seat]
             let player =

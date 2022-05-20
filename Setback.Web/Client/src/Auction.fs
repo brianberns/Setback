@@ -1,18 +1,22 @@
 namespace Setback.Web.Client
 
+open Browser.Dom
+
 open Fable.Core
 
 open PlayingCards
 open Setback
 open Setback.Cfrm
 
-module Auction =
+module AbstractOpenDeal =
 
     /// Answers the current player's seat.
-    let private getCurrentSeat dealer deal =
+    let getCurrentSeat dealer deal =
         Seat.incr
             (AbstractOpenDeal.currentPlayerIndex deal)
             dealer
+
+module Auction =
 
     /// Auction context.
     type private Context =
@@ -34,6 +38,14 @@ module Auction =
     /// the rest of the deal.
     let private makeBid context bid =
         promise {
+
+            do
+                let seat =
+                    AbstractOpenDeal.getCurrentSeat
+                        context.Dealer
+                        context.Deal
+                console.log($"{seat |> Seat.toString} bids {bid |> Bid.toString}")
+
             let deal' =
                 context.Deal
                     |> AbstractOpenDeal.addBid bid
@@ -76,7 +88,8 @@ module Auction =
         let rec loop deal =
 
                 // prepare current player
-            let seat = getCurrentSeat dealer deal
+            let seat =
+                AbstractOpenDeal.getCurrentSeat dealer deal
             let (handView : HandView) =
                 auctionMap.[seat]
             let bidder =

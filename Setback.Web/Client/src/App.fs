@@ -40,8 +40,8 @@ module App =
 
         let surface = CardSurface.init "#surface"
 
-        let rng = Random(0)
-        let dealer = Seat.West
+        let rng = Random()
+        let dealer = Seat.South
         let deal =
             Deck.shuffle rng
                 |> AbstractOpenDeal.fromDeck dealer
