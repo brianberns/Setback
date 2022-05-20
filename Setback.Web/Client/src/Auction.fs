@@ -46,15 +46,15 @@ module Auction =
                         context.Deal
                 console.log($"{seat |> Seat.toString} bids {bid |> Bid.toString}")
 
-            let deal' =
+            let deal =
                 context.Deal
                     |> AbstractOpenDeal.addBid bid
             let cont =
-                if deal'.ClosedDeal.Auction |> AbstractAuction.isComplete then
+                if deal.ClosedDeal.Auction |> AbstractAuction.isComplete then
                     context.Complete
                 else
                     context.Continuation
-            cont deal'
+            cont deal
         }
 
     /// Allows user to make a bid.
