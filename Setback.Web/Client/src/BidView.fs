@@ -1,6 +1,8 @@
 namespace Setback.Web.Client
 
 open Browser.Dom
+
+open PlayingCards
 open Setback
 
 /// A view of a bid.
@@ -14,8 +16,27 @@ module BidView =
             let innerText = Bid.toString bid
             ~~HTMLParagraphElement.Create(innerText = innerText)
         bidView.addClass("bid")
-        bidView.css
+        bidView
+
+type BidViewChooser = JQueryElement
+
+module BidViewChooser =
+
+    let create position validBids handler : BidViewChooser =
+
+        let div = ~~HTMLDivElement.Create()
+        div.css
             {|
                 position = "absolute"
             |}
-        bidView
+        JQueryElement.setPosition position div
+
+        for bid in Enum.getValues<Bid> do
+            let bidView = BidView.ofBid bid
+            if validBids |> Set.contains bid then
+                bidView.addClass("active")
+                bidView.click(fun () ->
+                    handler bid)
+            div.append(bidView)
+
+        div

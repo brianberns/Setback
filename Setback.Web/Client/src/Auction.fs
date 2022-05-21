@@ -27,6 +27,8 @@ module Auction =
             /// Current deal.
             Deal : AbstractOpenDeal
 
+            ChooseBid : (Bid -> unit) -> Set<Bid> -> unit
+
             /// Continues the auction.
             Continuation : AbstractOpenDeal -> unit
 
@@ -58,16 +60,14 @@ module Auction =
         }
 
     /// Allows user to make a bid.
-    let private bidUser (handView : HandView) context =
-        async {
-                // determine bid to make
-            let! bid =
-                WebPlayer.makeBid AbstractScore.zero context.Deal
-
-                // move to next player
-            do! makeBid context bid
-                |> Async.AwaitPromise
-        } |> Async.StartImmediate
+    let private bidUser context =
+        context.Deal.ClosedDeal.Auction
+            |> AbstractAuction.legalBids
+            |> set
+            |> context.ChooseBid (fun bid ->
+                promise {
+                    do! makeBid context bid
+                } |> ignore)
 
     /// Automatically makes a bid.
     let private bidAuto context =
@@ -82,7 +82,7 @@ module Auction =
         } |> Async.StartImmediate
 
     /// Runs the given deal's auction.
-    let run dealer deal (auctionMap : Map<_, _>) cont =
+    let run dealer deal chooseBid cont =
 
         /// Makes a single bid and then loops recursively.
         let rec loop deal =
@@ -90,18 +90,15 @@ module Auction =
                 // prepare current player
             let seat =
                 AbstractOpenDeal.getCurrentSeat dealer deal
-            let (handView : HandView) =
-                auctionMap.[seat]
             let bidder =
-                if seat.IsUser then
-                    bidUser handView
-                else
-                    bidAuto
+                if seat.IsUser then bidUser
+                else bidAuto
 
                 // invoke bidder
             bidder {
                 Dealer = dealer
                 Deal = deal
+                ChooseBid = chooseBid
                 Continuation = loop
                 Complete = cont
             }

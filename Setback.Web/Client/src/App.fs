@@ -10,13 +10,12 @@ open Setback.Cfrm
 
 module App =
 
-    let private auction surface dealer deal handViews =
-        let auctionMap =
-            handViews
-                |> Seq.map (fun (seat : Seat, handView) ->
-                    seat, handView)
-                |> Map
-        Auction.run dealer deal auctionMap
+    let private auction surface dealer deal =
+        let chooseBid (handler : Bid -> unit) (bids : Set<Bid>) =
+            let pos = surface |> CardSurface.getPosition Point.origin
+            let chooser = BidViewChooser.create pos bids handler
+            surface.Element.append(chooser)
+        Auction.run dealer deal chooseBid
 
     let private playout surface dealer deal handViews =
         let playoutMap =
@@ -48,7 +47,7 @@ module App =
 
         promise {
             let! handViews = DealView.start surface dealer deal
-            auction surface dealer deal handViews (fun deal' ->
+            auction surface dealer deal (fun deal' ->
                 playout surface dealer deal' handViews)
         } |> ignore
 
