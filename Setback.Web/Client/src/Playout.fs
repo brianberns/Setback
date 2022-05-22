@@ -36,6 +36,9 @@ module Playout =
 
             /// Continues the playout.
             Continuation : AbstractOpenDeal -> unit
+
+            /// Completes the playout (by tallying the score and starting another deal).
+            Complete : AbstractOpenDeal -> unit
         }
 
     /// Plays the given card on the current trick, and returns the
@@ -95,6 +98,7 @@ module Playout =
                     if playout |> AbstractPlayout.isComplete then
                         do! AuctionView.removeAnim ()
                             |> Animation.run
+                        deal |> context.Complete
                     else
                         deal |> context.Continuation
                 | None -> failwith "Unexpected"
@@ -149,7 +153,7 @@ module Playout =
         } |> Async.StartImmediate
 
     /// Plays the given deal.
-    let play dealer deal (playoutMap : Map<_, _>) =
+    let play dealer deal (playoutMap : Map<_, _>) cont =
         assert(
             deal.ClosedDeal.Auction
                 |> AbstractAuction.isComplete)
@@ -175,6 +179,7 @@ module Playout =
                 AnimCardPlay = animCardPlay
                 AnimTrickFinish = animTrickFinish
                 Continuation = loop
+                Complete = cont
             }
 
         loop deal
