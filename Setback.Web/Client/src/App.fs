@@ -8,14 +8,17 @@ open PlayingCards
 open Setback
 open Setback.Cfrm
 
-module App =
+module Deal =
 
+    /// Runs the auction of the given deal.
     let private auction surface dealer deal =
 
-        let chooseBid (handler : Bid -> unit) (bids : Set<Bid>) =
-            let chooser = BidChooser.create bids handler
+        /// Creates bid chooser.
+        let chooseBid handler legalBids =
+            let chooser = BidChooser.create legalBids handler
             surface.Element.append(chooser)
 
+            // get bid animation for each seat
         let auctionMap =
             Enum.getValues<Seat>
                 |> Seq.map (fun seat ->
@@ -24,9 +27,13 @@ module App =
                     seat, animBid)
                 |> Map
 
+            // run the auction
         Auction.run dealer deal chooseBid auctionMap
 
+    /// Runs the playout of the given deal.
     let private playout surface dealer deal handViews =
+
+            // get animations for each seat
         let playoutMap =
             handViews
                 |> Seq.map (fun (seat : Seat, handView) ->
@@ -42,7 +49,21 @@ module App =
 
                     seat, (handView, animCardPlay, animTrickFinish))
                 |> Map
+
+            // run the playout
         Playout.play dealer deal playoutMap
+
+    /// Runs the given deal.
+    let run surface dealer deal seatViews =
+        auction surface dealer deal (fun deal' ->
+            if deal'.ClosedDeal.Auction.HighBid.Bid = Bid.Pass then
+                for (_, handView) in seatViews do
+                    for (cardView : CardView) in handView do
+                        cardView.remove()
+            else
+                playout surface dealer deal' seatViews)
+
+module App =
 
     let private run () =
 
@@ -55,14 +76,12 @@ module App =
                 |> AbstractOpenDeal.fromDeck dealer
 
         promise {
+
+                // animate dealing the cards
             let! seatViews = DealView.start surface dealer deal
-            auction surface dealer deal (fun deal' ->
-                if deal'.ClosedDeal.Auction.HighBid.Bid = Bid.Pass then
-                    for (_, handView) in seatViews do
-                        for cardView in handView do
-                            cardView.remove()
-                else
-                    playout surface dealer deal' seatViews)
+
+                // run the deal
+            Deal.run surface dealer deal seatViews
         } |> ignore
 
         // start the game when the browser is ready
