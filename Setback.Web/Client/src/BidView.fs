@@ -25,7 +25,7 @@ module HTMLElement =
 
     let HTMLButtonElement = HTMLButtonElementType()
 
-/// A view of a bid.
+/// A view of a single bid. E.g. "Three".
 type BidView = JQueryElement
 
 module BidView =
@@ -49,7 +49,7 @@ module BidView =
         bidView.addClass("bid")
         bidView
 
-/// Widget that enables the user to choose a bid.
+/// Widget that enables the user to choose a legal bid.
 type BidChooser = JQueryElement
 
 module BidChooser =
