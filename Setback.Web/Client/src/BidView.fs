@@ -12,15 +12,15 @@ type BidView = JQueryElement
 [<AutoOpen>]
 module HTMLElement =
 
-    type HTMLParagraphElementType() =
-        member _.Create() = document.createElement("p")
-
-    let HTMLParagraphElement = HTMLParagraphElementType()
-
     type HTMLDivElementType() =
         member _.Create() = document.createElement("div")
 
     let HTMLDivElement = HTMLDivElementType()
+
+    type HTMLButtonElementType() =
+        member _.Create() = document.createElement("button")
+
+    let HTMLButtonElement = HTMLButtonElementType()
 
 module BidView =
 
@@ -28,20 +28,22 @@ module BidView =
     let ofBid bid : BidView =
         let bidView =
             let innerText = Bid.toString bid
-            ~~HTMLParagraphElement.Create(innerText = innerText)
+            ~~HTMLButtonElement.Create(innerText = innerText)
         bidView.addClass("bid")
         bidView
 
+/// Widget that enables the user to choose a bid.
 type BidChooser = JQueryElement
 
 module BidChooser =
 
-    /// Creates a bid chooser for the given bids, with the
-    /// given choice handler.
+    /// Creates a chooser for the given bids, invoking the given
+    /// choice handler.
     let create position validBids handler : BidChooser =
 
             // create an element to hold the bid views
-        let div = ~~HTMLDivElement.Create()
+        let div = ~~HTMLDivElement.Create(innerHTML = "<p>Your Bid</p>")
+        div.addClass("chooser")
         div.css
             {|
                 position = "absolute"
@@ -54,7 +56,10 @@ module BidChooser =
             if validBids |> Set.contains bid then
                 bidView.addClass("active")
                 bidView.click(fun () ->
+                    div.remove()
                     handler bid)
+            else
+                bidView.addClass("inactive")
             div.append(bidView)
 
         div

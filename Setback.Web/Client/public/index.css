@@ -1,5 +1,6 @@
 body {
     background-color: lightblue;
+    font-family: sans-serif;
 }
 
 #surface {
@@ -7,6 +8,20 @@ body {
     height: 800px;
     position: relative;
     margin: auto;
+}
+
+.chooser {
+    font-size: x-large;
+    text-align: center;
+    background-color: gray;
+}
+
+.bid {
+    font-size: large;
+    width: 75px;
+    margin-left: 5px;
+    margin-right: 5px;
+    padding: 10px;
 }
 
 .card {
