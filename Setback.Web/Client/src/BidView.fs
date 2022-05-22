@@ -8,6 +8,25 @@ open Setback
 /// A view of a bid.
 type BidView = JQueryElement
 
+/// Avoid Fable's attempt to invoke illegal constructors.
+[<AutoOpen>]
+module HTMLElement =
+
+    type HTMLParagraphElementType() =
+        member _.Create() = document.createElement("p")
+
+    let HTMLParagraphElement = HTMLParagraphElementType()
+
+    type HTMLDivElementType() =
+        member _.Create() = document.createElement("div")
+
+    let HTMLDivElement = HTMLDivElementType()
+
+module HTMLDivElement =
+
+    // Avoid "illegal constructor" error.
+    let Create() = document.createElement("div")
+
 module BidView =
 
     /// Creates a bid view.

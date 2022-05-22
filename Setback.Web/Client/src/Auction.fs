@@ -27,6 +27,10 @@ module Auction =
             /// Current deal.
             Deal : AbstractOpenDeal
 
+            /// Function that allows the user to choose a bid. First
+            /// argument is a handler that's invoked when a user chooses
+            /// a bid. Second argument is the (non-empty) set of valid
+            /// bids from which the user is to choose one.
             ChooseBid : (Bid -> unit) -> Set<Bid> -> unit
 
             /// Continues the auction.
