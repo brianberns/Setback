@@ -22,11 +22,6 @@ module HTMLElement =
 
     let HTMLDivElement = HTMLDivElementType()
 
-module HTMLDivElement =
-
-    // Avoid "illegal constructor" error.
-    let Create() = document.createElement("div")
-
 module BidView =
 
     /// Creates a bid view.
