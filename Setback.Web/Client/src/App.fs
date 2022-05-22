@@ -11,10 +11,20 @@ open Setback.Cfrm
 module App =
 
     let private auction surface dealer deal =
+
         let chooseBid (handler : Bid -> unit) (bids : Set<Bid>) =
             let chooser = BidChooser.create bids handler
             surface.Element.append(chooser)
-        Auction.run dealer deal chooseBid
+
+        let auctionMap =
+            Enum.getValues<Seat>
+                |> Seq.map (fun seat ->
+                    let animBid =
+                        AuctionView.bidAnim surface seat
+                    seat, animBid)
+                |> Map
+
+        Auction.run dealer deal chooseBid auctionMap
 
     let private playout surface dealer deal handViews =
         let playoutMap =

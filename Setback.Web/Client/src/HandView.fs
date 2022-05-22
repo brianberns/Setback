@@ -28,7 +28,7 @@ module HandView =
             |> CardSurface.getPosition (Pt (x, y))
             |> AnimationAction.moveTo
 
-    // Center point of each hand.
+    /// Center point of each hand.
     let private centerPointMap =
         Map [
             Seat.West,  Pt (-0.7,  0.0)
@@ -153,7 +153,7 @@ module OpenHandView =
                 // animate card being played
             let animPlay =
                 [|
-                    BringToFront                           // bring card to front
+                    BringToFront                               // bring card to front
                         |> Animation.create cardView
                     TrickView.playAnim surface seat cardView   // slide revealed card to center
                 |] |> Animation.Serial

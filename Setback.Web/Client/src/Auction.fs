@@ -16,6 +16,30 @@ module AbstractOpenDeal =
             (AbstractOpenDeal.currentPlayerIndex deal)
             dealer
 
+module AuctionView =
+
+    let private displayMap =
+        Map [
+            Seat.West,  Pt (-0.9,  0.0)
+            Seat.North, Pt (-0.3, -0.9)
+            Seat.East,  Pt ( 0.9,  0.0)
+            Seat.South, Pt (-0.3,  0.9)
+        ]
+
+    let bidAnim surface seat bid =
+
+        let bidView = BidView.ofBid bid
+        let origin =
+            surface |> CardSurface.getPosition Point.origin
+        JQueryElement.setPosition origin bidView
+        surface.Element.append(bidView)
+
+        let dest =
+            surface |> CardSurface.getPosition displayMap.[seat]
+        AnimationAction.moveTo dest
+            |> ElementAction.create bidView
+            |> Animation.Unit
+
 module Auction =
 
     /// Auction context.
@@ -32,6 +56,8 @@ module Auction =
             /// a bid. Second argument is the (non-empty) set of valid
             /// bids from which the user is to choose one.
             ChooseBid : (Bid -> unit) -> Set<Bid> -> unit
+
+            AnimBid : Bid -> Animation
 
             /// Continues the auction.
             Continuation : AbstractOpenDeal -> unit
@@ -52,6 +78,10 @@ module Auction =
                         context.Dealer
                         context.Deal
                 console.log($"{Seat.toString seat} bids {Bid.toString bid}")
+
+                // animate the bid
+            do! context.AnimBid bid
+                |> Animation.run
 
                 // add bid to deal
             let deal =
@@ -93,7 +123,7 @@ module Auction =
         } |> Async.StartImmediate
 
     /// Runs the given deal's auction.
-    let run dealer deal chooseBid cont =
+    let run dealer deal chooseBid (auctionMap : Map<_, _>) cont =
 
         /// Makes a single bid and then loops recursively.
         let rec loop deal =
@@ -101,6 +131,8 @@ module Auction =
                 // prepare current player
             let seat =
                 AbstractOpenDeal.getCurrentSeat dealer deal
+            let animBid =
+                auctionMap.[seat]
             let bidder =
                 if seat.IsUser then bidUser
                 else bidAuto
@@ -110,6 +142,7 @@ module Auction =
                 Dealer = dealer
                 Deal = deal
                 ChooseBid = chooseBid
+                AnimBid = animBid
                 Continuation = loop
                 Complete = cont
             }

@@ -5,9 +5,6 @@ open Browser.Dom
 open PlayingCards
 open Setback
 
-/// A view of a bid.
-type BidView = JQueryElement
-
 /// Avoid Fable's attempt to invoke illegal constructors.
 [<AutoOpen>]
 module HTMLElement =
@@ -28,9 +25,12 @@ module HTMLElement =
 
     let HTMLButtonElement = HTMLButtonElementType()
 
+/// A view of a bid.
+type BidView = JQueryElement
+
 module BidView =
 
-    /// Creates a bid view.
+    /// Creates a clickable bid view.
     let ofBid bid : BidView =
         let bidView =
             let innerText = Bid.toString bid
