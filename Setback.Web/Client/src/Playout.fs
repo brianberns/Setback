@@ -64,6 +64,7 @@ module Playout =
     let private playCard context card =
         promise {
 
+                // write to log
             do
                 let seat =
                     AbstractOpenDeal.getCurrentSeat
@@ -83,10 +84,12 @@ module Playout =
                         do! animate ()
                 | None -> ()
 
-                // play the card and continue
+                // add the card to the deal
             let deal =
                 context.Deal
                     |> AbstractOpenDeal.addPlay card
+
+                // continue the rest of the deal
             match deal.ClosedDeal.PlayoutOpt with
                 | Some playout ->
                     if playout |> AbstractPlayout.isComplete |> not then

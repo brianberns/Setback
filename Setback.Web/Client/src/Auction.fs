@@ -45,16 +45,20 @@ module Auction =
     let private makeBid context bid =
         promise {
 
+                // write to log
             do
                 let seat =
                     AbstractOpenDeal.getCurrentSeat
                         context.Dealer
                         context.Deal
-                console.log($"{seat |> Seat.toString} bids {bid |> Bid.toString}")
+                console.log($"{Seat.toString seat} bids {Bid.toString bid}")
 
+                // add bid to deal
             let deal =
                 context.Deal
                     |> AbstractOpenDeal.addBid bid
+
+                // continue the rest of the deal
             let cont =
                 if deal.ClosedDeal.Auction |> AbstractAuction.isComplete then
                     context.Complete

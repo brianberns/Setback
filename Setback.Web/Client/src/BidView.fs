@@ -47,16 +47,16 @@ module BidChooser =
 
     /// Creates a chooser for the given bids, invoking the given
     /// choice handler.
-    let create validBids handler : BidChooser =
+    let create legalBids handler : BidChooser =
 
             // create an element to hold the bid views
-        let div = ~~HTMLDivElement.Create(innerHTML = "<p>Your Bid</p>")
+        let div = ~~HTMLDivElement.Create(innerHTML = "<p>Your Bid?</p>")
         div.addClass("chooser")
 
             // invoke handler when a valid bid is chosen
         for bid in Enum.getValues<Bid> do
             let bidView = BidView.ofBid bid
-            if validBids |> Set.contains bid then
+            if legalBids |> Set.contains bid then
                 bidView.addClass("active")
                 bidView.click(fun () ->
                     div.remove()
