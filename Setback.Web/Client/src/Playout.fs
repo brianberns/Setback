@@ -124,19 +124,22 @@ module Playout =
     /// Automatically plays a card.
     let private playAuto context =
         async {
-                // determine card to play
-            let! card =
-                WebPlayer.makePlay AbstractScore.zero context.Deal
+            try
+                    // determine card to play
+                let! card =
+                    WebPlayer.makePlay AbstractScore.zero context.Deal
 
-                // animate playing the selected card
-            let cardView = CardView.ofCard card
-            do! context.AnimCardPlay cardView
-                |> Animation.run
-                |> Async.AwaitPromise
+                    // animate playing the selected card
+                let cardView = CardView.ofCard card
+                do! context.AnimCardPlay cardView
+                    |> Animation.run
+                    |> Async.AwaitPromise
 
-                // move to next player
-            do! playCard context card
-                |> Async.AwaitPromise
+                    // move to next player
+                do! playCard context card
+                    |> Async.AwaitPromise
+
+            with ex -> console.log(ex)
         } |> Async.StartImmediate
 
     /// Plays the given deal.

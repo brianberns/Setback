@@ -76,13 +76,16 @@ module Auction =
     /// Automatically makes a bid.
     let private bidAuto context =
         async {
-                // determine bid to make
-            let! bid =
-                WebPlayer.makeBid AbstractScore.zero context.Deal
+            try
+                    // determine bid to make
+                let! bid =
+                    WebPlayer.makeBid AbstractScore.zero context.Deal
 
-                // move to next player
-            do! makeBid context bid
-                |> Async.AwaitPromise
+                    // move to next player
+                do! makeBid context bid
+                    |> Async.AwaitPromise
+
+            with ex -> console.log(ex)
         } |> Async.StartImmediate
 
     /// Runs the given deal's auction.
