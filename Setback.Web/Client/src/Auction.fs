@@ -28,7 +28,7 @@ module AuctionView =
 
     let bidAnim surface seat bid =
 
-        let bidView = BidView.ofBid bid
+        let bidView = BidView.createStatic bid
         bidView.css
             {|
                 position = "absolute"
@@ -40,9 +40,12 @@ module AuctionView =
 
         let dest =
             surface |> CardSurface.getPosition destMap.[seat]
-        AnimationAction.moveTo dest
-            |> ElementAction.create bidView
-            |> Animation.Unit
+        [|
+            AnimationAction.moveTo dest
+                |> ElementAction.create bidView
+                |> Animation.Unit
+            Animation.Sleep 1000
+        |] |> Animation.Serial
 
 module Auction =
 

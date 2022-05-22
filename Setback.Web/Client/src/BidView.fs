@@ -31,11 +31,20 @@ type BidView = JQueryElement
 module BidView =
 
     /// Creates a clickable bid view.
-    let ofBid bid : BidView =
+    let createClickable bid : BidView =
         let bidView =
             let innerText = Bid.toString bid
             ~~HTMLButtonElement.Create(
                 ``type`` = "button",
+                innerText = innerText)
+        bidView.addClass("bid")
+        bidView
+
+    /// Creates an unclickable bid view.
+    let createStatic bid : BidView =
+        let bidView =
+            let innerText = Bid.toString bid
+            ~~HTMLDivElement.Create(
                 innerText = innerText)
         bidView.addClass("bid")
         bidView
@@ -55,7 +64,7 @@ module BidChooser =
 
             // invoke handler when a valid bid is chosen
         for bid in Enum.getValues<Bid> do
-            let bidView = BidView.ofBid bid
+            let bidView = BidView.createClickable bid
             if legalBids |> Set.contains bid then
                 bidView.addClass("active")
                 bidView.click(fun () ->
