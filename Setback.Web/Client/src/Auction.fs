@@ -18,24 +18,28 @@ module AbstractOpenDeal =
 
 module AuctionView =
 
-    let private displayMap =
+    let private destMap =
         Map [
-            Seat.West,  Pt (-0.9,  0.0)
-            Seat.North, Pt (-0.3, -0.9)
-            Seat.East,  Pt ( 0.9,  0.0)
-            Seat.South, Pt (-0.3,  0.9)
+            Seat.West,  Pt (-0.83,  0.6)
+            Seat.North, Pt (-0.30, -0.9)
+            Seat.East,  Pt ( 0.86,  0.6)
+            Seat.South, Pt (-0.30,  1.29)
         ]
 
     let bidAnim surface seat bid =
 
         let bidView = BidView.ofBid bid
+        bidView.css
+            {|
+                position = "absolute"
+            |}
         let origin =
             surface |> CardSurface.getPosition Point.origin
         JQueryElement.setPosition origin bidView
         surface.Element.append(bidView)
 
         let dest =
-            surface |> CardSurface.getPosition displayMap.[seat]
+            surface |> CardSurface.getPosition destMap.[seat]
         AnimationAction.moveTo dest
             |> ElementAction.create bidView
             |> Animation.Unit
