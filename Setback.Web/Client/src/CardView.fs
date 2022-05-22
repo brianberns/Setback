@@ -24,7 +24,6 @@ module CardView =
         cardView.addClass("card")
         cardView.css
             {|
-                position = "absolute"
                 width = width
                 ``z-index`` = JQueryElement.zIndexIncr ()
             |}
