@@ -67,18 +67,18 @@ module DealView =
 
                 // animate hands being dealt
             let seat iPlayer = Seat.incr iPlayer dealer
-            let anim1a, anim1b = HandView.deal surface (seat 1) closed1
-            let anim2a, anim2b = HandView.deal surface (seat 2) closed2
-            let anim3a, anim3b = HandView.deal surface (seat 3) closed3
-            let anim0a, anim0b = HandView.deal surface (seat 0) closed0
+            let anim1a, anim1b = HandView.dealAnim surface (seat 1) closed1
+            let anim2a, anim2b = HandView.dealAnim surface (seat 2) closed2
+            let anim3a, anim3b = HandView.dealAnim surface (seat 3) closed3
+            let anim0a, anim0b = HandView.dealAnim surface (seat 0) closed0
 
                 // animate user's hand reveal
-            let reveal =
+            let animReveal =
                 let closedHandView = closedHandViews.[iUser]
-                OpenHandView.reveal closedHandView openHandView
+                OpenHandView.revealAnim closedHandView openHandView
 
                 // animate remaining deck removal
-            let remove =
+            let animRemove =
                 backs.[24..]
                     |> Array.map (fun back ->
                         Animation.create back Remove)
@@ -88,7 +88,7 @@ module DealView =
             [|
                 anim1a; anim2a; anim3a; anim0a
                 anim1b; anim2b; anim3b; anim0b
-                reveal; remove
+                animReveal; animRemove
             |] |> Animation.Serial 
 
         promise {

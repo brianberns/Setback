@@ -22,13 +22,13 @@ module App =
                 |> Seq.map (fun (seat : Seat, handView) ->
 
                     let animCardPlay =
-                        let play =
-                            if seat.IsUser then OpenHandView.play
-                            else ClosedHandView.play
-                        play surface seat handView
+                        let anim =
+                            if seat.IsUser then OpenHandView.playAnim
+                            else ClosedHandView.playAnim
+                        anim surface seat handView
 
                     let animTrickFinish =
-                        TrickView.finish surface
+                        TrickView.finishAnim surface
 
                     seat, (handView, animCardPlay, animTrickFinish))
                 |> Map

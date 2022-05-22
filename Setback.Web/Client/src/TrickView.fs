@@ -19,7 +19,7 @@ module TrickView =
         ]
 
     /// Animates a card being played on a trick.
-    let play surface seat (cardView : CardView) =
+    let playAnim surface seat (cardView : CardView) =
 
             // add card view
         cardViewMap.Add(seat, cardView)
@@ -55,7 +55,7 @@ module TrickView =
 
     /// Animates the end of a trick by sending its cards to the
     /// trick winner.
-    let finish surface winnerSeat =
+    let finishAnim surface winnerSeat =
         assert(cardViewMap.Count = Seat.numSeats)
 
             // move cards to trick winner

@@ -39,7 +39,7 @@ module HandView =
 
     /// Deals the cards in the given hand view into their target
     /// position.
-    let deal surface seat (handView : HandView) =
+    let dealAnim surface seat (handView : HandView) =
 
         assert(handView.Length = Setback.numCardsPerHand)
         let batchSize = Setback.numCardsPerHand / 2
@@ -66,7 +66,7 @@ module HandView =
         animate 0 batch1, animate batchSize batch2
 
     /// Animates adjustment of remaining unplayed cards in a hand.
-    let adjust surface seat (handView : HandView) =
+    let adjustAnim surface seat (handView : HandView) =
         let numCards = handView.Length
         handView
             |> Array.mapi (fun iCard cardView ->
@@ -84,7 +84,7 @@ module ClosedHandView =
 
     /// Answers a function that can be called to animate the playing
     /// of a card from the given closed hand view.
-    let play surface seat (handView : HandView) =
+    let playAnim surface seat (handView : HandView) =
         let mutable cardViewsMut = ResizeArray(handView)
         fun (cardView : CardView) ->
 
@@ -100,14 +100,14 @@ module ClosedHandView =
                         |> Animation.create back
                     BringToFront                           // bring revealed card to front
                         |> Animation.create cardView
-                    TrickView.play surface seat cardView   // slide revealed card to center
+                    TrickView.playAnim surface seat cardView   // slide revealed card to center
                 |] |> Animation.Serial
 
                 // animate adjustment of remaining cards to fill gap
             let animAdjust =
                 cardViewsMut
                     |> Seq.toArray
-                    |> HandView.adjust surface seat
+                    |> HandView.adjustAnim surface seat
 
                 // animate in parallel
             [|
@@ -133,7 +133,7 @@ module OpenHandView =
             |> Seq.toArray
 
     /// Reveals the given open hand view.
-    let reveal (closedHandView : HandView) (openHandView : HandView) =
+    let revealAnim (closedHandView : HandView) (openHandView : HandView) =
         assert(closedHandView.Length = openHandView.Length)
         (closedHandView, openHandView)
             ||> Array.map2 (fun back front ->
@@ -142,7 +142,7 @@ module OpenHandView =
 
     /// Answers a function that can be called to animate the playing
     /// of a card from the given open hand view.
-    let play surface seat (handView : HandView) =
+    let playAnim surface seat (handView : HandView) =
         let mutable cardViewsMut = ResizeArray(handView)
         fun (cardView : CardView) ->
 
@@ -155,14 +155,14 @@ module OpenHandView =
                 [|
                     BringToFront                           // bring card to front
                         |> Animation.create cardView
-                    TrickView.play surface seat cardView   // slide revealed card to center
+                    TrickView.playAnim surface seat cardView   // slide revealed card to center
                 |] |> Animation.Serial
 
                 // animate adjustment of remaining cards to fill gap
             let animAdjust =
                 cardViewsMut
                     |> Seq.toArray
-                    |> HandView.adjust surface seat
+                    |> HandView.adjustAnim surface seat
 
                 // animate in parallel
             [|
