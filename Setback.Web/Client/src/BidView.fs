@@ -32,12 +32,15 @@ module BidView =
         bidView.addClass("bid")
         bidView
 
-type BidViewChooser = JQueryElement
+type BidChooser = JQueryElement
 
-module BidViewChooser =
+module BidChooser =
 
-    let create position validBids handler : BidViewChooser =
+    /// Creates a bid chooser for the given bids, with the
+    /// given choice handler.
+    let create position validBids handler : BidChooser =
 
+            // create an element to hold the bid views
         let div = ~~HTMLDivElement.Create()
         div.css
             {|
@@ -45,6 +48,7 @@ module BidViewChooser =
             |}
         JQueryElement.setPosition position div
 
+            // invoke handler when a valid bid is chosen
         for bid in Enum.getValues<Bid> do
             let bidView = BidView.ofBid bid
             if validBids |> Set.contains bid then

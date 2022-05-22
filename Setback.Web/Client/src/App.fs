@@ -13,7 +13,7 @@ module App =
     let private auction surface dealer deal =
         let chooseBid (handler : Bid -> unit) (bids : Set<Bid>) =
             let pos = surface |> CardSurface.getPosition Point.origin
-            let chooser = BidViewChooser.create pos bids handler
+            let chooser = BidChooser.create pos bids handler
             surface.Element.append(chooser)
         Auction.run dealer deal chooseBid
 
