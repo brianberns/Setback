@@ -44,6 +44,7 @@
     <Compile Include="BidView.fs" />
     <Compile Include="CardView.fs" />
     <Compile Include="CardSurface.fs" />
+    <Compile Include="AuctionView.fs" />
     <Compile Include="TrickView.fs" />
     <Compile Include="HandView.fs" />
     <Compile Include="DealView.fs" />
