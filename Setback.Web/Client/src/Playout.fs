@@ -92,7 +92,10 @@ module Playout =
                 // continue the rest of the deal
             match deal.ClosedDeal.PlayoutOpt with
                 | Some playout ->
-                    if playout |> AbstractPlayout.isComplete |> not then
+                    if playout |> AbstractPlayout.isComplete then
+                        do! AuctionView.removeAnim ()
+                            |> Animation.run
+                    else
                         deal |> context.Continuation
                 | None -> failwith "Unexpected"
         }

@@ -5,6 +5,11 @@ open Setback
 /// View of a each seat's bid in an auction.
 module AuctionView =
 
+    /// Bids made in this auction.
+    /// ASSUMPTION: Only one auction view per app.
+    let mutable private bidViews =
+        ResizeArray<BidView>(Seat.numSeats)
+
     /// Bid animation destinations.
     let private destMap =
         Map [
@@ -28,6 +33,7 @@ module AuctionView =
             surface |> CardSurface.getPosition Point.origin
         JQueryElement.setPosition origin bidView
         surface.Element.append(bidView)
+        bidViews.Add(bidView)
 
             // animate the the bid view to its destination
         let dest =
@@ -38,3 +44,21 @@ module AuctionView =
                 |> Animation.Unit
             Animation.Sleep 1000
         |] |> Animation.Serial
+
+    /// Animates the removal of the current bid views.
+    let removeAnim () =
+
+            // create animation
+        let anim =
+            bidViews
+                |> Seq.map (fun bidView ->
+                    AnimationAction.Remove
+                        |> ElementAction.create bidView
+                        |> Animation.Unit)
+                |> Seq.toArray
+                |> Animation.Parallel
+
+            // reset to new auction
+        bidViews.Clear()
+
+        anim
