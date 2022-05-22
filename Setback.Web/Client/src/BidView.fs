@@ -12,13 +12,19 @@ type BidView = JQueryElement
 [<AutoOpen>]
 module HTMLElement =
 
+    open Browser.Types
+
     type HTMLDivElementType() =
-        member _.Create() = document.createElement("div")
+        member _.Create() =
+            document.createElement("div")
+                :?> HTMLDivElement
 
     let HTMLDivElement = HTMLDivElementType()
 
     type HTMLButtonElementType() =
-        member _.Create() = document.createElement("button")
+        member _.Create() =
+            document.createElement("button")
+                :?> HTMLButtonElement
 
     let HTMLButtonElement = HTMLButtonElementType()
 
@@ -28,7 +34,9 @@ module BidView =
     let ofBid bid : BidView =
         let bidView =
             let innerText = Bid.toString bid
-            ~~HTMLButtonElement.Create(innerText = innerText)
+            ~~HTMLButtonElement.Create(
+                ``type`` = "button",
+                innerText = innerText)
         bidView.addClass("bid")
         bidView
 
@@ -39,16 +47,11 @@ module BidChooser =
 
     /// Creates a chooser for the given bids, invoking the given
     /// choice handler.
-    let create position validBids handler : BidChooser =
+    let create validBids handler : BidChooser =
 
             // create an element to hold the bid views
         let div = ~~HTMLDivElement.Create(innerHTML = "<p>Your Bid</p>")
         div.addClass("chooser")
-        div.css
-            {|
-                position = "absolute"
-            |}
-        JQueryElement.setPosition position div
 
             // invoke handler when a valid bid is chosen
         for bid in Enum.getValues<Bid> do
@@ -59,7 +62,7 @@ module BidChooser =
                     div.remove()
                     handler bid)
             else
-                bidView.addClass("inactive")
+                bidView.prop("disabled", true)
             div.append(bidView)
 
         div
