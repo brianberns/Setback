@@ -45,9 +45,14 @@ module App =
                 |> AbstractOpenDeal.fromDeck dealer
 
         promise {
-            let! handViews = DealView.start surface dealer deal
+            let! seatViews = DealView.start surface dealer deal
             auction surface dealer deal (fun deal' ->
-                playout surface dealer deal' handViews)
+                if deal'.ClosedDeal.Auction.HighBid.Bid = Bid.Pass then
+                    for (_, handView) in seatViews do
+                        for cardView in handView do
+                            cardView.remove()
+                else
+                    playout surface dealer deal' seatViews)
         } |> ignore
 
         // start the game when the browser is ready
