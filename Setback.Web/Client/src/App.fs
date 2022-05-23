@@ -86,6 +86,10 @@ module Game =
     /// Runs one new game.
     let run surface rng dealer cont =
 
+        let ewName = "East + West"
+        let nsName = "North + South"
+        let teamNames = [| ewName; nsName |]
+
         let ewScore = ~~"#ewScore"
         let nsScore = ~~"#nsScore"
 
@@ -103,47 +107,45 @@ module Game =
 
         /// Updates game state after a deal is complete.
         and update dealer game deal =
+            promise {
 
-                // determine score of this deal
-            let dealScore =
-                deal |> AbstractOpenDeal.dealScore
-            do
-                let absScore = Game.absoluteScore dealer dealScore
-                console.log($"E+W make {absScore.[0]} point(s)")
-                console.log($"N+S make {absScore.[1]} point(s)")
+                    // determine score of this deal
+                let dealScore =
+                    deal |> AbstractOpenDeal.dealScore
+                do
+                    let absScore = Game.absoluteScore dealer dealScore
+                    console.log($"E+W make {absScore.[0]} point(s)")
+                    console.log($"N+S make {absScore.[1]} point(s)")
 
-                // update game score
-            let gameScore = game.Score + dealScore
-            do
-                let absScore = Game.absoluteScore dealer gameScore
-                console.log($"E+W now have {absScore.[0]} point(s)")
-                console.log($"N+S now have {absScore.[1]} point(s)")
-                ewScore.text(string absScore.[0])
-                nsScore.text(string absScore.[1])
+                    // update game score
+                let gameScore = game.Score + dealScore
+                do
+                    let absScore = Game.absoluteScore dealer gameScore
+                    console.log($"E+W have {absScore.[0]} point(s)")
+                    console.log($"N+S have {absScore.[1]} point(s)")
+                    ewScore.text(string absScore.[0])
+                    nsScore.text(string absScore.[1])
 
-                // is the game over?
-            let winningTeamIdxOpt =
-                gameScore |> Game.winningTeamIdxOpt dealer
-            let dealer' = dealer.Next
-            match winningTeamIdxOpt with
+                    // is the game over?
+                let winningTeamIdxOpt =
+                    gameScore |> Game.winningTeamIdxOpt dealer
+                let dealer' = dealer.Next
+                match winningTeamIdxOpt with
 
-                    // game is over
-                | Some iTeam ->
-                    let teamName =
-                        assert(int Seat.East % Setback.numTeams = 0)
-                        match iTeam with
-                            | 0 -> "E+W"
-                            | 1 -> "N+S"
-                            | _ -> failwith "Unexpected"
-                    console.log($"{teamName} wins the game")
-                    cont dealer'
+                        // game is over
+                    | Some iTeam ->
 
-                    // run another deal
-                | None ->
-                    let game' =
-                        let score'' = gameScore |> AbstractScore.shift 1
-                        { game with Score = score'' }
-                    loop game' dealer'
+                        console.log($"{teamNames.[iTeam]} wins the game")
+
+                        cont dealer'
+
+                        // run another deal
+                    | None ->
+                        let game' =
+                            let score'' = gameScore |> AbstractScore.shift 1
+                            { game with Score = score'' }
+                        loop game' dealer'
+            } |> ignore
 
         loop Game.zero dealer
 
