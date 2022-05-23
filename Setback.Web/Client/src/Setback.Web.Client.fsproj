@@ -36,6 +36,7 @@
     <Compile Include="..\..\..\Setback.Cfrm\AbstractOpenDeal.fs" />
     <Compile Include="..\..\..\Setback.Cfrm\BaselineGameState.fs" />
     <Compile Include="..\..\..\Setback.Cfrm\BootstrapGameState.fs" />
+    <Compile Include="..\..\..\Setback.Cfrm\Game.fs" />
     <Compile Include="..\..\Shared\SharedTypes.fs" />
     <Compile Include="WebPlayer.fs" />
     <Compile Include="Length.fs" />
