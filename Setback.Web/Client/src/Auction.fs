@@ -67,7 +67,7 @@ module Auction =
                 context.Deal
                     |> AbstractOpenDeal.addBid bid
 
-                // continue the rest of the deal
+                // continue or complete the auction
             let cont =
                 if deal.ClosedDeal.Auction |> AbstractAuction.isComplete then
                     context.Complete

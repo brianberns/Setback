@@ -75,33 +75,31 @@ module Playout =
                         context.Deal
                 console.log($"{seat |> Seat.toString} plays {card}")
 
-                // animate if trick is finished
-            match getTrickWinnerOpt context card with
-                | Some winner ->
-                    let animate () =
-                        context.AnimTrickFinish winner
-                            |> Animation.run
-                    if winner.IsUser then   // don't force user to wait for animation to finish
-                        animate () |> ignore
-                    else
-                        do! animate ()
-                | None -> ()
-
                 // add the card to the deal
             let deal =
                 context.Deal
                     |> AbstractOpenDeal.addPlay card
 
-                // continue the rest of the deal
-            match deal.ClosedDeal.PlayoutOpt with
-                | Some playout ->
-                    if playout |> AbstractPlayout.isComplete then
-                        do! AuctionView.removeAnim ()
+                // animate if trick is finished
+            let dealComplete = deal |> AbstractOpenDeal.isComplete
+            match getTrickWinnerOpt context card with
+                | Some winner ->
+                    let animate () =
+                        context.AnimTrickFinish winner
                             |> Animation.run
-                        deal |> context.Complete
+                    if winner.IsUser && not dealComplete then
+                        animate () |> ignore   // don't force user to wait for animation to finish
                     else
-                        deal |> context.Continuation
-                | None -> failwith "Unexpected"
+                        do! animate ()
+                | None -> ()
+
+                // continue or complete the playout
+            if dealComplete then
+                do! AuctionView.removeAnim ()
+                    |> Animation.run
+                deal |> context.Complete
+            else
+                deal |> context.Continuation
         }
 
     /// Allows user to play a card.
