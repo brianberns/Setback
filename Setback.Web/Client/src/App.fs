@@ -68,7 +68,7 @@ module Deal =
 
 module Game =
 
-    let run surface rng dealer =
+    let run surface rng dealer cont =
 
         let rec loop (game : Game) dealer =
             promise {
@@ -105,20 +105,39 @@ module Game =
                             console.log($"E+W now have {absScore.[0]} point(s)")
                             console.log($"N+S now have {absScore.[1]} point(s)")
 
-                        let game' =
-                            let score'' = gameScore |> AbstractScore.shift 1
-                            { game with Score = score'' }
-                        loop game' dealer')
+                        let winningTeamIdxOpt =
+                            game.Score |> Game.winningTeamIdxOpt dealer
+                        match winningTeamIdxOpt with
+                            | Some iTeam ->
+                                let teamName =
+                                    match iTeam with
+                                        | 0 -> "E+W"
+                                        | 1 -> "N+S"
+                                        | _ -> failwith "Unexpected"
+                                console.log($"{teamName} wins the game")
+                                cont dealer'
+                            | None ->
+                                let game' =
+                                    let score'' = gameScore |> AbstractScore.shift 1
+                                    { game with Score = score'' }
+                                loop game' dealer')
             } |> ignore
 
         loop Game.zero dealer
+
+module Session =
+
+    let run surface rng dealer =
+        let rec loop dealer =
+            Game.run surface rng dealer loop
+        loop dealer
 
 module App =
 
     let private run () =
         let surface = CardSurface.init "#surface"
         let rng = Random()
-        Game.run surface rng Seat.South
+        Session.run surface rng Seat.South
 
         // start the game when the browser is ready
     (~~document).ready(run)
