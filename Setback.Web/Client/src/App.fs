@@ -68,12 +68,20 @@ module Deal =
 
 module Game =
 
+    let private getTeamName = function
+        | Seat.East
+        | Seat.West -> "East + West"
+        | Seat.North
+        | Seat.South -> "North + South"
+        | _ -> failwith "Unexpected"
+
     let run surface rng dealer =
 
         let rec loop (score : AbstractScore) dealer =
             promise {
 
                     // create random deal
+                console.log($"Dealer is {Seat.toString dealer}")
                 let deal =
                     Deck.shuffle rng
                         |> AbstractOpenDeal.fromDeck dealer
@@ -83,7 +91,19 @@ module Game =
 
                     // run the deal
                 Deal.run surface dealer deal seatViews (fun deal' ->
-                    loop score dealer)
+
+                    let dealScore =
+                        deal' |> AbstractOpenDeal.dealScore
+                    let dealer' = dealer.Next
+                    console.log($"{getTeamName dealer} make {dealScore.[0]} point(s)")
+                    console.log($"{getTeamName dealer'} make {dealScore.[1]} point(s)")
+
+                    let score' = score + dealScore
+                    console.log($"{getTeamName dealer} now have {score'.[0]} point(s)")
+                    console.log($"{getTeamName dealer'} now have {score'.[1]} point(s)")
+
+                    let score'' = score' |> AbstractScore.shift 1
+                    loop score'' dealer')
             } |> ignore
 
         loop AbstractScore.zero dealer
