@@ -68,13 +68,6 @@ module Deal =
 
 module Game =
 
-    let private getTeamName = function
-        | Seat.East
-        | Seat.West -> "East + West"
-        | Seat.North
-        | Seat.South -> "North + South"
-        | _ -> failwith "Unexpected"
-
     let run surface rng dealer =
 
         let rec loop (game : Game) dealer =
@@ -101,15 +94,19 @@ module Game =
                         let dealScore =
                             deal' |> AbstractOpenDeal.dealScore
                         let dealer' = dealer.Next
-                        console.log($"{getTeamName dealer} make {dealScore.[0]} point(s)")
-                        console.log($"{getTeamName dealer'} make {dealScore.[1]} point(s)")
+                        do
+                            let absScore = Game.shiftScore dealer dealScore
+                            console.log($"E+W make {absScore.[0]} point(s)")
+                            console.log($"N+S make {absScore.[1]} point(s)")
 
-                        let score' = game.Score + dealScore
-                        console.log($"{getTeamName dealer} now have {score'.[0]} point(s)")
-                        console.log($"{getTeamName dealer'} now have {score'.[1]} point(s)")
+                        let gameScore = game.Score + dealScore
+                        do
+                            let absScore = Game.shiftScore dealer gameScore
+                            console.log($"E+W now have {absScore.[0]} point(s)")
+                            console.log($"N+S now have {absScore.[1]} point(s)")
 
                         let game' =
-                            let score'' = score' |> AbstractScore.shift 1
+                            let score'' = gameScore |> AbstractScore.shift 1
                             { game with Score = score'' }
                         loop game' dealer')
             } |> ignore
