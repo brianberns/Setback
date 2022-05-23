@@ -106,10 +106,11 @@ module Game =
                             console.log($"N+S now have {absScore.[1]} point(s)")
 
                         let winningTeamIdxOpt =
-                            game.Score |> Game.winningTeamIdxOpt dealer
+                            gameScore |> Game.winningTeamIdxOpt dealer
                         match winningTeamIdxOpt with
                             | Some iTeam ->
                                 let teamName =
+                                    assert(int Seat.East % Setback.numTeams = 0)
                                     match iTeam with
                                         | 0 -> "E+W"
                                         | 1 -> "N+S"
