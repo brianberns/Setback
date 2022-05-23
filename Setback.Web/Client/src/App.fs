@@ -86,8 +86,18 @@ module Game =
     /// Runs one new game.
     let run surface rng dealer cont =
 
+        let ewScore = ~~"#ewScore"
+        let nsScore = ~~"#nsScore"
+
         /// Runs one deal.
         let rec loop (game : Game) dealer =
+
+                // display current game score
+            let absScore = Game.absoluteScore dealer game.Score
+            ewScore.text(string absScore.[0])
+            nsScore.text(string absScore.[1])
+
+                // run a deal
             Deal.run surface rng dealer game.Score
                 (update dealer game)
 

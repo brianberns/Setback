@@ -49,6 +49,9 @@ type JQueryElement =
     /// Removes the given class from the element.
     abstract removeClass : className : string -> unit
 
+    /// Sets the element's inner text contents.
+    abstract text : text : string -> unit
+
 /// HTML element position.
 type Position =
     {

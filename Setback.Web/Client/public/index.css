@@ -10,6 +10,16 @@ body {
     margin: auto;   /* center horizontally within parent */
 }
 
+#score {
+    position: absolute;
+    left: 30px;
+    top: 30px;
+}
+
+#score td:nth-child(1) {
+    text-align: end;
+}
+
 .chooser {
     font-size: x-large;
     width: fit-content;
