@@ -14,11 +14,18 @@ body {
     position: absolute;
     left: 30px;
     top: 30px;
-}
-
-#score td:nth-child(1) {
     text-align: end;
 }
+
+    #score th {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+
+    #score td {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
 
 .chooser {
     font-size: x-large;

@@ -118,6 +118,8 @@ module Game =
                 let absScore = Game.absoluteScore dealer gameScore
                 console.log($"E+W now have {absScore.[0]} point(s)")
                 console.log($"N+S now have {absScore.[1]} point(s)")
+                ewScore.text(string absScore.[0])
+                nsScore.text(string absScore.[1])
 
                 // is the game over?
             let winningTeamIdxOpt =
