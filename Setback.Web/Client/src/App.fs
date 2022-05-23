@@ -95,13 +95,13 @@ module Game =
                             deal' |> AbstractOpenDeal.dealScore
                         let dealer' = dealer.Next
                         do
-                            let absScore = Game.shiftScore dealer dealScore
+                            let absScore = Game.absoluteScore dealer dealScore
                             console.log($"E+W make {absScore.[0]} point(s)")
                             console.log($"N+S make {absScore.[1]} point(s)")
 
                         let gameScore = game.Score + dealScore
                         do
-                            let absScore = Game.shiftScore dealer gameScore
+                            let absScore = Game.absoluteScore dealer gameScore
                             console.log($"E+W now have {absScore.[0]} point(s)")
                             console.log($"N+S now have {absScore.[1]} point(s)")
 

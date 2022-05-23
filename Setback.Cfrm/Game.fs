@@ -22,7 +22,7 @@ module Game =
     let zero = { Score = AbstractScore.zero }
 
     /// Shifts from dealer-relative to absolute score.
-    let shiftScore (dealer : Seat) score =
+    let absoluteScore (dealer : Seat) score =
         let iDealerTeam =
             int dealer % Setback.numTeams
         let iAbsoluteTeam =
@@ -33,5 +33,5 @@ module Game =
     /// any.
     let winningTeamIdxOpt dealer score =
         score
-            |> shiftScore dealer
+            |> absoluteScore dealer
             |> BootstrapGameState.winningTeamOpt

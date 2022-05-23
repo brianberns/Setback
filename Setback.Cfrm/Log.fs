@@ -82,7 +82,7 @@ module Log =
             let dealScore =
                 deal
                     |> AbstractOpenDeal.dealScore
-                    |> Game.shiftScore dealer
+                    |> Game.absoluteScore dealer
             logn ""
             logn "Deal points:"
             logn $"   E+W: {dealScore.[0]}"
@@ -90,7 +90,7 @@ module Log =
 
             let gameScore =
                 gameScore
-                    |> Game.shiftScore dealer
+                    |> Game.absoluteScore dealer
             logn ""
             logn "Game score:"
             logn $"   E+W: {gameScore.[0]}"
