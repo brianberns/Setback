@@ -53,81 +53,91 @@ module Deal =
             // run the playout
         Playout.play dealer deal playoutMap
 
-    /// Runs the given deal.
-    let run surface dealer score deal seatViews cont =
-        auction surface dealer score deal (fun deal' ->
+    /// Runs one new deal.
+    let run surface rng dealer score cont =
+        promise {
 
-            if deal'.ClosedDeal.Auction.HighBid.Bid = Bid.Pass then
-                for (_, handView) in seatViews do
-                    for (cardView : CardView) in handView do
-                        cardView.remove()
-                cont deal'
+                // create random deal
+            console.log($"Dealer is {Seat.toString dealer}")
+            let deal =
+                Deck.shuffle rng
+                    |> AbstractOpenDeal.fromDeck dealer
 
-            else
-                playout surface dealer deal' seatViews cont)
+                // animate dealing the cards
+            let! seatViews = DealView.start surface dealer deal
+
+                // run the auction and then playout
+            auction surface dealer score deal (fun deal' ->
+
+                    // force cleanup after all-pass auction
+                if deal'.ClosedDeal.Auction.HighBid.Bid = Bid.Pass then
+                    for (_, handView) in seatViews do
+                        for (cardView : CardView) in handView do
+                            cardView.remove()
+                    cont deal'
+
+                else
+                    playout surface dealer deal' seatViews cont)
+
+        } |> ignore
 
 module Game =
 
+    /// Runs one new game.
     let run surface rng dealer cont =
 
+        /// Runs one deal.
         let rec loop (game : Game) dealer =
-            promise {
+            Deal.run surface rng dealer game.Score
+                (update dealer game)
 
-                    // create random deal
-                console.log($"Dealer is {Seat.toString dealer}")
-                let deal =
-                    Deck.shuffle rng
-                        |> AbstractOpenDeal.fromDeck dealer
+        /// Updates game state after a deal is complete.
+        and update dealer game deal =
 
-                    // animate dealing the cards
-                let! seatViews = DealView.start surface dealer deal
+                // determine score of this deal
+            let dealScore =
+                deal |> AbstractOpenDeal.dealScore
+            do
+                let absScore = Game.absoluteScore dealer dealScore
+                console.log($"E+W make {absScore.[0]} point(s)")
+                console.log($"N+S make {absScore.[1]} point(s)")
 
-                    // run the deal
-                Deal.run
-                    surface
-                    dealer
-                    game.Score
-                    deal
-                    seatViews
-                    (fun deal' ->
+                // update game score
+            let gameScore = game.Score + dealScore
+            do
+                let absScore = Game.absoluteScore dealer gameScore
+                console.log($"E+W now have {absScore.[0]} point(s)")
+                console.log($"N+S now have {absScore.[1]} point(s)")
 
-                        let dealScore =
-                            deal' |> AbstractOpenDeal.dealScore
-                        let dealer' = dealer.Next
-                        do
-                            let absScore = Game.absoluteScore dealer dealScore
-                            console.log($"E+W make {absScore.[0]} point(s)")
-                            console.log($"N+S make {absScore.[1]} point(s)")
+                // is the game over?
+            let winningTeamIdxOpt =
+                gameScore |> Game.winningTeamIdxOpt dealer
+            let dealer' = dealer.Next
+            match winningTeamIdxOpt with
 
-                        let gameScore = game.Score + dealScore
-                        do
-                            let absScore = Game.absoluteScore dealer gameScore
-                            console.log($"E+W now have {absScore.[0]} point(s)")
-                            console.log($"N+S now have {absScore.[1]} point(s)")
+                    // game is over
+                | Some iTeam ->
+                    let teamName =
+                        assert(int Seat.East % Setback.numTeams = 0)
+                        match iTeam with
+                            | 0 -> "E+W"
+                            | 1 -> "N+S"
+                            | _ -> failwith "Unexpected"
+                    console.log($"{teamName} wins the game")
+                    cont dealer'
 
-                        let winningTeamIdxOpt =
-                            gameScore |> Game.winningTeamIdxOpt dealer
-                        match winningTeamIdxOpt with
-                            | Some iTeam ->
-                                let teamName =
-                                    assert(int Seat.East % Setback.numTeams = 0)
-                                    match iTeam with
-                                        | 0 -> "E+W"
-                                        | 1 -> "N+S"
-                                        | _ -> failwith "Unexpected"
-                                console.log($"{teamName} wins the game")
-                                cont dealer'
-                            | None ->
-                                let game' =
-                                    let score'' = gameScore |> AbstractScore.shift 1
-                                    { game with Score = score'' }
-                                loop game' dealer')
-            } |> ignore
+                    // run another deal
+                | None ->
+                    let game' =
+                        let score'' = gameScore |> AbstractScore.shift 1
+                        { game with Score = score'' }
+                    loop game' dealer'
 
         loop Game.zero dealer
 
 module Session =
 
+    /// Runs a new session.
     let run surface rng dealer =
         let rec loop dealer =
             Game.run surface rng dealer loop
@@ -135,10 +145,8 @@ module Session =
 
 module App =
 
-    let private run () =
+        // start a session when the browser is ready
+    (~~document).ready(fun () ->
         let surface = CardSurface.init "#surface"
         let rng = Random()
-        Session.run surface rng Seat.South
-
-        // start the game when the browser is ready
-    (~~document).ready(run)
+        Session.run surface rng Seat.South)
