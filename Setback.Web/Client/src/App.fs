@@ -11,7 +11,7 @@ open Setback.Cfrm
 module Deal =
 
     /// Runs the auction of the given deal.
-    let private auction surface dealer deal =
+    let private auction surface dealer score deal =
 
         /// Creates bid chooser.
         let chooseBid handler legalBids =
@@ -28,7 +28,7 @@ module Deal =
                 |> Map
 
             // run the auction
-        Auction.run dealer deal chooseBid auctionMap
+        Auction.run dealer score deal chooseBid auctionMap
 
     /// Runs the playout of the given deal.
     let private playout surface dealer deal handViews =
@@ -54,8 +54,8 @@ module Deal =
         Playout.play dealer deal playoutMap
 
     /// Runs the given deal.
-    let run surface dealer deal seatViews cont =
-        auction surface dealer deal (fun deal' ->
+    let run surface dealer score deal seatViews cont =
+        auction surface dealer score deal (fun deal' ->
 
             if deal'.ClosedDeal.Auction.HighBid.Bid = Bid.Pass then
                 for (_, handView) in seatViews do
@@ -77,7 +77,7 @@ module Game =
 
     let run surface rng dealer =
 
-        let rec loop (score : AbstractScore) dealer =
+        let rec loop score dealer =
             promise {
 
                     // create random deal
@@ -90,7 +90,7 @@ module Game =
                 let! seatViews = DealView.start surface dealer deal
 
                     // run the deal
-                Deal.run surface dealer deal seatViews (fun deal' ->
+                Deal.run surface dealer score deal seatViews (fun deal' ->
 
                     let dealScore =
                         deal' |> AbstractOpenDeal.dealScore

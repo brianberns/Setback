@@ -23,6 +23,9 @@ module Auction =
             /// Current dealer's seat.
             Dealer : Seat
 
+            /// Current score, relative to the dealer's team.
+            Score : AbstractScore
+
             /// Current deal.
             Deal : AbstractOpenDeal
 
@@ -89,7 +92,7 @@ module Auction =
             try
                     // determine bid to make
                 let! bid =
-                    WebPlayer.makeBid AbstractScore.zero context.Deal
+                    WebPlayer.makeBid context.Score context.Deal
 
                     // move to next player
                 do! makeBid context bid
@@ -99,7 +102,7 @@ module Auction =
         } |> Async.StartImmediate
 
     /// Runs the given deal's auction.
-    let run dealer deal chooseBid (auctionMap : Map<_, _>) cont =
+    let run dealer score deal chooseBid (auctionMap : Map<_, _>) cont =
 
         /// Makes a single bid and then loops recursively.
         let rec loop deal =
@@ -116,6 +119,7 @@ module Auction =
                 // invoke bidder
             bidder {
                 Dealer = dealer
+                Score = score
                 Deal = deal
                 ChooseBid = chooseBid
                 AnimBid = animBid
