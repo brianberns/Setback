@@ -7,6 +7,7 @@ open Browser.Dom
 open PlayingCards
 open Setback
 open Setback.Cfrm
+open Setback.Web.Client   // ugly - force AutoOpen
 
 module Deal =
 
@@ -135,9 +136,15 @@ module Game =
                         // game is over
                     | Some iTeam ->
 
-                        console.log($"{teamNames.[iTeam]} wins the game")
-
-                        cont dealer'
+                            // display banner
+                        let str = $"{teamNames.[iTeam]} wins the game!"
+                        console.log(str)
+                        let banner = ~~HTMLDivElement.Create(innerText = str)
+                        banner.addClass("banner")
+                        banner.click(fun () ->
+                            banner.remove()
+                            cont dealer')
+                        surface.Element.append(banner)
 
                         // run another deal
                     | None ->

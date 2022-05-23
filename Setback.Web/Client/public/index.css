@@ -58,3 +58,19 @@ body {
 .active {
     cursor: pointer;
 }
+
+.banner {
+    font-size: xx-large;
+    width: fit-content;
+    height: fit-content;
+    text-align: center;
+    cursor: pointer;
+    background-color: lightcoral;
+    padding: 100px;
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}
