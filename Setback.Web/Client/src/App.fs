@@ -3,7 +3,6 @@ namespace Setback.Web.Client
 open System
 
 open Browser
-open Browser.Dom
 
 open PlayingCards
 open Setback
@@ -85,35 +84,52 @@ module Deal =
 
 module Game =
 
-    let private ewName = "East + West"
-    let private nsName = "North + South"
-    let private teamNames = [| ewName; nsName |]
+    let private teamNames =
+        [|
+            "East + West"
+            "North + South"
+        |]
 
-    let private ewScoreElem = ~~"#ewScore"
-    let private nsScoreElem = ~~"#nsScore"
+    let private scoreElems =
+        [|
+            "#ewScore"
+            "#nsScore"
+        |] |> Array.map (~~)
 
-    let private ewGamesWonElem = ~~"ewGamesWon"
-    let private nsGamesWonElem = ~~"nsGamesWon"
     let private gamesWonKeys = [| "ewGamesWon"; "nsGamesWon" |]
-    let private teamGamesWonElems = [| ewGamesWonElem; nsGamesWonElem |]
+    let private gamesWonElems =
+        [|
+            "#ewGamesWon"
+            "#nsGamesWon"
+        |] |> Array.map (~~)
+
+    let private getNumGamesWon iTeam =
+        let key = gamesWonKeys.[iTeam]
+        WebStorage.localStorage.[key]
+            |> Option.ofObj
+            |> Option.map int
+            |> Option.defaultValue 0
+
+    let private setNumGamesWon iTeam (nGames : int) =
+        let key = gamesWonKeys.[iTeam]
+        WebStorage.localStorage.[key] <- string nGames
+
+    let private displayGamesWon () =
+        for iTeam = 0 to Setback.numTeams - 1 do
+            let gamesWonElem = gamesWonElems.[iTeam]
+            let nGames = getNumGamesWon iTeam
+            gamesWonElem.text(string nGames)
 
     /// Increments the number of games won by the given team.
-    let incrGamesWon iTeam =
+    let private incrGamesWon iTeam =
 
             // update previous count from storage
-        let key = gamesWonKeys.[iTeam]
-        let nGames =
-            WebStorage.localStorage.[key]
-                |> Option.ofObj
-                |> Option.map int
-                |> Option.defaultValue 0
-        let nGames' = nGames + 1
-        console.log($"{teamNames.[iTeam]} has won {nGames'} game(s)")
-        WebStorage.localStorage.[key] <- string nGames'
+        let nGames = (getNumGamesWon iTeam) + 1
+        console.log($"{teamNames.[iTeam]} has won {nGames} game(s)")
+        setNumGamesWon iTeam nGames
 
             // update display
-        let gamesWonElem = teamGamesWonElems.[iTeam]
-        gamesWonElem.text(string nGames')
+        displayGamesWon ()
 
     /// Handles the end of a game.
     let private gameOver surface iTeam cont =
@@ -138,8 +154,8 @@ module Game =
 
                 // display current game score
             let absScore = Game.absoluteScore dealer game.Score
-            ewScoreElem.text(string absScore.[0])
-            nsScoreElem.text(string absScore.[1])
+            for iTeam = 0 to Setback.numTeams - 1 do
+                scoreElems.[iTeam].text(string absScore.[iTeam])
 
                 // run a deal
             Deal.run surface rng dealer game.Score
@@ -163,8 +179,8 @@ module Game =
                     let absScore = Game.absoluteScore dealer gameScore
                     console.log($"E+W have {absScore.[0]} point(s)")
                     console.log($"N+S have {absScore.[1]} point(s)")
-                    ewScoreElem.text(string absScore.[0])
-                    nsScoreElem.text(string absScore.[1])
+                    for iTeam = 0 to Setback.numTeams - 1 do
+                        scoreElems.[iTeam].text(string absScore.[iTeam])
 
                     // is the game over?
                 let winningTeamIdxOpt =
@@ -185,6 +201,7 @@ module Game =
                         loop game' dealer'
             } |> ignore
 
+        displayGamesWon ()
         loop Game.zero dealer
 
 module Session =
