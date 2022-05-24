@@ -34,7 +34,7 @@ module TrickView =
     /// Center point of cards taken in a trick.
     let private finishPointMap =
         let offsetX = 0.4
-        let offsetY = 0.6
+        let offsetY = 0.7
         Map [
             Seat.West,  Pt (    -0.7,  offsetY)
             Seat.North, Pt (-offsetX,     -0.9)
