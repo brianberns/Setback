@@ -11,12 +11,13 @@ module AuctionView =
         ResizeArray<BidView>(Seat.numSeats)
 
     /// Bid animation destinations.
+    // To-do: Come up with a better way to position these.
     let private destMap =
         Map [
             Seat.West,  Pt (-0.83,  0.6)
-            Seat.North, Pt (-0.30, -0.9)
-            Seat.East,  Pt ( 0.86,  0.6)
-            Seat.South, Pt (-0.30,  1.29)
+            Seat.North, Pt (-0.31, -0.9)
+            Seat.East,  Pt ( 0.84,  0.6)
+            Seat.South, Pt (-0.31,  1.3)
         ]
 
     /// Animates the given bid for the given seat.

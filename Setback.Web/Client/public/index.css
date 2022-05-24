@@ -44,10 +44,13 @@ body {
 
 .bid {
     font-size: large;
-    width: 90px;
+    width: 80px;
     margin-left: 5px;
     margin-right: 5px;
     padding: 10px;
+    background-color: whitesmoke;
+    text-align: center;
+    border-radius: 10px;
 }
 
 .card {
