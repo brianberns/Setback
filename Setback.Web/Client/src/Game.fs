@@ -9,6 +9,9 @@ open Setback
 open Setback.Cfrm
 open Setback.Web.Client   // ugly - force AutoOpen
 
+// To-do:
+// * Split GameView into separate file
+// * Improve Cfrm.Game module to work with actual games
 module Game =
 
     let private teamNames =
@@ -89,12 +92,6 @@ module Game =
 
                     // run a deal
                 let! deal = Deal.run surface rng dealer game.Score
-                return! update dealer game deal
-            }
-
-        /// Updates game state after a deal is complete.
-        and update dealer game deal =
-            async {
 
                     // determine score of this deal
                 let dealScore =
@@ -132,5 +129,6 @@ module Game =
                         return! loop game' dealer'
             }
 
+            // start a new game
         displayGamesWon ()
         loop Game.zero dealer
