@@ -2,8 +2,6 @@ namespace Setback.Web.Client
 
 open Browser.Dom
 
-open Fable.Core
-
 open PlayingCards
 open Setback
 
