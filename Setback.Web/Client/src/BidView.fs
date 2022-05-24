@@ -2,6 +2,8 @@ namespace Setback.Web.Client
 
 open Browser.Dom
 
+open Fable.Core
+
 open PlayingCards
 open Setback
 
@@ -54,24 +56,33 @@ type BidChooser = JQueryElement
 
 module BidChooser =
 
-    /// Creates a chooser for the given bids, invoking the given
-    /// choice handler.
-    let create legalBids handler : BidChooser =
+    /// Creates a chooser for the given bids.
+    let create legalBids (handler : Bid -> JS.Promise<_>) : BidChooser * _ =
 
             // create an element to hold the bid views
         let div = ~~HTMLDivElement.Create(innerHTML = "<p>Your Bid?</p>")
         div.addClass("chooser")
 
-            // invoke handler when a valid bid is chosen
-        for bid in Enum.getValues<Bid> do
-            let bidView = BidView.createClickable bid
-            if legalBids |> Set.contains bid then
-                bidView.addClass("active")
-                bidView.click(fun () ->
-                    div.remove()
-                    handler bid)
-            else
-                bidView.prop("disabled", true)
-            div.append(bidView)
+            // enable user to select a bid
+        assert(legalBids |> Set.isEmpty |> not)
+        let promise =
+            Promise.create (fun resolve _reject ->
+                for bid in Enum.getValues<Bid> do
+                    let bidView = BidView.createClickable bid
+                    if legalBids.Contains(bid) then
+                        bidView.addClass("active")
+                        bidView.click(fun () ->
 
-        div
+                                // prevent further clicks
+                            div.remove()
+
+                                // handle the bid
+                            promise {
+                                let! value = handler bid
+                                resolve value
+                            } |> ignore)
+                    else
+                        bidView.prop("disabled", true)
+                    div.append(bidView))
+
+        div, promise

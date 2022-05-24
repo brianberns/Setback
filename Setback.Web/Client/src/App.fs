@@ -4,6 +4,8 @@ open System
 
 open Browser
 
+open Fable.Core
+
 open PlayingCards
 open Setback
 open Setback.Cfrm
@@ -14,10 +16,11 @@ module Deal =
     /// Runs the auction of the given deal.
     let private auction surface dealer score deal =
 
-        /// Creates bid chooser.
+            // create bid chooser
         let chooseBid handler legalBids =
-            let chooser = BidChooser.create legalBids handler
+            let chooser, promise = BidChooser.create legalBids handler
             surface.Element.append(chooser)
+            promise
 
             // get bid animation for each seat
         let auctionMap =
@@ -55,8 +58,8 @@ module Deal =
         Playout.play dealer deal playoutMap
 
     /// Runs one new deal.
-    let run surface rng dealer score cont =
-        promise {
+    let run surface rng dealer score =
+        async {
 
                 // create random deal
             console.log($"Dealer is {Seat.toString dealer}")
@@ -65,22 +68,24 @@ module Deal =
                     |> AbstractOpenDeal.fromDeck dealer
 
                 // animate dealing the cards
-            let! seatViews = DealView.start surface dealer deal
+            let! seatViews =
+                DealView.start surface dealer deal
+                    |> Async.AwaitPromise
 
                 // run the auction and then playout
-            auction surface dealer score deal (fun deal' ->
+            let! deal' =
+                auction surface dealer score deal
 
-                    // force cleanup after all-pass auction
-                if deal'.ClosedDeal.Auction.HighBid.Bid = Bid.Pass then
-                    for (_, handView) in seatViews do
-                        for (cardView : CardView) in handView do
-                            cardView.remove()
-                    cont deal'
+                // force cleanup after all-pass auction
+            if deal'.ClosedDeal.Auction.HighBid.Bid = Bid.Pass then
+                for (_, handView) in seatViews do
+                    for (cardView : CardView) in handView do
+                        cardView.remove()
+                return deal'
 
-                else
-                    playout surface dealer deal' seatViews cont)
-
-        } |> ignore
+            else
+                return! playout surface dealer deal' seatViews
+        }
 
 module Game =
 
@@ -132,7 +137,7 @@ module Game =
         displayGamesWon ()
 
     /// Handles the end of a game.
-    let private gameOver surface iTeam cont =
+    let private gameOver surface iTeam =
 
             // display banner
         let banner =
@@ -140,30 +145,34 @@ module Game =
             console.log(text)
             ~~HTMLDivElement.Create(innerText = text)
         banner.addClass("banner")
-        banner.click(fun () ->
-            banner.remove()
-            incrGamesWon iTeam
-            cont ())
         surface.Element.append(banner)
 
+            // wait for user to click banner
+        Promise.create (fun resolve _reject ->
+            banner.click(fun () ->
+                banner.remove()
+                incrGamesWon iTeam
+                resolve ()))
+
     /// Runs one new game.
-    let run surface rng dealer cont =
+    let run surface rng dealer =
 
         /// Runs one deal.
         let rec loop (game : Game) dealer =
+            async {
+                    // display current game score
+                let absScore = Game.absoluteScore dealer game.Score
+                for iTeam = 0 to Setback.numTeams - 1 do
+                    scoreElems.[iTeam].text(string absScore.[iTeam])
 
-                // display current game score
-            let absScore = Game.absoluteScore dealer game.Score
-            for iTeam = 0 to Setback.numTeams - 1 do
-                scoreElems.[iTeam].text(string absScore.[iTeam])
-
-                // run a deal
-            Deal.run surface rng dealer game.Score
-                (update dealer game)
+                    // run a deal
+                let! deal = Deal.run surface rng dealer game.Score
+                return! update dealer game deal
+            }
 
         /// Updates game state after a deal is complete.
         and update dealer game deal =
-            promise {
+            async {
 
                     // determine score of this deal
                 let dealScore =
@@ -190,16 +199,16 @@ module Game =
 
                         // game is over
                     | Some iTeam ->
-                        gameOver surface iTeam (fun () ->
-                            cont dealer')
+                        do! gameOver surface iTeam
+                            |> Async.AwaitPromise
+                        return dealer'
 
                         // run another deal
                     | None ->
-                        let game' =
-                            let score'' = gameScore |> AbstractScore.shift 1
-                            { game with Score = score'' }
-                        loop game' dealer'
-            } |> ignore
+                        let score'' = gameScore |> AbstractScore.shift 1
+                        let game' = { game with Score = score'' }
+                        return! loop game' dealer'
+            }
 
         displayGamesWon ()
         loop Game.zero dealer
@@ -209,8 +218,11 @@ module Session =
     /// Runs a new session.
     let run surface rng dealer =
         let rec loop dealer =
-            Game.run surface rng dealer loop
-        loop dealer
+            async {
+                let! dealer' = Game.run surface rng dealer
+                do! loop dealer'
+            }
+        loop dealer |> Async.StartImmediate
 
 module App =
 

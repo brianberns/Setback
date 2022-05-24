@@ -18,7 +18,7 @@ module AbstractOpenDeal =
 module Auction =
 
     /// Auction context.
-    type private Context =
+    type private Context<'t> =
         {
             /// Current dealer's seat.
             Dealer : Seat
@@ -33,16 +33,10 @@ module Auction =
             /// argument is a handler that's invoked when a user chooses
             /// a bid. Second argument is the (non-empty) set of valid
             /// bids from which the user is to choose one.
-            ChooseBid : (Bid -> unit) -> Set<Bid> -> unit
+            ChooseBid : (Bid -> JS.Promise<'t>) -> Set<Bid> -> JS.Promise<'t>
 
             /// Animation of making a bid.
             AnimBid : Bid -> Animation
-
-            /// Continues the auction.
-            Continuation : AbstractOpenDeal -> unit
-
-            /// Completes the auction (by playing the cards).
-            Complete : AbstractOpenDeal -> unit
         }
 
     /// Makes the given bid in the given deal and then continues
@@ -63,17 +57,8 @@ module Auction =
                 |> Animation.run
 
                 // add bid to deal
-            let deal =
-                context.Deal
-                    |> AbstractOpenDeal.addBid bid
-
-                // continue or complete the auction
-            let cont =
-                if deal.ClosedDeal.Auction |> AbstractAuction.isComplete then
-                    context.Complete
-                else
-                    context.Continuation
-            cont deal
+            return context.Deal
+                |> AbstractOpenDeal.addBid bid
         }
 
     /// Allows user to make a bid.
@@ -82,49 +67,54 @@ module Auction =
             |> AbstractAuction.legalBids
             |> set
             |> context.ChooseBid (fun bid ->
-                promise {
-                    do! makeBid context bid
-                } |> ignore)
+                makeBid context bid)
 
     /// Automatically makes a bid.
     let private bidAuto context =
         async {
-            try
-                    // determine bid to make
-                let! bid =
-                    WebPlayer.makeBid context.Score context.Deal
+                // determine bid to make
+            let! bid =
+                WebPlayer.makeBid context.Score context.Deal
 
-                    // move to next player
-                do! makeBid context bid
-                    |> Async.AwaitPromise
-
-            with ex -> console.log(ex)
-        } |> Async.StartImmediate
+                // move to next player
+            return! makeBid context bid
+                |> Async.AwaitPromise
+        }
 
     /// Runs the given deal's auction.
-    let run dealer score deal chooseBid (auctionMap : Map<_, _>) cont =
+    let run dealer score deal chooseBid (auctionMap : Map<_, _>) =
 
         /// Makes a single bid and then loops recursively.
         let rec loop deal =
+            async {
+                    // prepare current player
+                let seat =
+                    AbstractOpenDeal.getCurrentSeat dealer deal
+                let animBid =
+                    auctionMap.[seat]
+                let bidder =
+                    if seat.IsUser then
+                        bidUser >> Async.AwaitPromise
+                    else bidAuto
 
-                // prepare current player
-            let seat =
-                AbstractOpenDeal.getCurrentSeat dealer deal
-            let animBid =
-                auctionMap.[seat]
-            let bidder =
-                if seat.IsUser then bidUser
-                else bidAuto
+                    // invoke bidder
+                let! deal' =
+                    bidder {
+                        Dealer = dealer
+                        Score = score
+                        Deal = deal
+                        ChooseBid = chooseBid
+                        AnimBid = animBid
+                    }
 
-                // invoke bidder
-            bidder {
-                Dealer = dealer
-                Score = score
-                Deal = deal
-                ChooseBid = chooseBid
-                AnimBid = animBid
-                Continuation = loop
-                Complete = cont
+                    // recurse until auction is complete
+                let isComplete =
+                    deal'.ClosedDeal.Auction
+                        |> AbstractAuction.isComplete
+                if isComplete then
+                    return deal'
+                else
+                    return! loop deal'
             }
 
         loop deal
