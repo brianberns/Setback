@@ -81,7 +81,9 @@ module Auction =
                         promise {
                             let! value = makeBid context bid
                             resolve value
-                        } |> ignore))
+                        } |> ignore)
+                else
+                    bidView.prop("disabled", true))
 
     /// Automatically makes a bid.
     let private bidAuto context =
