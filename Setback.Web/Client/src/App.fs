@@ -217,8 +217,10 @@ module Session =
     let run surface rng dealer =
         let rec loop dealer =
             async {
-                let! dealer' = Game.run surface rng dealer
-                do! loop dealer'
+                try
+                    let! dealer' = Game.run surface rng dealer
+                    do! loop dealer'
+                with ex -> console.log(ex)
             }
         loop dealer |> Async.StartImmediate
 
