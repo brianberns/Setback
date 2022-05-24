@@ -28,6 +28,7 @@ body {
     }
 
 .chooser {
+    display: none;   /* hidden when created */
     font-size: x-large;
     width: fit-content;
     height: fit-content;

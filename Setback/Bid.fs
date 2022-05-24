@@ -24,4 +24,11 @@ module Bid =
         | Bid.Three -> "Three"
         | Bid.Four -> "Four"
         | _ -> failwith "Unexpected bid"
+
+    let fromString = function
+        | "Pass" -> Bid.Pass
+        | "Two" -> Bid.Two
+        | "Three" -> Bid.Three
+        | "Four" -> Bid.Four
+        | _ -> failwith "Unexpected bid"
 #endif

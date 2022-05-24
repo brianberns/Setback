@@ -17,10 +17,8 @@ module Deal =
     let private auction surface dealer score deal =
 
             // create bid chooser
-        let chooseBid handler legalBids =
-            let chooser, promise = BidChooser.create legalBids handler
-            surface.Element.append(chooser)
-            promise
+        let chooser = BidChooser.create ()
+        surface.Element.append(chooser.Element)
 
             // get bid animation for each seat
         let auctionMap =
@@ -32,7 +30,7 @@ module Deal =
                 |> Map
 
             // run the auction
-        Auction.run dealer score deal chooseBid auctionMap
+        Auction.run dealer score deal chooser auctionMap
 
     /// Runs the playout of the given deal.
     let private playout surface dealer deal handViews =

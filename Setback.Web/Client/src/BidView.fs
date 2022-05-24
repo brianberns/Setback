@@ -38,6 +38,7 @@ module BidView =
             let innerText = Bid.toString bid
             ~~HTMLButtonElement.Create(
                 ``type`` = "button",
+                id = Bid.toString bid,
                 innerText = innerText)
         bidView.addClass("bid")
         bidView
@@ -51,38 +52,42 @@ module BidView =
         bidView.addClass("bid")
         bidView
 
+    /// Answers the given bid view's underlying bid.
+    let bid (bidView : BidView) =
+        bidView.attr("id")
+            |> Bid.fromString
+
 /// Widget that enables the user to choose a legal bid.
-type BidChooser = JQueryElement
+type BidChooser =
+    {
+        /// Underlying HTML element.
+        Element : JQueryElement
+
+        /// View for each bid.
+        BidViews : BidView[]
+    }
 
 module BidChooser =
 
-    /// Creates a chooser for the given bids.
-    let create legalBids (handler : Bid -> JS.Promise<_>) : BidChooser * _ =
+    /// Creates a chooser.
+    let create () =
 
             // create an element to hold the bid views
         let div = ~~HTMLDivElement.Create(innerHTML = "<p>Your Bid?</p>")
         div.addClass("chooser")
 
-            // enable user to select a bid
-        assert(legalBids |> Set.isEmpty |> not)
-        let promise =
-            Promise.create (fun resolve _reject ->
-                for bid in Enum.getValues<Bid> do
-                    let bidView = BidView.createClickable bid
-                    if legalBids.Contains(bid) then
-                        bidView.addClass("active")
-                        bidView.click(fun () ->
+            // create bid views
+        let bidViews =
+            Enum.getValues<Bid>
+                |> Array.map BidView.createClickable
+        for bidView in bidViews do
+            div.append(bidView)
 
-                                // prevent further clicks
-                            div.remove()
+        {
+            Element = div
+            BidViews = bidViews
+        }
 
-                                // handle the bid
-                            promise {
-                                let! value = handler bid
-                                resolve value
-                            } |> ignore)
-                    else
-                        bidView.prop("disabled", true)
-                    div.append(bidView))
-
-        div, promise
+    /// Makes the given chooser visible.
+    let display chooser =
+        chooser.Element.css {| display = "block" |}

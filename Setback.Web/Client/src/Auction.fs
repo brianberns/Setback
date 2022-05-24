@@ -29,12 +29,6 @@ module Auction =
             /// Current deal.
             Deal : AbstractOpenDeal
 
-            /// Function that allows the user to choose a bid. First
-            /// argument is a handler that's invoked when a user chooses
-            /// a bid. Second argument is the (non-empty) set of valid
-            /// bids from which the user is to choose one.
-            ChooseBid : (Bid -> JS.Promise<'t>) -> Set<Bid> -> JS.Promise<'t>
-
             /// Animation of making a bid.
             AnimBid : Bid -> Animation
         }
@@ -62,12 +56,32 @@ module Auction =
         }
 
     /// Allows user to make a bid.
-    let private bidUser context =
-        context.Deal.ClosedDeal.Auction
-            |> AbstractAuction.legalBids
-            |> set
-            |> context.ChooseBid (fun bid ->
-                makeBid context bid)
+    let private bidUser chooser context =
+
+            // determine all legal bids
+        let legalBids =
+            context.Deal.ClosedDeal.Auction
+                |> AbstractAuction.legalBids
+                |> set
+        assert(legalBids |> Set.isEmpty |> not)
+
+            // enable user to select one of the corresponding bid views
+        Promise.create (fun resolve _reject ->
+            chooser |> BidChooser.display
+            for bidView in chooser.BidViews do
+                let bid = bidView |> BidView.bid
+                if legalBids.Contains(bid) then
+                    bidView.addClass("active")
+                    bidView.click(fun () ->
+
+                            // prevent further clicks
+                        chooser.Element.remove()
+
+                            // make the selected bid
+                        promise {
+                            let! value = makeBid context bid
+                            resolve value
+                        } |> ignore))
 
     /// Automatically makes a bid.
     let private bidAuto context =
@@ -82,7 +96,7 @@ module Auction =
         }
 
     /// Runs the given deal's auction.
-    let run dealer score deal chooseBid (auctionMap : Map<_, _>) =
+    let run dealer score deal chooser (auctionMap : Map<_, _>) =
 
         /// Makes a single bid and then loops recursively.
         let rec loop deal =
@@ -94,7 +108,7 @@ module Auction =
                     auctionMap.[seat]
                 let bidder =
                     if seat.IsUser then
-                        bidUser >> Async.AwaitPromise
+                        bidUser chooser >> Async.AwaitPromise
                     else bidAuto
 
                     // invoke bidder
@@ -103,7 +117,6 @@ module Auction =
                         Dealer = dealer
                         Score = score
                         Deal = deal
-                        ChooseBid = chooseBid
                         AnimBid = animBid
                     }
 
