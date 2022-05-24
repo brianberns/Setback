@@ -51,6 +51,8 @@
     <Compile Include="DealView.fs" />
     <Compile Include="Auction.fs" />
     <Compile Include="Playout.fs" />
+    <Compile Include="Deal.fs" />
+    <Compile Include="Game.fs" />
     <Compile Include="App.fs" />
   </ItemGroup>
   <ItemGroup>
