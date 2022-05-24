@@ -46,11 +46,20 @@ module Deal =
                     let animTrickFinish =
                         TrickView.finishAnim surface
 
-                    seat, (handView, animCardPlay, animTrickFinish))
+                    let animEstablishTrump =
+                        AuctionView.establishTrumpAnim
+
+                    let tuple =
+                        handView,
+                        animCardPlay,
+                        animTrickFinish,
+                        animEstablishTrump
+
+                    seat, tuple)
                 |> Map
 
             // run the playout
-        Playout.play dealer deal playoutMap
+        Playout.run dealer deal playoutMap
 
     /// Runs one new deal.
     let run surface rng dealer score =

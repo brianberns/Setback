@@ -33,6 +33,9 @@ module Playout =
 
             /// Animation of winning a trick.
             AnimTrickFinish : Seat -> Animation
+
+            /// Animation of establishing trump.
+            AnimEstablishTrump : Seat -> Suit -> Animation
         }
 
     /// Plays the given card on the current trick, and returns the
@@ -56,23 +59,39 @@ module Playout =
                         AbstractTrick.highPlayerIndex trick)
         }
 
+    /// Has trump just been established?
+    let private tryTrumpJustEstablished deal =
+        option {
+            let! playout = deal.ClosedDeal.PlayoutOpt
+            if playout.CurrentTrick.NumPlays = 1
+                && playout.History = AbstractPlayoutHistory.empty then
+                    assert(playout.TrumpOpt.IsSome)
+                    return! playout.TrumpOpt
+        }
+
     /// Plays the given card in the given deal and then continues
     /// the rest of the deal.
     let private playCard context card =
         promise {
 
                 // write to log
-            do
-                let seat =
-                    AbstractOpenDeal.getCurrentSeat
-                        context.Dealer
-                        context.Deal
-                console.log($"{seat |> Seat.toString} plays {card}")
+            let seat =
+                AbstractOpenDeal.getCurrentSeat
+                    context.Dealer
+                    context.Deal
+            console.log($"{Seat.toString seat} plays {card}")
 
                 // add the card to the deal
             let deal =
                 context.Deal
                     |> AbstractOpenDeal.addPlay card
+
+                // animate if setting trump
+            match tryTrumpJustEstablished deal with
+                | Some trump ->
+                    do! context.AnimEstablishTrump seat trump
+                        |> Animation.run
+                | None -> ()
 
                 // animate if trick is finished
             let dealComplete = deal |> AbstractOpenDeal.isComplete
@@ -143,8 +162,8 @@ module Playout =
                 |> Async.AwaitPromise
         }
 
-    /// Plays the given deal.
-    let play dealer deal (playoutMap : Map<_, _>) =
+    /// Runs the given deal's playout
+    let run dealer deal (playoutMap : Map<_, _>) =
         assert(
             deal.ClosedDeal.Auction
                 |> AbstractAuction.isComplete)
@@ -155,8 +174,11 @@ module Playout =
                     // prepare current player
                 let seat =
                     AbstractOpenDeal.getCurrentSeat dealer deal
-                let (handView : HandView), animCardPlay, animTrickFinish =
-                    playoutMap.[seat]
+                let (handView : HandView),
+                    animCardPlay,
+                    animTrickFinish,
+                    animEstablishTrump =
+                        playoutMap.[seat]
                 let player =
                     if seat.IsUser then
                         playUser handView >> Async.AwaitPromise
@@ -170,6 +192,7 @@ module Playout =
                         Deal = deal
                         AnimCardPlay = animCardPlay
                         AnimTrickFinish = animTrickFinish
+                        AnimEstablishTrump = animEstablishTrump
                     }
 
                     // recurse until auction is complete

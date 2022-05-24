@@ -1,4 +1,4 @@
-body {
+﻿body {
     background-color: lightblue;
     font-family: sans-serif;
 }
@@ -51,6 +51,26 @@ body {
     background-color: whitesmoke;
     text-align: center;
     border-radius: 10px;
+}
+
+.♦ {
+    color: red;
+    font-size: x-large;
+}
+
+.♥ {
+    color: red;
+    font-size: x-large;
+}
+
+.♣ {
+    color: black;
+    font-size: x-large;
+}
+
+.♠ {
+    color: black;
+    font-size: x-large;
 }
 
 .card {

@@ -46,7 +46,20 @@ module BidView =
         let bidView =
             let innerText = Bid.toString bid
             ~~HTMLDivElement.Create(
+                id = Bid.toString bid,
                 innerText = innerText)
+        bidView.addClass("bid")
+        bidView
+
+    /// Creates a trump bid view.
+    let createTrump bid suit : BidView =
+        let bidView =
+            let innerHTML =
+                let suitChar = Suit.toChar suit
+                $"{Bid.toString bid} <span class={suitChar}>{suitChar}</span>"
+            ~~HTMLDivElement.Create(
+                id = Bid.toString bid,
+                innerHTML = innerHTML)
         bidView.addClass("bid")
         bidView
 

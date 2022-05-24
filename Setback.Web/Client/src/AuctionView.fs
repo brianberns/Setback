@@ -7,8 +7,8 @@ module AuctionView =
 
     /// Bids made in this auction.
     /// ASSUMPTION: Only one auction view per app.
-    let mutable private bidViews =
-        ResizeArray<BidView>(Seat.numSeats)
+    let mutable private bidViewMap =
+        System.Collections.Generic.Dictionary<Seat, BidView>(Seat.numSeats)
 
     /// Bid animation destinations.
     // To-do: Come up with a better way to position these.
@@ -34,7 +34,7 @@ module AuctionView =
             surface |> CardSurface.getPosition Point.origin
         JQueryElement.setPosition origin bidView
         surface.Element.append(bidView)
-        bidViews.Add(bidView)
+        bidViewMap.[seat] <- bidView
 
             // animate the the bid view to its destination
         let dest =
@@ -51,8 +51,8 @@ module AuctionView =
 
             // create animation
         let anim =
-            bidViews
-                |> Seq.map (fun bidView ->
+            bidViewMap
+                |> Seq.map (fun (KeyValue(_, bidView)) ->
                     AnimationAction.Remove
                         |> ElementAction.create bidView
                         |> Animation.Unit)
@@ -60,6 +60,26 @@ module AuctionView =
                 |> Animation.Parallel
 
             // reset to new auction
-        bidViews.Clear()
+        bidViewMap.Clear()
 
         anim
+
+    /// Animates establishing trump.
+    let establishTrumpAnim seat trump =
+
+            // get existing bid view
+        let oldBidView = bidViewMap.[seat]
+        let bid = oldBidView |> BidView.bid
+
+            // create new bid view
+        let newBidView = BidView.createTrump bid trump
+        newBidView.css
+            {|
+                position = "absolute"
+            |}
+        bidViewMap.[seat] <- newBidView
+
+            // create animation
+        AnimationAction.ReplaceWith newBidView
+            |> ElementAction.create oldBidView
+            |> Animation.Unit
