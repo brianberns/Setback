@@ -348,3 +348,7 @@ healthchecksdb
 
 # FABLE output
 *.fs.js
+
+# Webpack output
+/Setback.Web/Client/public/*.svg
+/Setback.Web/Client/public/*.LICENSE.txt

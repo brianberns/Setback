@@ -12,7 +12,7 @@ module.exports = {
         port: 8081,
         proxy: {
             '/ISetbackApi/**': {
-                target: "http://127.0.0.1:5000",
+                target: "http://127.0.0.1:5000/Setback/",
                 changeOrigin: true
             }
         }
