@@ -14,14 +14,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Suave" Version="2.5.6" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Suave.Dynamic">
-      <HintPath>..\..\..\Suave.Dynamic\Suave.Dynamic\bin\Release\net6.0\Suave.Dynamic.dll</HintPath>
-    </Reference>
-    <PackageReference Include="Tommy" Version="3.1.2" />
+    <PackageReference Include="Suave" Version="2.6.2" />
+    <PackageReference Include="Suave.Dynamic" Version="1.1.0" />
   </ItemGroup>
 
 </Project>
