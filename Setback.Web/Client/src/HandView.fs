@@ -94,26 +94,30 @@ module ClosedHandView =
             assert(flag)
 
                 // animate card being played
-            let animPlay =
-                [|
-                    ReplaceWith cardView                   // reveal card
-                        |> Animation.create back
-                    BringToFront                           // bring revealed card to front
-                        |> Animation.create cardView
-                    TrickView.playAnim surface seat cardView   // slide revealed card to center
-                |] |> Animation.Serial
+            Animation.Serial [|
 
-                // animate adjustment of remaining cards to fill gap
-            let animAdjust =
-                cardViewsMut
-                    |> Seq.toArray
-                    |> HandView.adjustAnim surface seat
+                    // reveal card (this has to finish before we can do anything else)
+                ReplaceWith cardView
+                    |> Animation.create back
 
-                // animate in parallel
-            [|
-                animPlay
-                animAdjust
-            |] |> Animation.Parallel
+                Animation.Parallel [|
+
+                    Animation.Serial [|
+
+                            // bring revealed card to front
+                        BringToFront
+                            |> Animation.create cardView
+
+                           // slide revealed card to center
+                        TrickView.playAnim surface seat cardView
+                    |]
+
+                        // adjust remaining cards to fill gap
+                    cardViewsMut
+                        |> Seq.toArray
+                        |> HandView.adjustAnim surface seat
+                |]
+            |]
 
 module OpenHandView =
 
