@@ -44,5 +44,6 @@ module WebPart =
 
         choose [
             Remoting.webPart dir
+            Filters.path "/" >=> Files.browseFile staticPath "index.html"
             GET >=> Files.browse staticPath
         ]
