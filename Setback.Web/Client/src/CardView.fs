@@ -10,7 +10,7 @@ type CardView = JQueryElement
 module CardView =
 
     /// Unscaled card width.
-    let width = Pixel 119.0
+    let width = Pixel 100.0
 
     /// Unscaled card height.
     let height = 333.0/238.0 * width

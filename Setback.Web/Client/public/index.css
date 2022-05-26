@@ -5,7 +5,7 @@
 
 #surface {
     width: 1500px;
-    height: 800px;
+    height: 700px;
     position: relative;
     margin: auto;   /* center horizontally within parent */
 }
@@ -15,6 +15,7 @@
     left: 30px;
     top: 30px;
     text-align: end;
+    font-size: small;
 }
 
     #score th {
@@ -30,14 +31,15 @@
 #title {
     position: absolute;
     left: 30px;
-    top: 750px;
+    top: 650px;
     text-align: end;
     color: lightslategray;
+    font-size: small;
 }
 
 .chooser {
     display: none;   /* hidden when created */
-    font-size: x-large;
+    font-size: large;
     width: fit-content;
     height: fit-content;
     text-align: center;
@@ -51,8 +53,8 @@
 }
 
 .bid {
-    font-size: large;
     width: 80px;
+    font-size: medium;
     margin-left: 5px;
     margin-right: 5px;
     padding: 10px;
@@ -63,22 +65,22 @@
 
 .♦ {
     color: red;
-    font-size: x-large;
+    font-size: large;
 }
 
 .♥ {
     color: red;
-    font-size: x-large;
+    font-size: large;
 }
 
 .♣ {
     color: black;
-    font-size: x-large;
+    font-size: large;
 }
 
 .♠ {
     color: black;
-    font-size: x-large;
+    font-size: large;
 }
 
 .card {
@@ -92,7 +94,7 @@
 }
 
 .banner {
-    font-size: xx-large;
+    font-size: x-large;
     width: fit-content;
     height: fit-content;
     text-align: center;
