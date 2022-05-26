@@ -5,8 +5,13 @@ module Remoting =
     open Fable.Remoting.Client
     open Setback.Web
 
+    /// Prefix routes with /Setback.
+    let routeBuilder typeName methodName = 
+        sprintf "/Setback/%s/%s" typeName methodName
+
     let api =
         Remoting.createApi()
+            |> Remoting.withRouteBuilder routeBuilder
             |> Remoting.buildProxy<ISetbackApi>
 
 module WebPlayer =

@@ -11,8 +11,8 @@ module.exports = {
         static: "./public",
         port: 8081,
         proxy: {
-            '/ISetbackApi/**': {
-                target: "http://127.0.0.1:5000/Setback/",
+            '/Setback/ISetbackApi/**': {
+                target: "http://127.0.0.1:5000/",
                 changeOrigin: true
             }
         }
