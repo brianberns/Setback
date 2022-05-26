@@ -36,10 +36,10 @@ module TrickView =
         let offsetX = 0.4
         let offsetY = 0.7
         Map [
-            Seat.West,  Pt (    -0.7,  offsetY)
-            Seat.North, Pt (-offsetX,     -0.9)
-            Seat.East,  Pt (     0.7, -offsetY)
-            Seat.South, Pt ( offsetX,      0.9)
+            Seat.West,  Pt (    -0.8,  offsetY)
+            Seat.North, Pt (-offsetX,     -0.8)
+            Seat.East,  Pt (     0.8, -offsetY)
+            Seat.South, Pt ( offsetX,      0.8)
         ]
 
     /// Offset from center of each card taken in a trick.
