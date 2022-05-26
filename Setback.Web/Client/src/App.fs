@@ -28,10 +28,7 @@ module App =
 
         // start a session when the browser is ready
     (~~document).ready(fun () ->
-
-        let version = ~~"#version"
-        version.text("1.0")
-
+        (~~"#version").text("1.1")
         let surface = CardSurface.init "#surface"
         let rng = Random()
         Session.run surface rng Seat.South)
