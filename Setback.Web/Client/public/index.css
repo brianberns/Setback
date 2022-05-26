@@ -27,6 +27,14 @@
         padding-right: 5px;
     }
 
+#title {
+    position: absolute;
+    left: 30px;
+    top: 750px;
+    text-align: end;
+    color: lightslategray;
+}
+
 .chooser {
     display: none;   /* hidden when created */
     font-size: x-large;
