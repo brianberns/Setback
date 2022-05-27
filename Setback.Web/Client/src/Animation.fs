@@ -45,19 +45,27 @@ module ElementAction =
 
     /// Runs an element action.
     let run elemAction =
-        match elemAction.Action with
-            | MoveTo (pos, duration) ->
-                elemAction.Element
-                    |> JQueryElement.animateTo pos duration
-            | BringToFront ->
-                elemAction.Element
-                    |> JQueryElement.bringToFront
-            | ReplaceWith replacementElem ->
-                elemAction.Element
-                    |> JQueryElement.replaceWith replacementElem
-            | Remove ->
-                elemAction.Element.remove()
-        elemAction.Element.promise()
+        let elems =
+            match elemAction.Action with
+                | MoveTo (pos, duration) ->
+                    elemAction.Element
+                        |> JQueryElement.animateTo pos duration
+                    [| elemAction.Element |]
+                | BringToFront ->
+                    elemAction.Element
+                        |> JQueryElement.bringToFront
+                    [| elemAction.Element |]
+                | ReplaceWith replacementElem ->
+                    elemAction.Element
+                        |> JQueryElement.replaceWith replacementElem
+                    [| elemAction.Element; replacementElem |]
+                | Remove ->
+                    elemAction.Element.remove()
+                    [| elemAction.Element |]
+        elems
+            |> Seq.map (fun elem -> elem.promise())
+            |> Promise.all
+            |> Promise.map (fun _ -> ())
 
 /// Describes an animation.
 [<RequireQualifiedAccess>]
