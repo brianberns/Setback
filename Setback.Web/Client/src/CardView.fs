@@ -1,5 +1,6 @@
 namespace Setback.Web.Client
 
+open System
 open Browser.Dom
 open Fable.Core.JsInterop
 open PlayingCards
@@ -19,15 +20,30 @@ module CardView =
     let border = Pixel 1.0
 
     /// Creates a card view.
-    let private create src id : CardView =
-        let cardView = ~~Image.Create(src = src, id = id, alt = id)
-        cardView.addClass("card")
-        cardView.css
-            {|
-                width = width
-                ``z-index`` = JQueryElement.zIndexIncr ()
-            |}
-        cardView
+    // https://stackoverflow.com/a/24201249/344223
+    let private create src id =
+        Promise.create (fun resolve reject ->
+
+                // create the image
+            let img = Image.Create(src = src, id = id, alt = id)
+
+                // set image properties view JQuery
+            let cardView = ~~img : CardView
+            cardView.addClass("card")
+            cardView.css
+                {|
+                    width = width
+                    ``z-index`` = JQueryElement.zIndexIncr ()
+                |}
+
+                // wait for image to load
+            if img.complete then
+                resolve cardView
+            else
+                img.addEventListener("load", fun _ ->
+                    resolve cardView)
+                img.addEventListener("error", fun _ ->
+                    reject (Exception("Could not load image"))))
 
     /// Card images. (Unfortunately, import only works with string
     /// literals.)

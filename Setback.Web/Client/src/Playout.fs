@@ -152,7 +152,9 @@ module Playout =
                 WebPlayer.makePlay AbstractScore.zero context.Deal
 
                 // animate playing the selected card
-            let cardView = CardView.ofCard card
+            let! cardView =
+                CardView.ofCard card
+                    |> Async.AwaitPromise
             do! context.AnimCardPlay cardView
                 |> Animation.run
                 |> Async.AwaitPromise

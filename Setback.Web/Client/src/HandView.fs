@@ -96,12 +96,12 @@ module ClosedHandView =
                 // animate card being played
             Animation.Serial [|
 
-                    // bring card to front
-                BringToFront
-                    |> Animation.create back
-
                     // reveal card
                 ReplaceWith cardView
+                    |> Animation.create back
+
+                    // bring card to front
+                BringToFront
                     |> Animation.create back
 
                     // slide revealed card to center
@@ -111,7 +111,7 @@ module ClosedHandView =
 module OpenHandView =
 
     /// Creates an open view of the given hand.
-    let ofHand (hand : Hand) : HandView =
+    let ofHand (hand : Hand) : Fable.Core.JS.Promise<HandView> =
         hand
             |> Seq.sortByDescending (fun card ->
                 let iSuit =
@@ -124,6 +124,7 @@ module OpenHandView =
                 iSuit, card.Rank)
             |> Seq.map CardView.ofCard
             |> Seq.toArray
+            |> Promise.all
 
     /// Reveals the given open hand view.
     let revealAnim (closedHandView : HandView) (openHandView : HandView) =
