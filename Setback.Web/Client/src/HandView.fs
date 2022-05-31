@@ -96,12 +96,12 @@ module ClosedHandView =
                 // animate card being played
             Animation.Serial [|
 
-                    // reveal card
-                ReplaceWith cardView
-                    |> Animation.create back
-
                     // bring card to front
                 BringToFront
+                    |> Animation.create back
+
+                    // reveal card
+                ReplaceWith cardView
                     |> Animation.create back
 
                     // slide revealed card to center
