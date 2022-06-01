@@ -1,10 +1,13 @@
-﻿main {
+﻿body {
+    margin: 50px;
+}
+
+main {
     background-color: lightblue;
     font-family: sans-serif;
-    width: 95vw;
-    height: 95vh;
+    width: 80vw;
+    height: 80vh;
     position: relative;
-    margin: auto; /* center horizontally within parent */
 }
 
 #score {
@@ -28,7 +31,7 @@
 #title {
     position: absolute;
     left: 2%;
-    top: 98%;
+    top: 96%;
     text-align: end;
     color: lightslategray;
     font-size: small;
@@ -36,65 +39,58 @@
 
 .chooser {
     display: none; /* hidden when created */
-    font-size: large;
+    font-size: min(2vw, 2vh);
+    text-align: center;
     width: fit-content;
     height: fit-content;
-    text-align: center;
     /* https://www.w3schools.com/howto/howto_css_center-vertical.asp */
     position: absolute;
     top: 50%;
     left: 50%;
-    -ms-transform: translate(-50%, -50%);
     transform: translate(-50%, -50%);
 }
 
 .bid {
-    width: 80px;
-    font-size: medium;
-    margin-left: 5px;
-    margin-right: 5px;
-    padding: 10px;
+    width: min(8vw, 12vh);
+    font-size: min(2vw, 2vh);
+    margin-left: 1vw;
+    margin-right: 1vw;
+    padding: min(1vw, 1vh);
     background-color: whitesmoke;
     text-align: center;
-    border-radius: 10px;
+    border-radius: min(1vw, 1vh);
 }
 
 .bid-static {
     position: absolute;
     top: 50%;
     left: 50%;
-    -ms-transform: translate(-50%, -50%);
     transform: translate(-50%, -50%);
+    border: 0;
+    color: black;
 }
 
 .♦ {
     color: red;
-    font-size: large;
 }
 
 .♥ {
     color: red;
-    font-size: large;
 }
 
 .♣ {
     color: black;
-    font-size: large;
 }
 
 .♠ {
     color: black;
-    font-size: large;
 }
 
 .card {
     position: absolute;
-    width: 8%;
+    width: min(8vw, 12vh);
     border: 1px solid gray;
     border-radius: 10px;
-    top: 50%;
-    left: 50%;
-    -ms-transform: translate(-50%, -50%);
     transform: translate(-50%, -50%);
 }
 
@@ -113,6 +109,5 @@
     position: absolute;
     top: 50%;
     left: 50%;
-    -ms-transform: translate(-50%, -50%);
     transform: translate(-50%, -50%);
 }
