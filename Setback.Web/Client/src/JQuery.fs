@@ -33,7 +33,7 @@ type JQueryElement =
     /// Gets the element's parent.
     abstract parent : unit -> JQueryElement
 
-    /// Create a promise that will be resolved when element
+    /// Creates a promise that will be resolved when element
     /// animation is complete.
     abstract promise : unit -> JS.Promise<unit>
 
