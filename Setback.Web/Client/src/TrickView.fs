@@ -9,8 +9,8 @@ module TrickView =
     let mutable private cardViewMap =
         System.Collections.Generic.Dictionary<Seat, CardView>()
 
-    /// Center location of each card played in a trick.
-    let private playLocMap =
+    /// Center position of each card played in a trick.
+    let private playPosMap =
         Position.seatMap [
             Seat.West,  (45, 50)
             Seat.North, (50, 45)
@@ -25,12 +25,12 @@ module TrickView =
         cardViewMap.Add(seat, cardView)
 
             // animate playing the card
-        playLocMap.[seat]
+        playPosMap.[seat]
             |> AnimationAction.moveTo
             |> Animation.create cardView
 
-    /// Center point of cards taken in a trick.
-    let private finishLocMap =
+    /// Center position of cards taken in a trick.
+    let private finishPosMap =
         Position.seatMap [
             Seat.West,  (20, 50)
             Seat.North, (50, 20)
@@ -54,7 +54,7 @@ module TrickView =
 
             // move cards to trick winner
         let step1 =
-            let centerLoc = finishLocMap.[winnerSeat]
+            let centerLoc = finishPosMap.[winnerSeat]
             cardViewMap
                 |> Seq.map (fun (KeyValue(seat, cardView)) ->
                     centerLoc + finishOffsetMap.[seat]

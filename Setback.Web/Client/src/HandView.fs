@@ -8,12 +8,12 @@ type HandView = CardView[]
 
 module HandView =
 
-    /// Gets the target x-coord of the given card in a hand
+    /// Gets the target left coord of the given card in a hand
     /// containing the given total number of cards.
-    let private getX numCards iCard =
+    let private getLeft numCards iCard =
 
         /// Target distance between adjacent cards in the hand.
-        let delta = 0.05
+        let delta = 2.5
 
         /// Left-shift from center of hand.
         let shift = 0.5 * float (numCards - 1) * delta
@@ -24,7 +24,7 @@ module HandView =
     /// Animates a card to its target position in a hand.
     let private animateCard pos numCards iCard =
         { pos with
-            left = getX numCards iCard + pos.left }
+            left = getLeft numCards iCard + pos.left }
             |> AnimationAction.moveTo
 
     /// Center position of each hand.

@@ -13,10 +13,10 @@ module AuctionView =
     /// Bid animation destinations.
     let private destMap =
         Position.seatMap [
-            Seat.West,  ( 5, 55)
-            Seat.North, (45,  5)
-            Seat.East,  (95, 55)
-            Seat.South, (45, 95)
+            Seat.West,  ( 2, 62)
+            Seat.North, (30,  1)
+            Seat.East,  (92, 62)
+            Seat.South, (30, 94)
         ]
 
     /// Animates the given bid for the given seat.

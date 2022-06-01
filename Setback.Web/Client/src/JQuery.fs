@@ -20,33 +20,40 @@ type LengthPercentage = Percent of float with
     static member (+) (Percent a, Percent b) =
         Percent (a + b)
 
-/// CSS-compatible record type.
+/// CSS-compatible percentage position.
 type Position =
     {
+        /// X coordinate.
         left : LengthPercentage
+
+        /// Y coordinate.
         top : LengthPercentage
     } with
 
-    static member (+) (a, b) =
-        {
-            left = a.left + b.left
-            top = a.top + b.top
-        }
-
-module Position =
-
-    let create (left, top) =
+    /// Creates a position.
+    static member Create(left, top) =
         {
             left = left
             top = top
         }
 
-    let ofFloats (left, top) =
-        create (Percent left, Percent top)
+    /// Addition.
+    static member (+) (a, b) =
+        Position.Create(
+            a.left + b.left,
+            a.top + b.top)
 
+module Position =
+
+    /// Creates a position.
+    let ofFloats (left, top) =
+        Position.Create (Percent left, Percent top)
+
+    /// Creates a position.
     let ofInts (left, top) =
         ofFloats (float left, float top)
 
+    /// Creates a map of positions.
     let seatMap seatPairs =
         seatPairs
             |> Seq.map (fun (seat, pair) ->
