@@ -11,11 +11,11 @@ open Setback.Cfrm
 module Deal =
 
     /// Runs the auction of the given deal.
-    let private auction surface dealer score deal =
+    let private auction (surface : JQueryElement) dealer score deal =
 
             // create bid chooser
         let chooser = BidChooser.create ()
-        surface.Element.append(chooser.Element)
+        surface.append(chooser.Element)
 
             // get bid animation for each seat
         let auctionMap =

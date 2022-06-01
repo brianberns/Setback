@@ -43,7 +43,6 @@
     <Compile Include="Animation.fs" />
     <Compile Include="BidView.fs" />
     <Compile Include="CardView.fs" />
-    <Compile Include="CardSurface.fs" />
     <Compile Include="AuctionView.fs" />
     <Compile Include="TrickView.fs" />
     <Compile Include="HandView.fs" />

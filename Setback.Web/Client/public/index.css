@@ -1,9 +1,6 @@
-﻿body {
+﻿main {
     background-color: lightblue;
     font-family: sans-serif;
-}
-
-#surface {
     width: 95vw;
     height: 95vh;
     position: relative;

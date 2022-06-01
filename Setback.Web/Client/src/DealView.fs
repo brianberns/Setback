@@ -27,13 +27,13 @@ module Seat =
 module DealView =
 
     /// Creates card backs at the center of the given surface.
-    let private getCardBacks surface =
+    let private getCardBacks (surface : JQueryElement) =
         let pos = Position.ofInts (50, 50)
         Seq.init Card.numCards (fun _ ->
             promise {
                 let! cardView = CardView.ofBack ()
                 JQueryElement.setPosition pos cardView
-                surface.Element.append(cardView)
+                surface.append(cardView)
                 return cardView
             })
             |> Seq.rev

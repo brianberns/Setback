@@ -62,7 +62,7 @@ module Game =
         displayGamesWon ()
 
     /// Handles the end of a game.
-    let private gameOver surface iTeam =
+    let private gameOver (surface : JQueryElement) iTeam =
 
             // display banner
         let banner =
@@ -70,7 +70,7 @@ module Game =
             console.log(text)
             ~~HTMLDivElement.Create(innerText = text)
         banner.addClass("banner")
-        surface.Element.append(banner)
+        surface.append(banner)
 
             // wait for user to click banner
         Promise.create (fun resolve _reject ->

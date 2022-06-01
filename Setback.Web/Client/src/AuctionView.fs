@@ -20,7 +20,7 @@ module AuctionView =
         ]
 
     /// Animates the given bid for the given seat.
-    let bidAnim surface seat bid =
+    let bidAnim (surface : JQueryElement) seat bid =
 
             // create view of the bid
         let bidView = BidView.createStatic bid
@@ -29,7 +29,7 @@ module AuctionView =
                 ``z-index`` = JQueryElement.zIndexIncr ()
             |}
         JQueryElement.setPosition (Position.ofInts (50, 50)) bidView
-        surface.Element.append(bidView)
+        surface.append(bidView)
         bidViewMap.[seat] <- bidView
 
             // animate the the bid view to its destination
