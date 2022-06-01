@@ -92,6 +92,7 @@
 
 .card {
     position: absolute;
+    width: 8%;
     border: 1px solid gray;
     border-radius: 10px;
     top: 50%;

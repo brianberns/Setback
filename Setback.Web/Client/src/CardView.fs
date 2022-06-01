@@ -21,11 +21,7 @@ module CardView =
                 // set image properties view JQuery
             let cardView = ~~img : CardView
             cardView.addClass("card")
-            cardView.css
-                {|
-                    width = "100px"
-                    ``z-index`` = JQueryElement.zIndexIncr ()
-                |}
+            JQueryElement.bringToFront cardView
 
                 // wait for image to load
             if img.complete then
