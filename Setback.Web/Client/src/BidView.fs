@@ -49,6 +49,7 @@ module BidView =
                 id = Bid.toString bid,
                 innerText = innerText)
         bidView.addClass("bid")
+        bidView.addClass("bid-static")
         bidView
 
     /// Creates a trump bid view.
@@ -61,6 +62,7 @@ module BidView =
                 id = Bid.toString bid,
                 innerHTML = innerHTML)
         bidView.addClass("bid")
+        bidView.addClass("bid-static")
         bidView
 
     /// Answers the given bid view's underlying bid.

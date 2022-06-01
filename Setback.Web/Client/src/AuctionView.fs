@@ -13,10 +13,10 @@ module AuctionView =
     /// Bid animation destinations.
     let private destMap =
         Position.seatMap [
-            Seat.West,  ( 2, 62)
-            Seat.North, (30,  1)
-            Seat.East,  (92, 62)
-            Seat.South, (30, 94)
+            Seat.West,  ( 3, 63)
+            Seat.North, (50,  2)
+            Seat.East,  (96, 63)
+            Seat.South, (50, 98)
         ]
 
     /// Animates the given bid for the given seat.
@@ -26,7 +26,6 @@ module AuctionView =
         let bidView = BidView.createStatic bid
         bidView.css
             {|
-                position = "absolute"
                 ``z-index`` = JQueryElement.zIndexIncr ()
             |}
         JQueryElement.setPosition (Position.ofInts (50, 50)) bidView
@@ -69,10 +68,6 @@ module AuctionView =
 
             // create new bid view
         let newBidView = BidView.createTrump bid trump
-        newBidView.css
-            {|
-                position = "absolute"
-            |}
         bidViewMap.[seat] <- newBidView
 
             // create animation

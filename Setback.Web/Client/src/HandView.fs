@@ -31,9 +31,9 @@ module HandView =
     let private centerPosMap =
         Position.seatMap [
             Seat.West,  (10, 50)
-            Seat.North, (50, 10)
+            Seat.North, (50, 15)
             Seat.East,  (90, 50)
-            Seat.South, (50, 90)
+            Seat.South, (50, 85)
         ]
 
     /// Deals the cards in the given hand view into their target

@@ -12,8 +12,8 @@
 
 #score {
     position: absolute;
-    left: 5%;
-    top: 5%;
+    left: 2%;
+    top: 2%;
     text-align: end;
     font-size: small;
 }
@@ -30,8 +30,8 @@
 
 #title {
     position: absolute;
-    left: 5%;
-    top: 95%;
+    left: 2%;
+    top: 98%;
     text-align: end;
     color: lightslategray;
     font-size: small;
@@ -60,6 +60,14 @@
     background-color: whitesmoke;
     text-align: center;
     border-radius: 10px;
+}
+
+.bid-static {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
 }
 
 .♦ {
