@@ -9,11 +9,13 @@ module Remoting =
     let routeBuilder typeName methodName = 
         sprintf "/Setback/%s/%s" typeName methodName
 
+    /// Server API.
     let api =
         Remoting.createApi()
             |> Remoting.withRouteBuilder routeBuilder
             |> Remoting.buildProxy<ISetbackApi>
 
+/// Plays Setback by calling a remote server.
 module WebPlayer =
 
     open Setback
@@ -26,13 +28,14 @@ module WebPlayer =
         let auction = deal.ClosedDeal.Auction
         let legalBids =
             auction |> AbstractAuction.legalBids
-        async {
-            match legalBids.Length with
-                | 0 -> return failwith "Unexpected"   // why does Fable require "return" here?
-                | 1 -> return legalBids.[0]           // trivial case
 
-                    // must choose between multiple legal bids
-                | _ ->
+        match legalBids.Length with
+            | 0 -> failwith "Unexpected"
+            | 1 -> async.Return(legalBids.[0])          // trivial case
+
+                // must choose between multiple legal bids
+            | _ ->
+                async {
                         // determine key for this situation
                     let key =
                         let hand =
@@ -40,7 +43,7 @@ module WebPlayer =
                                 deal |> AbstractOpenDeal.currentPlayerIndex
                             deal.UnplayedCards.[iPlayer]
                         assert(hand.Count = Setback.numCardsPerHand)
-                        BootstrapGameState.toAbbr auction score hand
+                        BootstrapGameState.toAbbr auction score hand             // score-sensitive bidding
 
                         // profile contains key?
                     match! Remoting.api.GetActionIndex(key) with
@@ -48,9 +51,10 @@ module WebPlayer =
                             return legalBids.[iAction]
                         | None ->
                             return
-                                if legalBids |> Array.contains(Bid.Three) then Bid.Three
+                                if legalBids |> Array.contains(Bid.Three) then   // assumption: unusual hand is probably strong
+                                    Bid.Three
                                 else Bid.Pass
-        }
+                }
 
     /// Chooses a play action.
     let private chooseAction (legalPlayActions : _[]) deal =
@@ -93,6 +97,7 @@ module WebPlayer =
                             |> Seq.toArray
                     playout, legalPlays
                 | _ -> failwith "Unexpected"
+
         match legalPlays.Length with
             | 0 -> failwith "Unexpected"
             | 1 -> async.Return(legalPlays.[0])          // trivial case
