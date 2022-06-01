@@ -4,16 +4,16 @@
 }
 
 #surface {
-    width: 1500px;
-    height: 700px;
+    width: 95vw;
+    height: 95vh;
     position: relative;
-    margin: auto;   /* center horizontally within parent */
+    margin: auto; /* center horizontally within parent */
 }
 
 #score {
     position: absolute;
-    left: 30px;
-    top: 30px;
+    left: 5%;
+    top: 5%;
     text-align: end;
     font-size: small;
 }
@@ -30,20 +30,19 @@
 
 #title {
     position: absolute;
-    left: 30px;
-    top: 650px;
+    left: 5%;
+    top: 95%;
     text-align: end;
     color: lightslategray;
     font-size: small;
 }
 
 .chooser {
-    display: none;   /* hidden when created */
+    display: none; /* hidden when created */
     font-size: large;
     width: fit-content;
     height: fit-content;
     text-align: center;
-
     /* https://www.w3schools.com/howto/howto_css_center-vertical.asp */
     position: absolute;
     top: 50%;
@@ -87,6 +86,10 @@
     position: absolute;
     border: 1px solid gray;
     border-radius: 10px;
+    top: 50%;
+    left: 50%;
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
 }
 
 .active {
@@ -101,7 +104,6 @@
     cursor: pointer;
     background-color: lightcoral;
     padding: 100px;
-
     position: absolute;
     top: 50%;
     left: 50%;

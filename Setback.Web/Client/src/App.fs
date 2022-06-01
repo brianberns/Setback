@@ -21,7 +21,7 @@ module Session =
         async {
             try
                 do! loop dealer
-            with ex -> console.log(ex)
+            with ex -> console.log($"Error: {ex}")
         } |> Async.StartImmediate
 
 module App =

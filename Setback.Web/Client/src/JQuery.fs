@@ -3,6 +3,56 @@
 open Fable.Core
 open Fable.Core.JsInterop
 
+/// CSS length percentage. E.g. "50%".
+[<StructuredFormatDisplay("{String}")>]
+type LengthPercentage = Percent of float with
+
+    /// Display string.
+    member this.String =
+        let (Percent pct) = this
+        $"{pct}%%"
+
+    /// Display string.
+    override this.ToString() =
+        this.String
+
+    /// Addition.
+    static member (+) (Percent a, Percent b) =
+        Percent (a + b)
+
+/// CSS-compatible record type.
+type Position =
+    {
+        left : LengthPercentage
+        top : LengthPercentage
+    } with
+
+    static member (+) (a, b) =
+        {
+            left = a.left + b.left
+            top = a.top + b.top
+        }
+
+module Position =
+
+    let create (left, top) =
+        {
+            left = left
+            top = top
+        }
+
+    let ofFloats (left, top) =
+        create (Percent left, Percent top)
+
+    let ofInts (left, top) =
+        ofFloats (float left, float top)
+
+    let seatMap seatPairs =
+        seatPairs
+            |> Seq.map (fun (seat, pair) ->
+                seat, ofInts pair)
+            |> Map
+
 /// jQuery API.
 type JQueryElement =
 
@@ -26,6 +76,9 @@ type JQueryElement =
 
     /// Sets the element's given CSS properties.
     abstract css : properties : obj -> unit
+
+    /// Gets the underlying DOM element(s).
+    abstract get : unit -> Browser.Types.HTMLElement[]
 
     /// Removes an event handler.
     abstract off : eventName : string -> unit
@@ -52,23 +105,9 @@ type JQueryElement =
     /// Sets the element's text contents.
     abstract text : text : string -> unit
 
-/// HTML element position.
-type Position =
-    {
-        /// Horizontal position, increasing to the right.
-        Left : Length
-
-        /// Vertical position, increasing downward.
-        Top : Length
-    }
-
-module Position =
-
-    /// Creates a position with the given values.
-    let create left top =
-        { Left = left; Top = top }
-
 module JQueryElement =
+
+    open Browser
 
     /// Imports jQuery library.
     let init () =
@@ -78,11 +117,6 @@ module JQueryElement =
     [<Emit("$($0)")>]
     let select (_selector : obj) : JQueryElement = jsNative
 
-    /// Gets the length of the given property of the given
-    /// jQuery element.
-    let length propertyName (elem : JQueryElement) =
-        elem.css propertyName |> Length.parse
-
     /// Increments and returns the next z-index.
     let zIndexIncr =
         let mutable zIndex = 0
@@ -91,11 +125,11 @@ module JQueryElement =
             zIndex
 
     /// Gets the z-index of the given element.
-    let getZIndex (elem : JQueryElement) =
+    let private getZIndex (elem : JQueryElement) =
         elem.css("z-index")
 
     /// Sets the z-index of the given element.
-    let setZIndex zIndex (elem : JQueryElement) =
+    let private setZIndex zIndex (elem : JQueryElement) =
         elem.css {| ``z-index`` = zIndex |}
 
     /// Brings the given card view to the front.
@@ -103,37 +137,28 @@ module JQueryElement =
         let zIndex = zIndexIncr ()
         setZIndex zIndex elem
 
-    module private Position =
-
-        /// Converts the given position to CSS format.
-        let toCss pos =
-            {| left = pos.Left; top = pos.Top |}
-
-    /// Gets the position of the given element.
-    let getPosition elem =
-        Position.create
-            (length "left" elem)
-            (length "top" elem)
-
     /// Sets the position of the given element.
-    let setPosition pos (elem : JQueryElement) =
-        pos
-            |> Position.toCss
-            |> elem.css
+    let setPosition (pos : Position) (elem : JQueryElement) =
+        elem.css pos
 
     /// Sets and animates the position of the given element.
-    let animateTo pos duration (elem : JQueryElement) =
-        let props = Position.toCss pos
-        elem.animate(props, duration)
+    let animateTo (pos : Position) duration (elem : JQueryElement) =
+        elem.animate(pos, duration)
 
     /// Replaces one element with another.
-    let replaceWith (replacementElem : JQueryElement) elem =
+    let replaceWith replacementElem elem =
 
-            // use same position
-        replacementElem
-            |> setPosition (getPosition elem)
+            // use same z-index
         replacementElem
             |> setZIndex (getZIndex elem)
+
+            // use same position (https://stackoverflow.com/a/18297116/344223)
+        let style = elem.get().[0].style
+        replacementElem.css
+            {|
+                left = style.left
+                top = style.top
+            |}
 
             // switch elements
         let parent = elem.parent()

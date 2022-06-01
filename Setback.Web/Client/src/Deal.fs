@@ -30,7 +30,7 @@ module Deal =
         Auction.run dealer score deal chooser auctionMap
 
     /// Runs the playout of the given deal.
-    let private playout surface dealer deal handViews =
+    let private playout dealer deal handViews =
 
             // get animations for each seat
         let playoutMap =
@@ -41,19 +41,13 @@ module Deal =
                         let anim =
                             if seat.IsUser then OpenHandView.playAnim
                             else ClosedHandView.playAnim
-                        anim surface seat handView
-
-                    let animTrickFinish =
-                        TrickView.finishAnim surface
-
-                    let animEstablishTrump =
-                        AuctionView.establishTrumpAnim
+                        anim seat handView
 
                     let tuple =
                         handView,
                         animCardPlay,
-                        animTrickFinish,
-                        animEstablishTrump
+                        TrickView.finishAnim,
+                        AuctionView.establishTrumpAnim
 
                     seat, tuple)
                 |> Map
@@ -88,5 +82,5 @@ module Deal =
                 return deal'
 
             else
-                return! playout surface dealer deal' seatViews
+                return! playout dealer deal' seatViews
         }

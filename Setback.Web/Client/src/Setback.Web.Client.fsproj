@@ -39,7 +39,6 @@
     <Compile Include="..\..\..\Setback.Cfrm\Game.fs" />
     <Compile Include="..\..\Shared\SharedTypes.fs" />
     <Compile Include="WebPlayer.fs" />
-    <Compile Include="Length.fs" />
     <Compile Include="JQuery.fs" />
     <Compile Include="Animation.fs" />
     <Compile Include="BidView.fs" />
@@ -56,6 +55,7 @@
     <Compile Include="App.fs" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Fable.Browser.Css" Version="2.2.0" />
     <PackageReference Include="Fable.Browser.Dom" Version="2.10.0" />
     <PackageReference Include="Fable.Core" Version="3.7.0" />
     <PackageReference Include="Fable.Promise" Version="3.1.3" />

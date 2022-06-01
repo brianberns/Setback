@@ -10,15 +10,6 @@ type CardView = JQueryElement
 
 module CardView =
 
-    /// Unscaled card width.
-    let width = Pixel 100.0
-
-    /// Unscaled card height.
-    let height = 333.0/238.0 * width
-
-    /// Size of border around each card.
-    let border = Pixel 1.0
-
     /// Creates a card view.
     // https://stackoverflow.com/a/24201249/344223
     let private create src id =
@@ -32,7 +23,7 @@ module CardView =
             cardView.addClass("card")
             cardView.css
                 {|
-                    width = width
+                    width = "100px"
                     ``z-index`` = JQueryElement.zIndexIncr ()
                 |}
 

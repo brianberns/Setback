@@ -11,13 +11,12 @@ module AuctionView =
         System.Collections.Generic.Dictionary<Seat, BidView>(Seat.numSeats)
 
     /// Bid animation destinations.
-    // To-do: Come up with a better way to position these.
     let private destMap =
-        Map [
-            Seat.West,  Pt (-0.83,  0.60)
-            Seat.North, Pt (-0.31, -0.90)
-            Seat.East,  Pt ( 0.82,  0.60)
-            Seat.South, Pt (-0.31,  1.27)
+        Position.seatMap [
+            Seat.West,  ( 5, 55)
+            Seat.North, (45,  5)
+            Seat.East,  (95, 55)
+            Seat.South, (45, 95)
         ]
 
     /// Animates the given bid for the given seat.
@@ -30,15 +29,12 @@ module AuctionView =
                 position = "absolute"
                 ``z-index`` = JQueryElement.zIndexIncr ()
             |}
-        let origin =
-            surface |> CardSurface.getPosition Point.origin
-        JQueryElement.setPosition origin bidView
+        JQueryElement.setPosition (Position.ofInts (50, 50)) bidView
         surface.Element.append(bidView)
         bidViewMap.[seat] <- bidView
 
             // animate the the bid view to its destination
-        let dest =
-            surface |> CardSurface.getPosition destMap.[seat]
+        let dest = destMap.[seat]
         [|
             AnimationAction.moveTo dest
                 |> ElementAction.create bidView

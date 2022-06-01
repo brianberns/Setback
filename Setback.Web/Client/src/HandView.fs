@@ -10,36 +10,35 @@ module HandView =
 
     /// Gets the target x-coord of the given card in a hand
     /// containing the given total number of cards.
-    let private getX numCards iCard : Coord =
+    let private getX numCards iCard =
 
         /// Target distance between adjacent cards in the hand.
-        let delta : Coord = 0.05
+        let delta = 0.05
 
         /// Left-shift from center of hand.
         let shift = 0.5 * float (numCards - 1) * delta
 
         (delta * float iCard) - shift
+            |> Percent
 
     /// Animates a card to its target position in a hand.
-    let private animateCard surface (Pt (xCenter, y))
-        numCards iCard =
-        let x = getX numCards iCard + xCenter
-        surface
-            |> CardSurface.getPosition (Pt (x, y))
+    let private animateCard pos numCards iCard =
+        { pos with
+            left = getX numCards iCard + pos.left }
             |> AnimationAction.moveTo
 
-    /// Center point of each hand.
-    let private centerPointMap =
-        Map [
-            Seat.West,  Pt (-0.7,  0.0)
-            Seat.North, Pt ( 0.0, -0.9)
-            Seat.East,  Pt ( 0.7,  0.0)
-            Seat.South, Pt ( 0.0,  0.9)
+    /// Center position of each hand.
+    let private centerPosMap =
+        Position.seatMap [
+            Seat.West,  (10, 50)
+            Seat.North, (50, 10)
+            Seat.East,  (90, 50)
+            Seat.South, (50, 90)
         ]
 
     /// Deals the cards in the given hand view into their target
     /// position.
-    let dealAnim surface seat (handView : HandView) =
+    let dealAnim seat (handView : HandView) =
 
         assert(handView.Length = Setback.numCardsPerHand)
         let batchSize = Setback.numCardsPerHand / 2
@@ -53,10 +52,10 @@ module HandView =
                 for iCard = 0 to batchSize - 1 do
                     let cardView = cardViews.[iCard]
                     let actions =
-                        let centerPt = centerPointMap.[seat]
+                        let centerPos = centerPosMap.[seat]
                         let iCard' = iCard + cardOffset
                         seq {
-                            animateCard surface centerPt numCards iCard'
+                            animateCard centerPos numCards iCard'
                             BringToFront
                         }
                     for action in actions do
@@ -66,12 +65,12 @@ module HandView =
         animate 0 batch1, animate batchSize batch2
 
     /// Animates adjustment of remaining unplayed cards in a hand.
-    let adjustAnim surface seat (handView : HandView) =
+    let adjustAnim seat (handView : HandView) =
         let numCards = handView.Length
         handView
             |> Array.mapi (fun iCard cardView ->
-                let centerPt = centerPointMap.[seat]
-                animateCard surface centerPt numCards iCard
+                let centerPos = centerPosMap.[seat]
+                animateCard centerPos numCards iCard
                     |> Animation.create cardView)
             |> Animation.Parallel
 
@@ -84,7 +83,7 @@ module ClosedHandView =
 
     /// Answers a function that can be called to animate the playing
     /// of a card from the given closed hand view.
-    let playAnim surface seat (handView : HandView) =
+    let playAnim seat (handView : HandView) =
         let mutable cardViewsMut = ResizeArray(handView)
         fun (cardView : CardView) ->
 
@@ -105,7 +104,7 @@ module ClosedHandView =
                     |> Animation.create back
 
                     // slide revealed card to center
-                TrickView.playAnim surface seat cardView
+                TrickView.playAnim seat cardView
             |]
 
 module OpenHandView =
@@ -136,7 +135,7 @@ module OpenHandView =
 
     /// Answers a function that can be called to animate the playing
     /// of a card from the given open hand view.
-    let playAnim surface seat (handView : HandView) =
+    let playAnim seat (handView : HandView) =
         let mutable cardViewsMut = ResizeArray(handView)
         fun (cardView : CardView) ->
 
@@ -149,14 +148,14 @@ module OpenHandView =
                 [|
                     BringToFront                               // bring card to front
                         |> Animation.create cardView
-                    TrickView.playAnim surface seat cardView   // slide revealed card to center
+                    TrickView.playAnim seat cardView   // slide revealed card to center
                 |] |> Animation.Serial
 
                 // animate adjustment of remaining cards to fill gap
             let animAdjust =
                 cardViewsMut
                     |> Seq.toArray
-                    |> HandView.adjustAnim surface seat
+                    |> HandView.adjustAnim seat
 
                 // animate in parallel
             [|

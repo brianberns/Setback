@@ -28,8 +28,7 @@ module DealView =
 
     /// Creates card backs at the center of the given surface.
     let private getCardBacks surface =
-        let pos =
-            surface |> CardSurface.getPosition Point.origin
+        let pos = Position.ofInts (50, 50)
         Seq.init Card.numCards (fun _ ->
             promise {
                 let! cardView = CardView.ofBack ()
@@ -71,10 +70,10 @@ module DealView =
 
                     // animate hands being dealt
                 let seat iPlayer = Seat.incr iPlayer dealer
-                let anim1a, anim1b = HandView.dealAnim surface (seat 1) closed1
-                let anim2a, anim2b = HandView.dealAnim surface (seat 2) closed2
-                let anim3a, anim3b = HandView.dealAnim surface (seat 3) closed3
-                let anim0a, anim0b = HandView.dealAnim surface (seat 0) closed0
+                let anim1a, anim1b = HandView.dealAnim (seat 1) closed1
+                let anim2a, anim2b = HandView.dealAnim (seat 2) closed2
+                let anim3a, anim3b = HandView.dealAnim (seat 3) closed3
+                let anim0a, anim0b = HandView.dealAnim (seat 0) closed0
 
                     // animate user's hand reveal
                 let animReveal =
