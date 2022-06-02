@@ -46,10 +46,9 @@ module BidView =
     let createStatic bid : BidView =
         let bidView =
             let innerText = Bid.toString bid
-            ~~HTMLButtonElement.Create(
+            ~~HTMLDivElement.Create(
                 id = Bid.toString bid,
-                innerText = innerText,
-                disabled = true)
+                innerText = innerText)
         bidView.addClass("bid")
         bidView.addClass("bid-static")
         bidView
@@ -60,10 +59,9 @@ module BidView =
             let innerHTML =
                 let suitChar = Suit.toChar suit
                 $"{Bid.toString bid} <span class={suitChar}>{suitChar}</span>"
-            ~~HTMLButtonElement.Create(
+            ~~HTMLDivElement.Create(
                 id = Bid.toString bid,
-                innerHTML = innerHTML,
-                disabled = true)
+                innerHTML = innerHTML)
         bidView.addClass("bid")
         bidView.addClass("bid-static")
         bidView

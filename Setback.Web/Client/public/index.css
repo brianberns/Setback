@@ -69,8 +69,6 @@ a {
 .bid-static {
     position: absolute;
     transform: translate(-50%, -50%);
-    border: 0;
-    color: black;
 }
 
 .♦ {
