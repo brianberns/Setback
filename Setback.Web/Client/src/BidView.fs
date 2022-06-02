@@ -39,6 +39,7 @@ module BidView =
                 id = Bid.toString bid,
                 innerText = innerText)
         bidView.addClass("bid")
+        bidView.addClass("bid-clickable")
         bidView
 
     /// Creates an unclickable bid view.
