@@ -75,6 +75,9 @@ type JQueryElement =
     /// Gets the element's attribute of the given name.
     abstract attr : attributeName : string -> string
 
+    /// Sets the element's attribute of the given name.
+    abstract attr : attributeName : string * value : string -> unit
+
     /// Handles the element's click event.
     abstract click : handler : (unit -> unit) -> unit
 

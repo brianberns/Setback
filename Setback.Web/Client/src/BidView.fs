@@ -36,8 +36,8 @@ module BidView =
             let innerText = Bid.toString bid
             ~~HTMLButtonElement.Create(
                 ``type`` = "button",
-                id = Bid.toString bid,
                 innerText = innerText)
+        bidView.attr("data-bid", Bid.toString bid)
         bidView.addClass("bid")
         bidView.addClass("bid-clickable")
         bidView
@@ -47,8 +47,8 @@ module BidView =
         let bidView =
             let innerText = Bid.toString bid
             ~~HTMLDivElement.Create(
-                id = Bid.toString bid,
                 innerText = innerText)
+        bidView.attr("data-bid", Bid.toString bid)
         bidView.addClass("bid")
         bidView.addClass("bid-static")
         bidView
@@ -60,15 +60,15 @@ module BidView =
                 let suitChar = Suit.toChar suit
                 $"{Bid.toString bid} <span class={suitChar}>{suitChar}</span>"
             ~~HTMLDivElement.Create(
-                id = Bid.toString bid,
                 innerHTML = innerHTML)
+        bidView.attr("data-bid", Bid.toString bid)
         bidView.addClass("bid")
         bidView.addClass("bid-static")
         bidView
 
     /// Answers the given bid view's underlying bid.
     let bid (bidView : BidView) =
-        bidView.attr("id")
+        bidView.attr("data-bid")
             |> Bid.fromString
 
 /// Widget that enables the user to choose a legal bid.
