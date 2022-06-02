@@ -106,3 +106,24 @@ module DealView =
                     let seat = Seat.incr iPlayer dealer
                     seat, handView)
         }
+
+    /// Elements tracking game points taken.
+    let private gamePointsElems =
+        [|
+            "#ewGamePoints"
+            "#nsGamePoints"
+        |] |> Array.map (~~)
+
+    /// Displays the game points taken by each team so far.
+    let displayGamePoints dealer deal =
+
+        let absoluteScore =
+            match deal.ClosedDeal.PlayoutOpt with
+                | Some playout ->
+                    playout.History.GameScore
+                        |> Game.absoluteScore dealer
+                | None -> AbstractScore.zero
+
+        for iTeam = 0 to Setback.numTeams - 1 do
+            let gamePointsElem = gamePointsElems.[iTeam]
+            gamePointsElem.text(string absoluteScore.[iTeam])

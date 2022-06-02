@@ -65,6 +65,9 @@ module Deal =
                 Deck.shuffle rng
                     |> AbstractOpenDeal.fromDeck dealer
 
+                // reset game points won
+            DealView.displayGamePoints dealer deal
+
                 // animate dealing the cards
             let! seatViews =
                 DealView.start surface dealer deal

@@ -93,10 +93,15 @@ module Playout =
                         |> Animation.run
                 | None -> ()
 
-                // animate if trick is finished
+                // trick is complete?
             let dealComplete = deal |> AbstractOpenDeal.isComplete
             match getTrickWinnerOpt context card with
                 | Some winner ->
+
+                        // track game points won
+                    DealView.displayGamePoints context.Dealer deal
+
+                        // animate
                     let animate () =
                         context.AnimTrickFinish winner
                             |> Animation.run
@@ -104,6 +109,7 @@ module Playout =
                         animate () |> ignore   // don't force user to wait for animation to finish
                     else
                         do! animate ()
+
                 | None -> ()
 
                 // cleanup at end of deal
