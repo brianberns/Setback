@@ -31,7 +31,7 @@ module HandView =
     let private centerPosMap =
         Position.seatMap [
             Seat.West,  (12, 50)
-            Seat.North, (50, 17)
+            Seat.North, (50, 16)
             Seat.East,  (88, 50)
             Seat.South, (50, 83)
         ]

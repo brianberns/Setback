@@ -32,10 +32,10 @@ module TrickView =
     /// Center position of cards taken in a trick.
     let private finishPosMap =
         Position.seatMap [
-            Seat.West,  (20, 50)
-            Seat.North, (50, 20)
-            Seat.East,  (80, 50)
-            Seat.South, (50, 80)
+            Seat.West,  (15, 70)
+            Seat.North, (30, 15)
+            Seat.East,  (85, 30)
+            Seat.South, (70, 85)
         ]
 
     /// Offset from center of each card taken in a trick.
