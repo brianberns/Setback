@@ -1,12 +1,12 @@
 ﻿body {
-    margin: 50px;
+    margin: 0px;
 }
 
 main {
     background-color: lightblue;
     font-family: sans-serif;
-    width: 80vw;
-    height: 80vh;
+    width: 100vw;
+    height: 100vh;
     position: relative;
 }
 
@@ -88,7 +88,7 @@ main {
 
 .card {
     position: absolute;
-    width: min(8vw, 12vh);
+    width: 12vh;
     border: 1px solid gray;
     border-radius: 10px;
     transform: translate(-50%, -50%);
