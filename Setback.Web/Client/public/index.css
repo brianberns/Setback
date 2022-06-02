@@ -4,10 +4,15 @@
 
 main {
     background-color: lightblue;
+    font-size: small;
     font-family: sans-serif;
     width: 100vw;
     height: 100vh;
     position: relative;
+}
+
+a {
+    text-decoration: none;
 }
 
 #score {
@@ -15,7 +20,6 @@ main {
     left: 2%;
     top: 2%;
     text-align: end;
-    font-size: small;
 }
 
     #score th {
@@ -31,10 +35,8 @@ main {
 #title {
     position: absolute;
     left: 2%;
-    top: 96%;
-    text-align: end;
+    top: 90%;
     color: lightslategray;
-    font-size: small;
 }
 
 .chooser {
