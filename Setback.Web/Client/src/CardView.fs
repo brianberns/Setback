@@ -12,14 +12,15 @@ module CardView =
 
     /// Creates a card view.
     // https://stackoverflow.com/a/24201249/344223
-    let private create src id =
+    let private create src name =
         Promise.create (fun resolve reject ->
 
                 // create the image
-            let img = Image.Create(src = src, id = id, alt = id)
+            let img = Image.Create(src = src, alt = name)
 
                 // set image properties view JQuery
             let cardView = ~~img : CardView
+            cardView.attr("data-card", name)
             cardView.addClass("card")
             JQueryElement.bringToFront cardView
 
@@ -116,5 +117,5 @@ module CardView =
 
     /// Answers the given card view's underlying card.
     let card (cardView : CardView) =
-        cardView.attr("id")
+        cardView.attr("data-card")
             |> Card.fromString
