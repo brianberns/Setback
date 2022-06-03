@@ -1,4 +1,4 @@
-namespace Setback.Web.Client
+﻿namespace Setback.Web.Client
 
 open PlayingCards
 open Setback
@@ -172,4 +172,10 @@ module DealView =
                 | None -> AbstractScore.zero
         for iTeam = 0 to Setback.numTeams - 1 do
             let gamePointsElem = gamePointsElems.[iTeam]
-            gamePointsElem.text(string absoluteGameScore.[iTeam])
+            let text =
+                let teamScore = absoluteGameScore.[iTeam]
+                assert(Setback.numTeams = 2)
+                if teamScore > absoluteGameScore.[1 - iTeam] then
+                    $"▶ {teamScore}"
+                else string teamScore
+            gamePointsElem.text(text)
