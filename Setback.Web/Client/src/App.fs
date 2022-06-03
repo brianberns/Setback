@@ -28,7 +28,6 @@ module App =
 
         // start a session when the browser is ready
     (~~document).ready(fun () ->
-        (~~"#version").text("1.1")
         let surface = ~~"main"
         let rng = Random()
         Session.run surface rng Seat.South)
