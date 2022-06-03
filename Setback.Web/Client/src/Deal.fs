@@ -57,13 +57,24 @@ module Deal =
         Playout.run dealer deal playoutMap
 
     /// Handles the end of a deal.
-    let private dealOver (surface : JQueryElement) deal =
+    let private dealOver (surface : JQueryElement) dealer deal =
+
+            // determine deal outcome
+        let dealScore =
+            deal
+                |> AbstractOpenDeal.dealScore
+                |> Game.absoluteScore dealer
+        let highBid = deal.ClosedDeal.Auction.HighBid
+        let bidder =
+            assert(highBid.BidderIndex >= 0)
+            dealer |> Seat.incr highBid.BidderIndex
+        let bid = highBid.Bid
 
             // display banner
         let banner =
-            let text = $"Deal is over"
-            console.log(text)
-            ~~HTMLDivElement.Create(innerText = text)
+            let html =
+                $"<p>{Seat.toString bidder} bid {Bid.toString bid}</p><p>East + West make {dealScore.[0]}<br />North + South make {dealScore.[1]}</p>"
+            ~~HTMLDivElement.Create(innerHTML = html)
         banner.addClass("banner")
         surface.append(banner)
 
@@ -103,8 +114,8 @@ module Deal =
                 return deal'
 
             else
-                let! deal' = playout dealer deal' seatViews
-                do! dealOver surface deal'
+                let! deal'' = playout dealer deal' seatViews
+                do! dealOver surface dealer deal''
                     |> Async.AwaitPromise
-                return deal'
+                return deal''
         }
