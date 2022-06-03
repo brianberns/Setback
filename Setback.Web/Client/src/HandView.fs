@@ -121,7 +121,7 @@ module OpenHandView =
                         | Suit.Diamonds -> 1   // red
                         | _ -> failwith "Unexpected"
                 iSuit, card.Rank)
-            |> Seq.map CardView.ofCard
+            |> Seq.map (CardView.ofCard false)
             |> Seq.toArray
             |> Promise.all
 
@@ -162,3 +162,10 @@ module OpenHandView =
                 animPlay
                 animAdjust
             |] |> Animation.Parallel
+
+    /// Establishes trump in the given hand view.
+    let establishTrump trump (handView : HandView) =
+        for cardView in handView do
+            let card = cardView |> CardView.card
+            if card.Suit = trump then
+                cardView.addClass("trump")

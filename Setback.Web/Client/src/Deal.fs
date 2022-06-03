@@ -33,10 +33,17 @@ module Deal =
     /// Runs the playout of the given deal.
     let private playout dealer deal handViews =
 
+        /// Establishes trump.
+        let establishTrumpAnim seat trump =
+            for (seat : Seat, handView) in handViews do
+                if seat.IsUser then
+                    handView |> OpenHandView.establishTrump trump
+            AuctionView.establishTrumpAnim seat trump
+
             // get animations for each seat
         let playoutMap =
             handViews
-                |> Seq.map (fun (seat : Seat, handView) ->
+                |> Seq.map (fun (seat, handView) ->
 
                     let animCardPlay =
                         let anim =
@@ -48,7 +55,7 @@ module Deal =
                         handView,
                         animCardPlay,
                         TrickView.finishAnim,
-                        AuctionView.establishTrumpAnim
+                        establishTrumpAnim
 
                     seat, tuple)
                 |> Map

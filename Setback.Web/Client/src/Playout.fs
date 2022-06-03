@@ -159,7 +159,14 @@ module Playout =
 
                 // animate playing the selected card
             let! cardView =
-                CardView.ofCard card
+                let isTrump =
+                    option {
+                        let! playout = context.Deal.ClosedDeal.PlayoutOpt
+                        let! trump = playout.TrumpOpt
+                        return card.Suit = trump
+                    } |> Option.defaultValue true
+                card
+                    |> CardView.ofCard isTrump
                     |> Async.AwaitPromise
             do! context.AnimCardPlay cardView
                 |> Animation.run

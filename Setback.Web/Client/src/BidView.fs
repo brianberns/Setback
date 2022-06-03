@@ -64,6 +64,7 @@ module BidView =
         bidView.attr("data-bid", Bid.toString bid)
         bidView.addClass("bid")
         bidView.addClass("bid-static")
+        bidView.addClass("trump")
         bidView
 
     /// Answers the given bid view's underlying bid.

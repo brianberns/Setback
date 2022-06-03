@@ -91,8 +91,14 @@ a {
     position: absolute;
     width: 12vh;
     border: 1px solid gray;
+    background-color: gray;
     border-radius: 10px;
     transform: translate(-50%, -50%);
+}
+
+.trump {
+    border: 3px solid #FFD700;
+    background-color: #FFD700;
 }
 
 .active {
