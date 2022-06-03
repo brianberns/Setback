@@ -4,7 +4,6 @@
 
 main {
     background-color: lightblue;
-    font-size: small;
     font-family: sans-serif;
     width: 100vw;
     height: 100vh;
@@ -106,7 +105,8 @@ a {
     height: fit-content;
     text-align: center;
     cursor: pointer;
-    background-color: lightcoral;
+    color: white;
+    background-color: darkred;
     padding: 100px;
     position: absolute;
     top: 50%;

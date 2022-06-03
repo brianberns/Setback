@@ -7,6 +7,7 @@ open Fable.Core
 open PlayingCards
 open Setback
 open Setback.Cfrm
+open Setback.Web.Client   // ugly - force AutoOpen
 
 module Deal =
 
@@ -55,6 +56,23 @@ module Deal =
             // run the playout
         Playout.run dealer deal playoutMap
 
+    /// Handles the end of a deal.
+    let private dealOver (surface : JQueryElement) deal =
+
+            // display banner
+        let banner =
+            let text = $"Deal is over"
+            console.log(text)
+            ~~HTMLDivElement.Create(innerText = text)
+        banner.addClass("banner")
+        surface.append(banner)
+
+            // wait for user to click banner
+        Promise.create (fun resolve _reject ->
+            banner.click(fun () ->
+                banner.remove()
+                resolve ()))
+
     /// Runs one new deal.
     let run surface rng dealer score =
         async {
@@ -85,5 +103,8 @@ module Deal =
                 return deal'
 
             else
-                return! playout dealer deal' seatViews
+                let! deal' = playout dealer deal' seatViews
+                do! dealOver surface deal'
+                    |> Async.AwaitPromise
+                return deal'
         }
