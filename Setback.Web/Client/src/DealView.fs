@@ -145,21 +145,17 @@ module DealView =
                 elem.text("")
 
                 // display card, if it exists
-            match deal.ClosedDeal.PlayoutOpt with
-                | Some playout ->
-                    match historyFunc playout.History with
-                        | Some (rank, iTeam) ->
-                            let elem =
-                                let iAbsoluteTeam =
-                                    (int dealer + iTeam) % Setback.numTeams
-                                elems.[iAbsoluteTeam]
-                            match playout.TrumpOpt with
-                                | Some trump ->
-                                    let card = Card(rank, trump)
-                                    elem.text(card.String)
-                                | None -> failwith "Unexpected"
-                        | None -> ()
-                | _ -> ()
+            option {
+                let! playout = deal.ClosedDeal.PlayoutOpt
+                let! rank, iTeam = historyFunc playout.History
+                let elem =
+                    let iAbsoluteTeam =
+                        (int dealer + iTeam) % Setback.numTeams
+                    elems.[iAbsoluteTeam]
+                let! trump = playout.TrumpOpt
+                let card = Card(rank, trump)
+                elem.text(card.String)
+            } |> ignore
 
         displayCard highElems (fun history -> history.HighTakenOpt)
         displayCard lowElems (fun history -> history.LowTakenOpt)
