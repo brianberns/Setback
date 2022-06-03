@@ -142,17 +142,20 @@ module DealView =
         for iTeam = 0 to Setback.numTeams - 1 do
             let elem = highElems.[iTeam]
             elem.text("")
-        match deal.HighTrumpOpt, deal.ClosedDeal.PlayoutOpt with
-            | Some (rank, iTeam), Some playout ->
-                let elem =
-                    let iAbsoluteTeam =
-                        (int dealer + iTeam) % Setback.numTeams
-                    highElems.[iAbsoluteTeam]
-                match playout.TrumpOpt with
-                    | Some trump ->
-                        let card = Card(rank, trump)
-                        elem.text(card.String)
-                    | None -> failwith "Unexpected"
+        match deal.ClosedDeal.PlayoutOpt with
+            | Some playout ->
+                match playout.History.HighTakenOpt with
+                    | Some (rank, iTeam) ->
+                        let elem =
+                            let iAbsoluteTeam =
+                                (int dealer + iTeam) % Setback.numTeams
+                            highElems.[iAbsoluteTeam]
+                        match playout.TrumpOpt with
+                            | Some trump ->
+                                let card = Card(rank, trump)
+                                elem.text(card.String)
+                            | None -> failwith "Unexpected"
+                    | None -> ()
             | _ -> ()
 
             // low

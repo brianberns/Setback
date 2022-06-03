@@ -16,6 +16,12 @@ type AbstractPlayoutHistory =
         /// first lead?
         HighEstablished : bool
 
+#if FABLE_COMPILER
+        /// Rank of highest trump taken so far, if any, with team
+        /// that took it.
+        HighTakenOpt : Option<Rank * int>
+#endif
+
         /// Rank of lowest trump taken so far, if any, with team
         /// that took it.
         LowTakenOpt : Option<Rank * int>
@@ -38,6 +44,9 @@ module AbstractPlayoutHistory =
         {
             NumTricksCompleted = 0
             HighEstablished = false
+#if FABLE_COMPILER
+            HighTakenOpt = None
+#endif
             LowTakenOpt = None
             JackTakenOpt = None
             GameScore = AbstractScore.zero
@@ -102,6 +111,16 @@ module AbstractPlayoutHistory =
                             assert(not history.HighEstablished)
                             firstPlay.Rank >= Rank.Jack
                         else history.HighEstablished
+
+#if FABLE_COMPILER
+                    HighTakenOpt =
+                        match acc.HighTakenOpt, takenOpt with
+                            | None, _ -> takenOpt
+                            | _, None -> acc.HighTakenOpt
+                            | Some highTaken, Some taken ->
+                                assert(fst highTaken <> fst taken)
+                                max highTaken taken |> Some
+#endif
 
                     LowTakenOpt =
                         match acc.LowTakenOpt, takenOpt with
