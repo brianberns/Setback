@@ -107,6 +107,27 @@ module DealView =
                     seat, handView)
         }
 
+    /// Elements tracking high trump taken.
+    let private highElems =
+        [|
+            "#ewHigh"
+            "#nsHigh"
+        |] |> Array.map (~~)
+
+    /// Elements tracking low trump taken.
+    let private lowElems =
+        [|
+            "#ewLow"
+            "#nsLow"
+        |] |> Array.map (~~)
+
+    /// Elements tracking jack of trump taken.
+    let private jackElems =
+        [|
+            "#ewJack"
+            "#nsJack"
+        |] |> Array.map (~~)
+
     /// Elements tracking game points taken.
     let private gamePointsElems =
         [|
@@ -114,10 +135,68 @@ module DealView =
             "#nsGamePoints"
         |] |> Array.map (~~)
 
-    /// Displays the game points taken by each team so far.
-    let displayGamePoints dealer deal =
+    /// Displays deal status (e.g. high, low, jack, and game).
+    let displayStatus dealer deal =
 
-        let absoluteScore =
+            // high
+        for iTeam = 0 to Setback.numTeams - 1 do
+            let elem = highElems.[iTeam]
+            elem.text("")
+        match deal.HighTrumpOpt, deal.ClosedDeal.PlayoutOpt with
+            | Some (rank, iTeam), Some playout ->
+                let elem =
+                    let iAbsoluteTeam =
+                        (int dealer + iTeam) % Setback.numTeams
+                    highElems.[iAbsoluteTeam]
+                match playout.TrumpOpt with
+                    | Some trump ->
+                        let card = Card(rank, trump)
+                        elem.text(card.String)
+                    | None -> failwith "Unexpected"
+            | _ -> ()
+
+            // low
+        for iTeam = 0 to Setback.numTeams - 1 do
+            let elem = lowElems.[iTeam]
+            elem.text("")
+        match deal.ClosedDeal.PlayoutOpt with
+            | Some playout ->
+                match playout.History.LowTakenOpt with
+                    | Some (rank, iTeam) ->
+                        let elem =
+                            let iAbsoluteTeam =
+                                (int dealer + iTeam) % Setback.numTeams
+                            lowElems.[iAbsoluteTeam]
+                        match playout.TrumpOpt with
+                            | Some trump ->
+                                let card = Card(rank, trump)
+                                elem.text(card.String)
+                            | None -> failwith "Unexpected"
+                    | None -> ()
+            | _ -> ()
+
+            // jack
+        for iTeam = 0 to Setback.numTeams - 1 do
+            let elem = jackElems.[iTeam]
+            elem.text("")
+        match deal.ClosedDeal.PlayoutOpt with
+            | Some playout ->
+                match playout.History.JackTakenOpt with
+                    | Some iTeam ->
+                        let elem =
+                            let iAbsoluteTeam =
+                                (int dealer + iTeam) % Setback.numTeams
+                            jackElems.[iAbsoluteTeam]
+                        match playout.TrumpOpt with
+                            | Some trump ->
+                                let card = Card(Rank.Jack, trump)
+                                elem.text(card.String)
+                            | None -> failwith "Unexpected"
+                    | None -> ()
+            | _ -> ()
+
+            // game
+        let absoluteGameScore =
             match deal.ClosedDeal.PlayoutOpt with
                 | Some playout ->
                     playout.History.GameScore
@@ -126,4 +205,4 @@ module DealView =
 
         for iTeam = 0 to Setback.numTeams - 1 do
             let gamePointsElem = gamePointsElems.[iTeam]
-            gamePointsElem.text(string absoluteScore.[iTeam])
+            gamePointsElem.text(string absoluteGameScore.[iTeam])

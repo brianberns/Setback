@@ -66,7 +66,7 @@ module Deal =
                     |> AbstractOpenDeal.fromDeck dealer
 
                 // reset game points won
-            DealView.displayGamePoints dealer deal
+            DealView.displayStatus dealer deal
 
                 // animate dealing the cards
             let! seatViews =

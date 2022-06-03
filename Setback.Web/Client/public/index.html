@@ -8,30 +8,57 @@
 </head>
 <body>
     <main>
-        <table id="score">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th>Game points</th>
-                    <th>Score</th>
-                    <th>Games won</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <th>East + West:</th>
-                    <td id="ewGamePoints">0</td>
-                    <td id="ewScore">0</td>
-                    <td id="ewGamesWon">0</td>
-                </tr>
-                <tr>
-                    <th>North + South:</th>
-                    <td id="nsGamePoints">0</td>
-                    <td id="nsScore">0</td>
-                    <td id="nsGamesWon">0</td>
-                </tr>
-            </tbody>
-        </table>
+        <div id="score">
+            <table>
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Score</th>
+                        <th>Games</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th>E+W:</th>
+                        <td id="ewScore">0</td>
+                        <td id="ewGamesWon">0</td>
+                    </tr>
+                    <tr>
+                        <th>N+S:</th>
+                        <td id="nsScore">0</td>
+                        <td id="nsGamesWon">0</td>
+                    </tr>
+                </tbody>
+            </table>
+            <br />
+            <table>
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>High</th>
+                        <th>Low</th>
+                        <th>Jack</th>
+                        <th>Game</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th>E+W:</th>
+                        <td id="ewHigh"></td>
+                        <td id="ewLow"></td>
+                        <td id="ewJack"></td>
+                        <td id="ewGamePoints">0</td>
+                    </tr>
+                    <tr>
+                        <th>N+S:</th>
+                        <td id="nsHigh"></td>
+                        <td id="nsLow"></td>
+                        <td id="nsJack"></td>
+                        <td id="nsGamePoints">0</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
         <div id="title">
             <p><a href="rules.html" target="_blank">Rules</a></p>
             <p></p>Bernsrite Setback <span id="version">0</span></p>

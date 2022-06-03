@@ -99,7 +99,7 @@ module Playout =
                 | Some winner ->
 
                         // track game points won
-                    DealView.displayGamePoints context.Dealer deal
+                    DealView.displayStatus context.Dealer deal
 
                         // animate
                     let animate () =
