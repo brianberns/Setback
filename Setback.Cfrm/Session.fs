@@ -2,29 +2,9 @@
 
 open System
 open System.ComponentModel
-open System.Reflection
 
 open PlayingCards
 open Setback
-
-module Random =
-
-    /// Saves the state of a random number generator.
-    let save (rng : Random) =
-        rng.GetType().GetFields(BindingFlags.NonPublic ||| BindingFlags.Instance)
-            |> Array.map (fun field ->
-                let value =
-                    match field.GetValue(rng) with
-                        | :? Array as array -> array.Clone()
-                        | value -> value
-                field, value)
-
-    /// Restores the state of a random number generator.
-    let restore state =
-        let rng = Random()
-        for (field : FieldInfo, value) in state do
-            field.SetValue(rng, value)
-        rng
 
 /// Manages a series of games with the given players.
 type Session

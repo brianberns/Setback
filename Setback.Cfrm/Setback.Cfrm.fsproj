@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <Compile Include="Prelude.fs" />
+    <Compile Include="Random.fs" />
     <Compile Include="SpanLayout.fs" />
     <Compile Include="AbstractScore.fs" />
     <Compile Include="AbstractHighBid.fs" />
