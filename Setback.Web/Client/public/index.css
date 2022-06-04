@@ -90,7 +90,7 @@ a {
 
 .card {
     position: absolute;
-    width: 12vh;
+    width: max(12vh, 80px);
     border: 1px solid gray;
     background-color: gray;
     border-radius: 10px;
