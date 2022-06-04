@@ -14,9 +14,9 @@ module Session =
         let rec loop dealer =
             async {
                 let rng' = rng.Clone()
-                let! dealer' = Game.run surface rng dealer
-                let! dealer'' = Game.run surface rng' dealer'   // duplicate deals
-                do! loop dealer''
+                let! _ = Game.run surface rng dealer
+                let! dealer' = Game.run surface rng' (dealer.Next)   // duplicate deals
+                do! loop dealer'
             }
 
         async {
