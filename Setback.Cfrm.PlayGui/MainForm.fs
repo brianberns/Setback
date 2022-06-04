@@ -223,7 +223,7 @@ type MainForm() as this =
 
     /// A deal has finished.
     let onDealFinish (dealer, _, gameScore) =
-        scoreControl.Score <- Game.shiftScore dealer gameScore
+        scoreControl.Score <- Game.absoluteScore dealer gameScore
 
     /// A deal has finished.
     let delayDealFinish args =
