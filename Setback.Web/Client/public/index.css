@@ -4,6 +4,7 @@
 
 main {
     background-color: lightblue;
+    font-size: min(2vw, 2vh);
     font-family: sans-serif;
     width: 100vw;
     height: 100vh;
