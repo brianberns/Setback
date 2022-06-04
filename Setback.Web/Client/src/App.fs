@@ -1,21 +1,22 @@
 namespace Setback.Web.Client
 
-open System
-
 open Browser
 
+open PlayingCards
 open Setback
 open Setback.Cfrm
 
 module Session =
 
     /// Runs a new session.
-    let run surface rng dealer =
+    let run surface (rng : Random) dealer =
 
         let rec loop dealer =
             async {
+                let rng' = rng.Clone()
                 let! dealer' = Game.run surface rng dealer
-                do! loop dealer'
+                let! dealer'' = Game.run surface rng' dealer'   // duplicate deals
+                do! loop dealer''
             }
 
         async {

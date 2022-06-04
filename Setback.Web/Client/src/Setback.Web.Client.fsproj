@@ -13,7 +13,7 @@
     <Compile Include="..\..\..\PlayingCards\Rank.fs" />
     <Compile Include="..\..\..\PlayingCards\Suit.fs" />
     <Compile Include="..\..\..\PlayingCards\Card.fs" />
-    <Compile Include="..\..\..\PlayingCards\Deck.fs" />
+    <Compile Include="Deck.fs" />
     <Compile Include="..\..\..\PlayingCards\Hand.fs" />
     <Compile Include="..\..\..\Setback\Rank.fs" />
     <Compile Include="..\..\..\Setback\Bid.fs" />
