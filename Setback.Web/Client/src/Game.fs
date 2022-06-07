@@ -83,7 +83,7 @@ module Game =
     let run surface rng dealer =
 
         /// Runs one deal.
-        let rec loop (game : Game) dealer =
+        let rec loop (game : Game) dealer nDeals =
             async {
                     // display current game score
                 let absScore = Game.absoluteScore dealer game.Score
@@ -114,21 +114,22 @@ module Game =
                 let winningTeamIdxOpt =
                     gameScore |> Game.winningTeamIdxOpt dealer
                 let dealer' = dealer.Next
+                let nDeals' = nDeals + 1
                 match winningTeamIdxOpt with
 
                         // game is over
                     | Some iTeam ->
                         do! gameOver surface iTeam
                             |> Async.AwaitPromise
-                        return dealer'
+                        return dealer', nDeals'
 
                         // run another deal
                     | None ->
                         let score'' = gameScore |> AbstractScore.shift 1
                         let game' = { game with Score = score'' }
-                        return! loop game' dealer'
+                        return! loop game' dealer' nDeals'
             }
 
             // start a new game
         displayGamesWon ()
-        loop Game.zero dealer
+        loop Game.zero dealer 0
