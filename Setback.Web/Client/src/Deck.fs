@@ -3,20 +3,20 @@
 /// https://en.wikipedia.org/wiki/Linear_congruential_generator
 type Random(seed) =
 
-    let mutable state = seed
+    let mutable state : uint64 = seed
 
-    let m = 1L <<< 32
-    let a = 1664525L
-    let c = 1013904223L
+    let m = 1UL <<< 32
+    let a = 1664525UL
+    let c = 1013904223UL
 
-    new() = Random(System.DateTime.Now.Ticks)
+    new() = Random(uint64 System.DateTime.Now.Ticks)
 
     /// Answers a random number in the given range.
     member _.Next(minValue, maxValue) =
         let range = maxValue - minValue
-        assert(range >= 0)
+        if range <= 0 then failwith "Invalid range"
         state <- (a * state + c) % m
-        int ((state % int64 range) + int64 minValue)
+        (int (state % uint64 range)) + minValue
 
     /// Clones the RNG in its current state.
     member _.Clone() = Random(state)
