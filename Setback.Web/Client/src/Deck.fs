@@ -1,5 +1,6 @@
 ﻿namespace PlayingCards
 
+/// Clonable random number generator.
 /// https://en.wikipedia.org/wiki/Linear_congruential_generator
 type Random(seed) =
 
@@ -9,6 +10,7 @@ type Random(seed) =
     let a = 1664525UL
     let c = 1013904223UL
 
+    /// Constructs an RNG with an arbitrary seed.
     new() = Random(uint64 System.DateTime.Now.Ticks)
 
     /// Answers a random number in the given range.
@@ -20,6 +22,9 @@ type Random(seed) =
 
     /// Clones the RNG in its current state.
     member _.Clone() = Random(state)
+
+    /// Current state of the RNG.
+    member _.State = state
 
 /// A shuffled deck of cards.
 type Deck =
