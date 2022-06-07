@@ -17,11 +17,12 @@ type AnimationAction =
 
 module AnimationAction =
 
-    /// Default duration of a move, in milliseconds.
-    let private duration = 300
-
-    /// Moves to the given position with the default duration.
+    /// Moves to the given position with the system duration.
     let moveTo position =
+        let duration =
+            let speed = (~~"#animationSpeed").``val``()
+            600 - speed   // duration is inverse of speed
+        Browser.Dom.console.log(duration)
         MoveTo (position, duration)
 
 /// An animation action applied to an element.
