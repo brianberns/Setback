@@ -22,7 +22,9 @@ module Session =
         async {
             try
                 do! loop dealer
-            with ex -> console.log(ex.StackTrace)
+            with ex ->
+                console.log(ex.StackTrace)
+                window.alert(ex.StackTrace)
         } |> Async.StartImmediate
 
 module App =
