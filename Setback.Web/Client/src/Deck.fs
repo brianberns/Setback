@@ -7,22 +7,21 @@ open System
 type Random(seed) =
 
     /// Blessed parameters.
-    static let m = 1UL <<< 32
-    static let a = 1664525UL
-    static let c = 1013904223UL
+    static let a = 1664525u
+    static let c = 1013904223u
 
     /// Computes the next state.
     static let next cur =
-        (a * cur + c) % m
+        a * cur + c
 
     /// Current state.
-    let mutable state : uint64 = seed
+    let mutable state = seed
 
     /// Constructs an RNG with an arbitrary seed.
     new() =
         let seed =
             DateTime.Now.Ticks
-                |> uint64
+                |> uint32
                 |> next
         Random(seed)
 
@@ -31,7 +30,7 @@ type Random(seed) =
         let range = maxValue - minValue
         if range <= 0 then failwith "Invalid range"
         state <- next state
-        (int (state % uint64 range)) + minValue
+        (int (state % uint32 range)) + minValue
 
     /// Clones the RNG in its current state.
     member _.Clone() = Random(state)
