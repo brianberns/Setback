@@ -22,7 +22,6 @@ module AnimationAction =
         let duration =
             let speed = (~~"#animationSpeed").``val``()
             600 - speed   // duration is inverse of speed
-        Browser.Dom.console.log(duration)
         MoveTo (position, duration)
 
 /// An animation action applied to an element.

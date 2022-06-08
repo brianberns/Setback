@@ -92,10 +92,11 @@ module Deal =
                 resolve ()))
 
     /// Runs one new deal.
-    let run surface rng dealer score =
+    let run surface (rng : Random) dealer score =
         async {
 
                 // create random deal
+            console.log($"Deal #{string rng.State}")
             console.log($"Dealer is {Seat.toString dealer}")
             let deal =
                 Deck.shuffle rng
