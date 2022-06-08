@@ -14,25 +14,35 @@ open Setback.Web.Client   // ugly - force AutoOpen
 // * Improve Cfrm.Game module to work with actual games
 module Game =
 
+    /// Team display names.
     let private teamNames =
         [|
             "East + West"
             "North + South"
         |]
 
+    /// HTML elements holding current score.
     let private scoreElems =
         [|
             "#ewScore"
             "#nsScore"
         |] |> Array.map (~~)
 
-    let private gamesWonKeys = [| "ewGamesWon"; "nsGamesWon" |]
+    /// Local storage keys holding number of games won.
+    let private gamesWonKeys =
+        [|
+            "ewGamesWon"
+            "nsGamesWon"
+        |]
+
+    /// HTML elements holding number of games won.
     let private gamesWonElems =
         [|
             "#ewGamesWon"
             "#nsGamesWon"
         |] |> Array.map (~~)
 
+    /// Answers number of games won by the given team.
     let private getNumGamesWon iTeam =
         let key = gamesWonKeys.[iTeam]
         WebStorage.localStorage.[key]
@@ -40,10 +50,12 @@ module Game =
             |> Option.map int
             |> Option.defaultValue 0
 
+    /// Sets the number of games won by the given team.
     let private setNumGamesWon iTeam (nGames : int) =
         let key = gamesWonKeys.[iTeam]
         WebStorage.localStorage.[key] <- string nGames
 
+    /// Displays the number of games won by all teams.
     let private displayGamesWon () =
         for iTeam = 0 to Setback.numTeams - 1 do
             let gamesWonElem = gamesWonElems.[iTeam]

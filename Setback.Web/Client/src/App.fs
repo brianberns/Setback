@@ -11,6 +11,7 @@ module Session =
     /// Runs a new session.
     let run surface rng dealer =
 
+        /// Plays a pair of duplicate deals.
         let rec loop (rng : Random) dealer =
             async {
                     // run first game of a pair
