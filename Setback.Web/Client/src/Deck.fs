@@ -1,23 +1,30 @@
 ﻿namespace PlayingCards
 
+open System
+
 /// Clonable random number generator.
 /// https://en.wikipedia.org/wiki/Linear_congruential_generator
 type Random(seed) =
 
     /// Blessed parameters.
-    let m = 1UL <<< 32
-    let a = 1664525UL
-    let c = 1013904223UL
+    static let m = 1UL <<< 32
+    static let a = 1664525UL
+    static let c = 1013904223UL
 
     /// Computes the next state.
-    let next cur =
+    static let next cur =
         (a * cur + c) % m
 
     /// Current state.
-    let mutable state : uint64 = next seed
+    let mutable state : uint64 = seed
 
     /// Constructs an RNG with an arbitrary seed.
-    new() = Random(uint64 System.DateTime.Now.Ticks)
+    new() =
+        let seed =
+            DateTime.Now.Ticks
+                |> uint64
+                |> next
+        Random(seed)
 
     /// Answers a random number in the given range.
     member _.Next(minValue, maxValue) =
