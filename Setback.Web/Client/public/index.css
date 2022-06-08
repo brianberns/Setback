@@ -105,6 +105,10 @@ a {
     cursor: pointer;
 }
 
+.inactive {
+    filter: contrast(70%);
+}
+
 .banner {
     font-size: x-large;
     width: fit-content;

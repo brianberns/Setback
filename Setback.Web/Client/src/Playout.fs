@@ -141,6 +141,7 @@ module Playout =
                             // prevent further clicks
                         for cardView in handView do
                             cardView.removeClass("active")
+                            cardView.removeClass("inactive")
                             cardView.off("click")
 
                             // play the selected card
@@ -148,7 +149,9 @@ module Playout =
                             do! context.AnimCardPlay cardView |> Animation.run
                             let! deal = playCard context card
                             resolve deal
-                        } |> ignore))
+                        } |> ignore)
+                else
+                    cardView.addClass("inactive"))
 
     /// Automatically plays a card.
     let private playAuto context =
