@@ -4,6 +4,7 @@ open PlayingCards
 open Setback
 open Setback.Cfrm
 
+/// Represents a (mutable) hand of cards.
 type HandView = ResizeArray<CardView>
 
 module HandView =
@@ -81,6 +82,7 @@ module ClosedHandView =
 
     /// Creates a closed view of the given cards.
     let ofCardViews (cardViews : seq<CardView>) : HandView =
+        assert(cardViews |> Seq.forall CardView.isBack)
         ResizeArray(cardViews)
 
     /// Answers a function that can be called to animate the playing
@@ -90,6 +92,7 @@ module ClosedHandView =
 
                 // remove arbitrary card from hand
             let back = handView |> Seq.last
+            assert(back |> CardView.isBack)
             let flag = handView.Remove(back)
             assert(flag)
 

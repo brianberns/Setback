@@ -117,7 +117,12 @@ module CardView =
     let ofBack () =
         create srcBack "Back" false
 
+    /// Indicates whether the given card view is a card back.
+    let isBack (cardView : CardView) =
+        cardView.attr("data-card") = "Back"
+
     /// Answers the given card view's underlying card.
     let card (cardView : CardView) =
+        assert(isBack cardView |> not)
         cardView.attr("data-card")
             |> Card.fromString
