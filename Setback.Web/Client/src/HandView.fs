@@ -146,7 +146,7 @@ module OpenHandView =
                 // animate card being played
             let animPlay =
                 [|
-                    BringToFront                               // bring card to front
+                    BringToFront                       // bring card to front
                         |> Animation.create cardView
                     TrickView.playAnim seat cardView   // slide revealed card to center
                 |] |> Animation.Serial
