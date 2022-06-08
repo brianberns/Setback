@@ -4,7 +4,7 @@ open PlayingCards
 open Setback
 open Setback.Cfrm
 
-type HandView = CardView[]
+type HandView = ResizeArray<CardView>
 
 module HandView =
 
@@ -40,10 +40,12 @@ module HandView =
     /// position.
     let dealAnim seat (handView : HandView) =
 
-        assert(handView.Length = Setback.numCardsPerHand)
+        assert(handView.Count = Setback.numCardsPerHand)
         let batchSize = Setback.numCardsPerHand / 2
-        let batch1 = handView.[..batchSize-1]
-        let batch2 = handView.[batchSize..]
+        let batch1, batch2 =
+            let cardViews = Seq.toArray handView
+            cardViews.[..batchSize-1],
+            cardViews.[batchSize..]
 
         /// Animate the given batch of cards.
         let animate cardOffset (cardViews : CardView[]) =
@@ -66,30 +68,29 @@ module HandView =
 
     /// Animates adjustment of remaining unplayed cards in a hand.
     let adjustAnim seat (handView : HandView) =
-        let numCards = handView.Length
+        let numCards = handView.Count
         handView
-            |> Array.mapi (fun iCard cardView ->
+            |> Seq.mapi (fun iCard cardView ->
                 let centerPos = centerPosMap.[seat]
                 animateCard centerPos numCards iCard
                     |> Animation.create cardView)
+            |> Seq.toArray
             |> Animation.Parallel
 
 module ClosedHandView =
 
     /// Creates a closed view of the given cards.
     let ofCardViews (cardViews : seq<CardView>) : HandView =
-        cardViews
-            |> Seq.toArray
+        ResizeArray(cardViews)
 
     /// Answers a function that can be called to animate the playing
     /// of a card from the given closed hand view.
     let playAnim seat (handView : HandView) =
-        let mutable cardViewsMut = ResizeArray(handView)
         fun (cardView : CardView) ->
 
                 // remove arbitrary card from hand
-            let back = cardViewsMut |> Seq.last
-            let flag = cardViewsMut.Remove(back)
+            let back = handView |> Seq.last
+            let flag = handView.Remove(back)
             assert(flag)
 
                 // animate card being played
@@ -122,25 +123,25 @@ module OpenHandView =
                         | _ -> failwith "Unexpected"
                 iSuit, card.Rank)
             |> Seq.map (CardView.ofCard false)
-            |> Seq.toArray
             |> Promise.all
+            |> Promise.map ResizeArray
 
     /// Reveals the given open hand view.
     let revealAnim (closedHandView : HandView) (openHandView : HandView) =
-        assert(closedHandView.Length = openHandView.Length)
+        assert(closedHandView.Count = openHandView.Count)
         (closedHandView, openHandView)
-            ||> Array.map2 (fun back front ->
+            ||> Seq.map2 (fun back front ->
                 Animation.create back (ReplaceWith front))
+            |> Seq.toArray
             |> Animation.Parallel
 
     /// Answers a function that can be called to animate the playing
     /// of a card from the given open hand view.
     let playAnim seat (handView : HandView) =
-        let mutable cardViewsMut = ResizeArray(handView)
         fun (cardView : CardView) ->
 
                 // remove selected card from hand
-            let flag = cardViewsMut.Remove(cardView)
+            let flag = handView.Remove(cardView)
             assert(flag)
 
                 // animate card being played
@@ -152,10 +153,7 @@ module OpenHandView =
                 |] |> Animation.Serial
 
                 // animate adjustment of remaining cards to fill gap
-            let animAdjust =
-                cardViewsMut
-                    |> Seq.toArray
-                    |> HandView.adjustAnim seat
+            let animAdjust = HandView.adjustAnim seat handView
 
                 // animate in parallel
             [|
