@@ -57,7 +57,7 @@ module App =
         let dealer =
             option {
                 let! str = parms.get("dealer")
-                match str with
+                match str.ToLower() with
                     | "w" | "west" -> return Seat.West
                     | "n" | "north" -> return Seat.North
                     | "e" | "east" -> return Seat.East
