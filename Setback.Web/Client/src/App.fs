@@ -1,5 +1,7 @@
 namespace Setback.Web.Client
 
+open System
+
 open Browser
 
 open PlayingCards
@@ -41,8 +43,38 @@ module Session =
 
 module App =
 
+    /// Parses the given fragment for known arguments.
+    let private parseParams (parms : Types.URLSearchParams) =
+
+        let rng =
+            option {
+                let! str = parms.get("seed")
+                match UInt64.TryParse str with
+                    | true, seed -> return Random(seed)
+                    | _ -> ()
+            } |> Option.defaultWith Random
+
+        let dealer =
+            option {
+                let! str = parms.get("dealer")
+                match str with
+                    | "w" | "west" -> return Seat.West
+                    | "n" | "north" -> return Seat.North
+                    | "e" | "east" -> return Seat.East
+                    | "s" | "south" -> return Seat.South
+                    | _ -> ()
+            } |> Option.defaultValue Seat.South
+
+        rng, dealer
+
         // start a session when the browser is ready
     (~~document).ready(fun () ->
+
         let surface = ~~"main"
-        let rng = Random()
-        Session.run surface rng Seat.South)
+
+            // parse params
+        let rng, dealer =
+            URL.Create(document.URL).searchParams
+                |> parseParams
+
+        Session.run surface rng dealer)

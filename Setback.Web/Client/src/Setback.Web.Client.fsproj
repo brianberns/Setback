@@ -56,6 +56,7 @@
   <ItemGroup>
     <PackageReference Include="Fable.Browser.Css" Version="2.2.0" />
     <PackageReference Include="Fable.Browser.Dom" Version="2.10.0" />
+    <PackageReference Include="Fable.Browser.Url" Version="1.1.0" />
     <PackageReference Include="Fable.Core" Version="3.7.1" />
     <PackageReference Include="Fable.Promise" Version="3.1.3" />
     <PackageReference Include="Fable.Remoting.Client" Version="7.19.0" />

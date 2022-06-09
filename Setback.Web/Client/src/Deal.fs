@@ -98,6 +98,7 @@ module Deal =
                 // create random deal
             console.log($"Deal #{string rng.State}")
             console.log($"Dealer is {Seat.toString dealer}")
+            console.log($"{document.URL.Split('?').[0]}?seed={rng.State}&dealer={Seat.toString dealer}")
             let deal =
                 Deck.shuffle rng
                     |> AbstractOpenDeal.fromDeck dealer
