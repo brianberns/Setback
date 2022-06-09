@@ -27,12 +27,13 @@ The second-strongest suit is included iff the difference between its strength an
 #### Bootstrap
 These keys are used when bootstrapping a score-sensitive model from a baseline model. Unlike the baseline keys, these keys are formatted using `/` characters, rather than by absolute position within the string, as follows:
 ```
-Them-need/Us-need/High-bid/High-bidder/Num-bids/Hand
+Score-need/High-bid/High-bidder/Num-bids/Hand
 ```
 
 Where:
-* `Them-need`: The number of points the other team needs to win, or `x` if the other team needs more than four points (i.e. can't win on this deal).
-* `Us-need`: If the other team is ahead and needs four points or less then `!`, else `.`.
+* `Score-need`: Representation of the current score, consisting of two characters: `Them-need` and `Us-need`.
+    * `Them-need`: The number of points the other team needs to win, or `x` if the other team needs more than four points (i.e. can't win on this deal).
+    * `Us-need`: If the other team is ahead and needs four points or less then `!`, else `.`.
 * `High-bid`: The current high bid as an integer: `0`, `2`, `3`, or `4`.
 * `High-bidder`: Index of the current high bidder, relative to the dealer: `0`, `1`, `2`, `3`, or `-1` if there is no current high bidder.
 * `Num-bids`: The number of bids made so far in this auction (`0` - `3`).
