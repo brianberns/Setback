@@ -71,7 +71,8 @@ module Playout =
 
     /// Plays the given card in the given deal and then continues
     /// the rest of the deal.
-    let private playCard context card =
+    let private playCard context cardView card =
+        assert(cardView |> CardView.card = card)
         promise {
 
                 // write to log
@@ -92,6 +93,10 @@ module Playout =
                     do! context.AnimEstablishTrump seat trump
                         |> Animation.run
                 | None -> ()
+
+                // play the card
+            do! context.AnimCardPlay cardView
+                |> Animation.run
 
                 // trick is complete?
             let dealComplete = deal |> AbstractOpenDeal.isComplete
@@ -146,8 +151,7 @@ module Playout =
 
                             // play the selected card
                         promise {
-                            do! context.AnimCardPlay cardView |> Animation.run
-                            let! deal = playCard context card
+                            let! deal = playCard context cardView card
                             resolve deal
                         } |> ignore)
                 else
@@ -160,7 +164,7 @@ module Playout =
             let! card =
                 WebPlayer.makePlay AbstractScore.zero context.Deal
 
-                // animate playing the selected card
+                // create view of the selected card
             let! cardView =
                 let isTrump =
                     option {
@@ -171,12 +175,9 @@ module Playout =
                 card
                     |> CardView.ofCard isTrump
                     |> Async.AwaitPromise
-            do! context.AnimCardPlay cardView
-                |> Animation.run
-                |> Async.AwaitPromise
 
-                // move to next player
-            return! playCard context card
+                // play the card
+            return! playCard context cardView card
                 |> Async.AwaitPromise
         }
 
