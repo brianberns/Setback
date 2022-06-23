@@ -3,6 +3,7 @@
 module Remoting =
 
     open Fable.Remoting.Client
+    open Browser.Dom
     open Setback.Web
 
     /// Prefix routes with /Setback.
@@ -10,10 +11,22 @@ module Remoting =
         sprintf "/Setback/%s/%s" typeName methodName
 
     /// Server API.
-    let api =
+    let private rawApi =
         Remoting.createApi()
             |> Remoting.withRouteBuilder routeBuilder
             |> Remoting.buildProxy<ISetbackApi>
+
+    /// Server API.
+    let api =
+        {
+            GetActionIndex =
+                fun key ->
+                    async {
+                        let! index = rawApi.GetActionIndex(key)
+                        console.log($"Key '{key}': {index}")
+                        return index
+                    }
+        }
 
 /// Plays Setback by calling a remote server.
 module WebPlayer =
