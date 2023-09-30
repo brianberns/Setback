@@ -10,26 +10,32 @@ open Setback
 open Setback.Cfrm
 open Setback.Web.Client   // ugly - force AutoOpen
 
+/// State maintained on client.
 type LocalState =
     {
+        /// Number of games won by each team
         GamesWon : int[]   // SimpleJson doesn't support ImmutableArray
     }
 
 module LocalState =
 
+    /// Initial state.
     let initial =
         {
             GamesWon = Array.zeroCreate Setback.numTeams
         }
 
-    let key = "LocalState"
+    /// Local state key.
+    let private key = "LocalState"
 
+    /// Answers the current local state.
     let get () =
         WebStorage.localStorage[key]
             |> Option.ofObj
             |> Option.map Json.parseAs<LocalState>
             |> Option.defaultValue initial
 
+    /// Sets the local state.
     let set (localState : LocalState) =
         WebStorage.localStorage[key]
             <- Json.serialize localState
