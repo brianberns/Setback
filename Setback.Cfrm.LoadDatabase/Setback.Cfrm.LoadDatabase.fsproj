@@ -19,8 +19,8 @@
   <ItemGroup />
 
   <ItemGroup>
-    <PackageReference Include="Cfrm" Version="2.1.0" />
-    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.115.5" />
+    <PackageReference Include="Cfrm" Version="2.2.0" />
+    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.118" />
   </ItemGroup>
 
   <ItemGroup>
