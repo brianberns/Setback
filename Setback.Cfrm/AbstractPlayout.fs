@@ -1,6 +1,9 @@
 ﻿namespace Setback.Cfrm
 
+#if !FABLE_COMPILER
 open System
+#endif
+
 open PlayingCards
 open Setback
 

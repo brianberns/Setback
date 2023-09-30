@@ -1,6 +1,9 @@
 ﻿namespace Setback.Cfrm
 
+#if !FABLE_COMPILER
 open System
+#endif
+
 open Setback
 
 /// Abstract view of the high bid in an auction.

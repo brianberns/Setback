@@ -1,8 +1,7 @@
 ﻿namespace Setback.Cfrm
 
-open System
-
 #if !FABLE_COMPILER
+open System
 open System.Buffers
 open Cfrm
 #endif
@@ -198,7 +197,12 @@ module BaselineGameState =
         let str =
             assert(AbstractAuctionPlus.layout.Length
                 = AbstractPlayoutPlus.layout.Length)
+
+#if FABLE_COMPILER
+            System.String.Create(
+#else
             String.Create(
+#endif
                 AbstractPlayoutPlus.layout.Length,
                 struct (dealActions, openDeal),
                 SpanAction(fun span struct (dealActions, openDeal) ->
