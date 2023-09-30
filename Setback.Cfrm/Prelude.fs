@@ -94,6 +94,7 @@ type ImmutableArray<'t>(items : 't[]) =
         let items' = PlayingCards.Array.clone items
         items'.[index] <- item
         ImmutableArray(items')
+    member _.ToArray() = PlayingCards.Array.clone items
 
 type ImmutableArrayBuilder<'t>(n) =
     let items = ResizeArray(n : int)

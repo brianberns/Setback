@@ -3,11 +3,36 @@ namespace Setback.Web.Client
 open Browser
 
 open Fable.Core
+open Fable.SimpleJson
 
 open PlayingCards
 open Setback
 open Setback.Cfrm
 open Setback.Web.Client   // ugly - force AutoOpen
+
+type LocalState =
+    {
+        GamesWon : int[]   // SimpleJson doesn't support ImmutableArray
+    }
+
+module LocalState =
+
+    let initial =
+        {
+            GamesWon = Array.zeroCreate Setback.numTeams
+        }
+
+    let key = "LocalState"
+
+    let get () =
+        WebStorage.localStorage[key]
+            |> Option.ofObj
+            |> Option.map Json.parseAs<LocalState>
+            |> Option.defaultValue initial
+
+    let set (localState : LocalState) =
+        WebStorage.localStorage[key]
+            <- Json.serialize localState
 
 // To-do:
 // * Split GameView into separate file
@@ -28,13 +53,6 @@ module Game =
             "#nsScore"
         |] |> Array.map (~~)
 
-    /// Local storage keys holding number of games won.
-    let private gamesWonKeys =
-        [|
-            "ewGamesWon"
-            "nsGamesWon"
-        |]
-
     /// HTML elements holding number of games won.
     let private gamesWonElems =
         [|
@@ -44,16 +62,18 @@ module Game =
 
     /// Answers number of games won by the given team.
     let private getNumGamesWon iTeam =
-        let key = gamesWonKeys.[iTeam]
-        WebStorage.localStorage.[key]
-            |> Option.ofObj
-            |> Option.map int
-            |> Option.defaultValue 0
+        let state = LocalState.get ()
+        state.GamesWon[iTeam]
 
     /// Sets the number of games won by the given team.
     let private setNumGamesWon iTeam (nGames : int) =
-        let key = gamesWonKeys.[iTeam]
-        WebStorage.localStorage.[key] <- string nGames
+        let state = LocalState.get ()
+        let gamesWon =
+            ImmutableArray(state.GamesWon)
+                .SetItem(iTeam, nGames)
+                .ToArray()
+        { state with GamesWon = gamesWon }
+            |> LocalState.set
 
     /// Displays the number of games won by all teams.
     let private displayGamesWon () =
