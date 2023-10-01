@@ -22,8 +22,8 @@ type SessionState =
         /// State of random number generator.
         RandomState : uint64   // can't persist entire RNG
 
-        /// First (false) or second (true) game of a two-game pair.
-        GameParity : bool
+        /// Duplicate deal state.
+        DuplicateDealState : Option<uint64 (*random state*) * int (*# deals*)>
 
         /// Current dealer.
         Dealer : Seat
@@ -37,7 +37,7 @@ module SessionState =
             GamesWon = Array.zeroCreate Setback.numTeams
             Scores = Array.zeroCreate Setback.numTeams
             RandomState = Random().State
-            GameParity = false
+            DuplicateDealState = None
             Dealer = Seat.South
         }
 
@@ -123,7 +123,7 @@ module Game =
                     |> resolve))
 
     /// Runs one new game.
-    let run surface sessionState =
+    let run surface sessionState : Async<SessionState * int> =
 
         /// Runs one deal.
         let rec loop (game : Game) sessionState nDeals =

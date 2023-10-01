@@ -13,42 +13,44 @@ module Session =
         /// Plays a pair of duplicate deals.
         let rec loop sessionState =
             async {
-                if sessionState.GameParity then
+                match sessionState.DuplicateDealState with
 
-                        // run second game of pair
-                    let! _, sessionState2 = Game.run surface sessionState
+                        // first game of a pair has already run
+                    | Some (randomState1, nDeals1) ->
+                        let sessionState1 =
+                            { sessionState with RandomState = randomState1 }
+                        return! finish sessionState1 nDeals1
 
-                        // continue with unseen random state
-                    let sessionState' =
-                        { sessionState2 with
-                            GameParity = false
-                            Dealer = sessionState.Dealer.Next }
-                    do! loop sessionState'
-                else
                         // run first game of a pair
-                    let! nDeals1, sessionState1 = Game.run surface sessionState
-
-                        // run second game of the pair w/ duplicate deals
-                    let sessionState' =
-                        { sessionState1 with
-                            RandomState = sessionState.RandomState
-                            GameParity = true
-                            Dealer = sessionState.Dealer.Next }
-                    let! nDeals2, sessionState2 = Game.run surface sessionState'
-                    assert(nDeals1 <> nDeals2
-                        || sessionState1.RandomState = sessionState2.RandomState)
-
-                        // continue with unseen random state
-                    let sessionState' =
-                        let randomState =
-                            if nDeals1 > nDeals2 then sessionState1.RandomState
-                            else sessionState2.RandomState
-                        { sessionState2 with
-                            RandomState = randomState
-                            GameParity = false
-                            Dealer = sessionState.Dealer.Next.Next }
-                    do! loop sessionState'
+                    | None ->
+                        let! sessionState1, nDeals1 = Game.run surface sessionState
+                        return! finish sessionState1 nDeals1
             }
+
+        and finish sessionState1 nDeals1 =
+            async {
+                    // run second game of the pair w/ duplicate deals
+                let sessionState' =
+                    { sessionState1 with
+                        RandomState = sessionState.RandomState   // reset RNG to duplicate deals
+                        DuplicateDealState =
+                            Some (sessionState1.RandomState, nDeals1)
+                        Dealer = sessionState.Dealer.Next }      // rotate from first dealer of game
+                let! sessionState2, nDeals2 = Game.run surface sessionState'
+                assert(nDeals1 <> nDeals2
+                    || sessionState1.RandomState = sessionState2.RandomState)
+
+                    // continue with unseen random state
+                let sessionState' =
+                    let randomState =
+                        if nDeals1 > nDeals2 then sessionState1.RandomState
+                        else sessionState2.RandomState
+                    { sessionState2 with
+                        RandomState = randomState
+                        DuplicateDealState = None
+                        Dealer = sessionState.Dealer.Next.Next }
+                do! loop sessionState'
+        }
 
         async {
             try
