@@ -51,10 +51,18 @@ module PersistentState =
             |> Option.map Json.parseAs<PersistentState>
             |> Option.defaultValue initial
 
-    /// Sets the current state.
-    let set (persistentState : PersistentState) =
+    /// Saves the given state.
+    let save (persistentState : PersistentState) =
         WebStorage.localStorage[key]
             <- Json.serialize persistentState
+
+[<AutoOpen>]
+module PersitentStateExt =
+
+    /// Saves the given state.
+    let (!) persistentState =
+        PersistentState.save persistentState
+        persistentState
 
 // To-do:
 // * Split GameView into separate file
@@ -157,7 +165,7 @@ module Game =
                 let winningTeamIdxOpt =
                     gameScore |> Game.winningTeamIdxOpt dealer
                 let persistentState' =
-                    { persistentState with
+                    !{ persistentState with
                         Scores = absScore
                         RandomState = rng.State
                         Dealer = dealer.Next }
@@ -169,7 +177,7 @@ module Game =
                         let! persistentState'' =
                             gameOver surface iTeam persistentState'
                                 |> Async.AwaitPromise
-                        return persistentState'', nDeals'
+                        return !persistentState'', nDeals'
 
                         // run another deal
                     | None ->
