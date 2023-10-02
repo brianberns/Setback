@@ -10,15 +10,15 @@ module Session =
     /// Runs a new session.
     let run surface persState =
 
-        /// Plays a pair of duplicate deals.
+        /// Plays a pair of duplicate games.
         let rec loop persState =
             async {
                     // run first game of a pair
-                console.log("Duplicate hand: 1 of 2")
+                console.log("Duplicate game: 1 of 2")
                 let! persState1, nDeals1 = Game.run surface persState
 
                     // run second game of a pair w/ duplicate deals
-                console.log("Duplicate hand: 2 of 2")
+                console.log("Duplicate game: 2 of 2")
                 let persState =
                     { persState1 with
                         RandomState = persState.RandomState   // reset RNG to repeat deals
