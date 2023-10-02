@@ -151,10 +151,11 @@ module Game =
                     // update game score
                 let gameScore = game.Score + dealScore
                 let absScore = Game.absoluteScore dealer gameScore
-                console.log($"E+W have {absScore[0]} point(s)")
-                console.log($"N+S have {absScore[1]} point(s)")
                 for iTeam = 0 to Setback.numTeams - 1 do
                     scoreElems[iTeam].text(string absScore[iTeam])
+                do
+                    console.log($"E+W have {absScore[0]} point(s)")
+                    console.log($"N+S have {absScore[1]} point(s)")
 
                     // is the game over?
                 let winningTeamIdxOpt =
