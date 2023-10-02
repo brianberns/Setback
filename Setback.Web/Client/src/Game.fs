@@ -16,8 +16,8 @@ type PersistentState =
         /// Number of games won by each team.
         GamesWon : AbstractScore
 
-        /// Number of points won by each team in the current game.
-        Scores : AbstractScore
+        /// Absolute score of each team in the current game.
+        GameScore : AbstractScore
 
         /// State of random number generator.
         RandomState : uint64   // can't persist entire RNG
@@ -35,7 +35,7 @@ module PersistentState =
     let private initial =
         {
             GamesWon = AbstractScore.zero
-            Scores = AbstractScore.zero
+            GameScore = AbstractScore.zero
             RandomState = Random().State
             DuplicateDealState = None
             Dealer = Seat.South
@@ -166,7 +166,7 @@ module Game =
                     gameScore |> Game.winningTeamIdxOpt dealer
                 let persistentState' =
                     !{ persistentState with
-                        Scores = absScore
+                        GameScore = absScore
                         RandomState = rng.State
                         Dealer = dealer.Next }
                 let nDeals' = nDeals + 1
@@ -188,4 +188,11 @@ module Game =
 
             // start a new game
         displayGamesWon persistentState.GamesWon
-        loop Game.zero persistentState 0
+        let game =
+            let iTeam =
+                int persistentState.Dealer % Setback.numTeams
+            let score =
+                persistentState.GameScore
+                    |> AbstractScore.shift iTeam
+            { Score = score }
+        loop game persistentState 0   // to-do: simplify absolute vs. relative scores
