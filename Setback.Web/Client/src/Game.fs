@@ -130,10 +130,10 @@ module Game =
                     |> resolve))
 
     /// Runs one new game.
-    let run surface persistentState : Async<PersistentState * int> =
+    let run surface persistentState =
 
         /// Runs one deal.
-        let rec loop (game : Game) persistentState nDeals =
+        let rec loop game persistentState nDeals =
             async {
                     // display current score of the game
                 let dealer = persistentState.Dealer
