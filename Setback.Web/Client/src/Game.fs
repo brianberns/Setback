@@ -104,7 +104,6 @@ module Game =
             // increment count
         let gamesWon =
             persistentState.GamesWon + AbstractScore.forTeam iTeam 1
-        console.log($"{teamNames[iTeam]} has won {gamesWon[iTeam]} game(s)")
 
             // update persistent state
         { persistentState with
