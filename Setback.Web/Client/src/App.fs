@@ -23,6 +23,7 @@ module Session =
 
                         // run first game of a pair
                     | None ->
+                        console.log("Duplicate hand: 1 of 2")
                         let! persState1, nDeals1 = Game.run surface persState
                         return! finish persState1 nDeals1
             }
@@ -30,6 +31,7 @@ module Session =
         and finish persState1 nDeals1 =
             async {
                     // run second game of the pair w/ duplicate deals
+                console.log("Duplicate hand: 2 of 2")
                 let persState' =
                     { persState1 with
                         RandomState = persState.RandomState   // reset RNG to repeat deals
