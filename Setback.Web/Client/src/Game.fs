@@ -45,26 +45,26 @@ module PersistentState =
     let private key = "PersistentState"
 
     /// Saves the given state.
-    let save (persistentState : PersistentState) =
+    let save (persState : PersistentState) =
         WebStorage.localStorage[key]
-            <- Json.serialize persistentState
+            <- Json.serialize persState
 
     /// Answers the current state.
     let get () =
         let json = WebStorage.localStorage[key] 
         if isNull json then
-            let initial = create ()
-            save initial
-            initial
+            let persState = create ()
+            save persState
+            persState
         else
             Json.parseAs<PersistentState>(json)
 
 type PersistentState with
 
     /// Saves this state.
-    member persistentState.Save() =
-        PersistentState.save persistentState
-        persistentState
+    member persState.Save() =
+        PersistentState.save persState
+        persState
 
 // To-do:
 // * Split GameView into separate file
@@ -99,14 +99,14 @@ module Game =
             gamesWonElem.text(string gamesWon[iTeam])
 
     /// Increments the number of games won by the given team.
-    let private incrGamesWon iTeam persistentState =
+    let private incrGamesWon iTeam persState =
 
             // increment count
         let gamesWon =
-            persistentState.GamesWon + AbstractScore.forTeam iTeam 1
+            persState.GamesWon + AbstractScore.forTeam iTeam 1
 
             // update persistent state
-        { persistentState with
+        { persState with
             GamesWon = gamesWon
             GameScore = AbstractScore.zero }
 
@@ -129,19 +129,19 @@ module Game =
                 resolve ()))
 
     /// Runs one new game.
-    let run surface persistentState =
+    let run surface persState =
 
         /// Runs one deal.
-        let rec loop game persistentState nDeals =
+        let rec loop game persState nDeals =
             async {
                     // display current score of the game
-                let dealer = persistentState.Dealer
+                let dealer = persState.Dealer
                 let absScore = Game.absoluteScore dealer game.Score
                 for iTeam = 0 to Setback.numTeams - 1 do
                     scoreElems[iTeam].text(string absScore[iTeam])
 
                     // run a deal
-                let rng = Random(persistentState.RandomState)
+                let rng = Random(persState.RandomState)
                 let! deal = Deal.run surface rng dealer game.Score
 
                     // determine score of this deal
@@ -163,8 +163,8 @@ module Game =
                     // is the game over?
                 let winningTeamIdxOpt =
                     gameScore |> Game.winningTeamIdxOpt dealer
-                let persistentState' =
-                    { persistentState with
+                let persState' =
+                    { persState with
                         GameScore = absScore
                         RandomState = rng.State
                         Dealer = dealer.Next }
@@ -175,31 +175,31 @@ module Game =
                     | Some iTeam ->
 
                             // increment games won
-                        let persistentState'' =
-                            incrGamesWon iTeam persistentState'
-                        PersistentState.save persistentState''
+                        let persState'' =
+                            incrGamesWon iTeam persState'
+                        PersistentState.save persState''
 
                             // display game result
-                        do! gameOver surface iTeam persistentState''.GamesWon
+                        do! gameOver surface iTeam persState''.GamesWon
                             |> Async.AwaitPromise
 
-                        return persistentState'', nDeals'
+                        return persState'', nDeals'
 
                         // run another deal in this game
                     | None ->
-                        PersistentState.save persistentState'
+                        PersistentState.save persState'
                         let score'' = gameScore |> AbstractScore.shift 1
                         let game' = { game with Score = score'' }
-                        return! loop game' persistentState' nDeals'
+                        return! loop game' persState' nDeals'
             }
 
             // start a new game
-        displayGamesWon persistentState.GamesWon
+        displayGamesWon persState.GamesWon
         let game =
             let iTeam =
-                int persistentState.Dealer % Setback.numTeams
+                int persState.Dealer % Setback.numTeams
             let score =
-                persistentState.GameScore
+                persState.GameScore
                     |> AbstractScore.shift iTeam
             { Score = score }
-        loop game persistentState 0   // to-do: simplify absolute vs. relative scores
+        loop game persState 0   // to-do: simplify absolute vs. relative scores
