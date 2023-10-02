@@ -3,6 +3,7 @@
 open Setback
 
 /// Abstract view of a score, relative to a specific team.
+//  To-do: rename this type, since it is sometimes used as an absolute score.
 type AbstractScore =
     | AbstractScore of int[]
 

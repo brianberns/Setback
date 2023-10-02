@@ -18,7 +18,7 @@ module Session =
                         // first game of a pair has already run
                     | Some (randomState1, nDeals1) ->
                         let sessionState1 =
-                            { sessionState with RandomState = randomState1 }
+                            { sessionState with RandomState = randomState1 }   // reset RNG to repeat deals
                         return! finish sessionState1 nDeals1
 
                         // run first game of a pair
@@ -32,7 +32,7 @@ module Session =
                     // run second game of the pair w/ duplicate deals
                 let sessionState' =
                     { sessionState1 with
-                        RandomState = sessionState.RandomState   // reset RNG to duplicate deals
+                        RandomState = sessionState.RandomState   // reset RNG to repeat deals
                         DuplicateDealState =
                             Some (sessionState1.RandomState, nDeals1)
                         Dealer = sessionState.Dealer.Next }      // rotate from first dealer of game
