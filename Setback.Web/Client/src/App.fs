@@ -32,10 +32,10 @@ module Session =
                     // run second game of the pair w/ duplicate deals
                 let persistentState' =
                     { persistentState1 with
-                        RandomState = persistentState.RandomState   // reset RNG to repeat deals
+                        RandomState = persistentState.RandomState       // reset RNG to repeat deals
                         DuplicateDealState =
                             Some (persistentState1.RandomState, nDeals1)
-                        Dealer = persistentState.Dealer.Next }      // rotate from first dealer of game
+                        Dealer = persistentState.Dealer.Next }.Save()   // rotate from first dealer of game
                 let! persistentState2, nDeals2 = Game.run surface persistentState'
                 assert(nDeals1 <> nDeals2
                     || persistentState1.RandomState = persistentState2.RandomState)
@@ -48,7 +48,7 @@ module Session =
                     { persistentState2 with
                         RandomState = randomState
                         DuplicateDealState = None
-                        Dealer = persistentState.Dealer.Next.Next }
+                        Dealer = persistentState.Dealer.Next.Next }.Save()
                 do! loop persistentState'
         }
 

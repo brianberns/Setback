@@ -59,11 +59,10 @@ module PersistentState =
         else
             Json.parseAs<PersistentState>(json)
 
-[<AutoOpen>]
-module PersitentStateExt =
+type PersistentState with
 
     /// Saves the given state.
-    let (!!) persistentState =
+    member persistentState.Save() =
         PersistentState.save persistentState
         persistentState
 
