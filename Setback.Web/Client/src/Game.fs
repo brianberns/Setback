@@ -61,7 +61,7 @@ module PersistentState =
 
 type PersistentState with
 
-    /// Saves the given state.
+    /// Saves this state.
     member persistentState.Save() =
         PersistentState.save persistentState
         persistentState
@@ -174,14 +174,19 @@ module Game =
 
                         // game is over
                     | Some iTeam ->
+
+                            // increment games won
                         let persistentState'' =
                             incrGamesWon iTeam persistentState'
                         PersistentState.save persistentState''
+
+                            // display game result
                         do! gameOver surface iTeam persistentState''.GamesWon
                             |> Async.AwaitPromise
+
                         return persistentState'', nDeals'
 
-                        // run another deal
+                        // run another deal in this game
                     | None ->
                         PersistentState.save persistentState'
                         let score'' = gameScore |> AbstractScore.shift 1
