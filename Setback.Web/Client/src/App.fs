@@ -8,53 +8,53 @@ open Setback.Cfrm
 module Session =
 
     /// Runs a new session.
-    let run surface sessionState =
+    let run surface persistentState =
 
         /// Plays a pair of duplicate deals.
-        let rec loop sessionState =
+        let rec loop persistentState =
             async {
-                match sessionState.DuplicateDealState with
+                match persistentState.DuplicateDealState with
 
                         // first game of a pair has already run
                     | Some (randomState1, nDeals1) ->
-                        let sessionState1 =
-                            { sessionState with RandomState = randomState1 }   // reset RNG to repeat deals
-                        return! finish sessionState1 nDeals1
+                        let persistentState1 =
+                            { persistentState with RandomState = randomState1 }   // reset RNG to repeat deals
+                        return! finish persistentState1 nDeals1
 
                         // run first game of a pair
                     | None ->
-                        let! sessionState1, nDeals1 = Game.run surface sessionState
-                        return! finish sessionState1 nDeals1
+                        let! persistentState1, nDeals1 = Game.run surface persistentState
+                        return! finish persistentState1 nDeals1
             }
 
-        and finish sessionState1 nDeals1 =
+        and finish persistentState1 nDeals1 =
             async {
                     // run second game of the pair w/ duplicate deals
-                let sessionState' =
-                    { sessionState1 with
-                        RandomState = sessionState.RandomState   // reset RNG to repeat deals
+                let persistentState' =
+                    { persistentState1 with
+                        RandomState = persistentState.RandomState   // reset RNG to repeat deals
                         DuplicateDealState =
-                            Some (sessionState1.RandomState, nDeals1)
-                        Dealer = sessionState.Dealer.Next }      // rotate from first dealer of game
-                let! sessionState2, nDeals2 = Game.run surface sessionState'
+                            Some (persistentState1.RandomState, nDeals1)
+                        Dealer = persistentState.Dealer.Next }      // rotate from first dealer of game
+                let! persistentState2, nDeals2 = Game.run surface persistentState'
                 assert(nDeals1 <> nDeals2
-                    || sessionState1.RandomState = sessionState2.RandomState)
+                    || persistentState1.RandomState = persistentState2.RandomState)
 
                     // continue with unseen random state
-                let sessionState' =
+                let persistentState' =
                     let randomState =
-                        if nDeals1 > nDeals2 then sessionState1.RandomState
-                        else sessionState2.RandomState
-                    { sessionState2 with
+                        if nDeals1 > nDeals2 then persistentState1.RandomState
+                        else persistentState2.RandomState
+                    { persistentState2 with
                         RandomState = randomState
                         DuplicateDealState = None
-                        Dealer = sessionState.Dealer.Next.Next }
-                do! loop sessionState'
+                        Dealer = persistentState.Dealer.Next.Next }
+                do! loop persistentState'
         }
 
         async {
             try
-                do! loop sessionState
+                do! loop persistentState
             with ex ->
                 console.log(ex.StackTrace)
                 window.alert(ex.StackTrace)
@@ -65,4 +65,4 @@ module App =
         // start a session when the browser is ready
     (~~document).ready(fun () ->
         let surface = ~~"main"
-        SessionState.get () |> Session.run surface)
+        PersistentState.get () |> Session.run surface)

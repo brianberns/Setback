@@ -10,8 +10,8 @@ open Setback
 open Setback.Cfrm
 open Setback.Web.Client   // ugly - force AutoOpen
 
-/// Session state.
-type SessionState =
+/// Persistent state.
+type PersistentState =
     {
         /// Number of games won by each team.
         GamesWon : AbstractScore
@@ -29,7 +29,7 @@ type SessionState =
         Dealer : Seat
     }
 
-module SessionState =
+module PersistentState =
 
     /// Initial state.
     let private initial =
@@ -42,19 +42,19 @@ module SessionState =
         }
 
     /// Local storage key.
-    let private key = "SessionState"
+    let private key = "PersistentState"
 
     /// Answers the current state.
     let get () =
         WebStorage.localStorage[key]
             |> Option.ofObj
-            |> Option.map Json.parseAs<SessionState>
+            |> Option.map Json.parseAs<PersistentState>
             |> Option.defaultValue initial
 
     /// Sets the current state.
-    let set (sessionState : SessionState) =
+    let set (persistentState : PersistentState) =
         WebStorage.localStorage[key]
-            <- Json.serialize sessionState
+            <- Json.serialize persistentState
 
 // To-do:
 // * Split GameView into separate file
@@ -89,21 +89,21 @@ module Game =
             gamesWonElem.text(string gamesWon[iTeam])
 
     /// Increments the number of games won by the given team.
-    let private incrGamesWon iTeam sessionState =
+    let private incrGamesWon iTeam persistentState =
 
             // increment count
         let gamesWon =
-            sessionState.GamesWon + AbstractScore.forTeam iTeam 1
+            persistentState.GamesWon + AbstractScore.forTeam iTeam 1
         console.log($"{teamNames[iTeam]} has won {gamesWon[iTeam]} game(s)")
 
             // update display
         displayGamesWon gamesWon
 
-            // update session state
-        { sessionState with GamesWon = gamesWon }
+            // update persistent state
+        { persistentState with GamesWon = gamesWon }
 
     /// Handles the end of a game.
-    let private gameOver (surface : JQueryElement) iTeam sessionState =
+    let private gameOver (surface : JQueryElement) iTeam persistentState =
 
             // display banner
         let banner =
@@ -117,24 +117,24 @@ module Game =
         Promise.create (fun resolve _reject ->
             banner.click(fun () ->
                 banner.remove()
-                sessionState
+                persistentState
                     |> incrGamesWon iTeam
                     |> resolve))
 
     /// Runs one new game.
-    let run surface sessionState : Async<SessionState * int> =
+    let run surface persistentState : Async<PersistentState * int> =
 
         /// Runs one deal.
-        let rec loop (game : Game) sessionState nDeals =
+        let rec loop (game : Game) persistentState nDeals =
             async {
                     // display current score of the game
-                let dealer = sessionState.Dealer
+                let dealer = persistentState.Dealer
                 let absScore = Game.absoluteScore dealer game.Score
                 for iTeam = 0 to Setback.numTeams - 1 do
                     scoreElems[iTeam].text(string absScore[iTeam])
 
                     // run a deal
-                let rng = Random(sessionState.RandomState)
+                let rng = Random(persistentState.RandomState)
                 let! deal = Deal.run surface rng dealer game.Score
 
                     // determine score of this deal
@@ -156,8 +156,8 @@ module Game =
                     // is the game over?
                 let winningTeamIdxOpt =
                     gameScore |> Game.winningTeamIdxOpt dealer
-                let sessionState' =
-                    { sessionState with
+                let persistentState' =
+                    { persistentState with
                         Scores = absScore
                         RandomState = rng.State
                         Dealer = dealer.Next }
@@ -166,18 +166,18 @@ module Game =
 
                         // game is over
                     | Some iTeam ->
-                        let! sessionState'' =
-                            gameOver surface iTeam sessionState'
+                        let! persistentState'' =
+                            gameOver surface iTeam persistentState'
                                 |> Async.AwaitPromise
-                        return sessionState'', nDeals'
+                        return persistentState'', nDeals'
 
                         // run another deal
                     | None ->
                         let score'' = gameScore |> AbstractScore.shift 1
                         let game' = { game with Score = score'' }
-                        return! loop game' sessionState' nDeals'
+                        return! loop game' persistentState' nDeals'
             }
 
             // start a new game
-        displayGamesWon sessionState.GamesWon
-        loop Game.zero sessionState 0
+        displayGamesWon persistentState.GamesWon
+        loop Game.zero persistentState 0
