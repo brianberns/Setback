@@ -56,7 +56,7 @@ module Program =
                     // report results from this batch
                 printfn "%d,%A,%d,%A"
                     (batchNum * batchSize)
-                    outBatch.ExpectedGameValues.[1]   // value of a deal from the first bidder's point of view
+                    outBatch.ExpectedGameValues[1]   // value of a deal from the first bidder's point of view
                     outBatch.InfoSetMap.Count
                     stopwatch.Elapsed
                 stopwatch.Reset()

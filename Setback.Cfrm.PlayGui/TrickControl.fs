@@ -46,21 +46,21 @@ type TrickControl() as this =
         let padding = 30
         let xCoord = (this.ClientSize.Width - CardControl.Width) / 2
         let yCoord = (this.ClientSize.Height - CardControl.Height) / 2
-        cardControlMap.[Seat.West].Location <- Point(padding, yCoord)
-        cardControlMap.[Seat.North].Location <- Point(xCoord, padding)
-        cardControlMap.[Seat.East].Location <-
+        cardControlMap[Seat.West].Location <- Point(padding, yCoord)
+        cardControlMap[Seat.North].Location <- Point(xCoord, padding)
+        cardControlMap[Seat.East].Location <-
             Point(this.ClientSize.Width - CardControl.Width - padding, yCoord)
-        cardControlMap.[Seat.South].Location <-
+        cardControlMap[Seat.South].Location <-
             Point(xCoord, this.ClientSize.Height - CardControl.Height - padding)
 
             // labels
         let xCoord = (this.ClientSize.Width - labelSize.Width) / 2
         let yCoord = (this.ClientSize.Height - labelSize.Height) / 2
-        labelMap.[Seat.West].Location <- Point(0, yCoord)
-        labelMap.[Seat.North].Location <- Point(xCoord, 0)
-        labelMap.[Seat.East].Location <-
+        labelMap[Seat.West].Location <- Point(0, yCoord)
+        labelMap[Seat.North].Location <- Point(xCoord, 0)
+        labelMap[Seat.East].Location <-
             Point(this.ClientSize.Width - labelSize.Width, yCoord)
-        labelMap.[Seat.South].Location <-
+        labelMap[Seat.South].Location <-
             Point(xCoord, this.ClientSize.Height - labelSize.Height)
 
             // erase any previously drawn borders
@@ -85,13 +85,13 @@ type TrickControl() as this =
 
     /// Sets the card played by the given seat in this trick.
     member __.SetCard(seat, card) =
-        let ctrl = cardControlMap.[seat]
+        let ctrl = cardControlMap[seat]
         ctrl.Card <- card
         ctrl.IsTrump <- (Some card.Suit = trumpOpt)
 
     /// Clears the card played by the given seat in this trick.
     member __.ClearCard(seat) =
-        cardControlMap.[seat].Clear()
+        cardControlMap[seat].Clear()
 
     /// Clears all cards in this trick.
     member __.Clear() =

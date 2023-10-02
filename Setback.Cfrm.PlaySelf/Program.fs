@@ -30,7 +30,7 @@ let onGameFinish (dealer, score) =
             gamesWon <- gamesWon + incr)
 
         // report progress
-    let nGames = gamesWon.[0] + gamesWon.[1]
+    let nGames = gamesWon[0] + gamesWon[1]
     if nGames % 1000 = 0 then
         printfn $"{nGames}"
 
@@ -38,6 +38,6 @@ let onGameFinish (dealer, score) =
 let main argv =
     session.GameFinishEvent.Add(onGameFinish)
     session.Run(100000)
-    printfn $"Defending champion: {gamesWon.[0]}"
-    printfn $"Challenger: {gamesWon.[1]}"
+    printfn $"Defending champion: {gamesWon[0]}"
+    printfn $"Challenger: {gamesWon[1]}"
     0

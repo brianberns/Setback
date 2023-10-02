@@ -45,7 +45,7 @@ module Program =
 
     /// Is a playout key?
     let isPlayout (key : string) =
-        ".EH".Contains(key.[0])
+        ".EH".Contains(key[0])
 
     /// Creates and loads database.
     let load conn =

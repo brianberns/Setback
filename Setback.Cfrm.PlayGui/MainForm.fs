@@ -70,32 +70,32 @@ type MainForm() as this =
             (this.ClientSize.Width - HandControl.Width) / 2
         let horizTop =
             (this.ClientSize.Height - HandControl.Height - goButton.Height) / 2
-        handControlMap.[Seat.North].Location <-
+        handControlMap[Seat.North].Location <-
             Point(vertLeft, padding)
-        handControlMap.[Seat.South].Location <-
+        handControlMap[Seat.South].Location <-
             let yCoord =
                 this.ClientSize.Height - HandControl.Height - goButton.Height - padding
             Point(vertLeft, yCoord)
-        handControlMap.[Seat.East].Location <-
+        handControlMap[Seat.East].Location <-
             let xCoord =
                 this.ClientSize.Width - HandControl.Width - padding
             Point(xCoord, horizTop)
-        handControlMap.[Seat.West].Location <-
+        handControlMap[Seat.West].Location <-
             Point(padding, horizTop)
 
             // bid control
         bidControl.Location <-
-            let handCtrl = handControlMap.[Seat.South]
+            let handCtrl = handControlMap[Seat.South]
             new Point(
                 handCtrl.Left + handCtrl.ClientSize.Width + 5,
                 handCtrl.Top)
 
             // trick control
         let size, location =
-            let innerLeft = handControlMap.[Seat.West].Right
-            let innerRight = handControlMap.[Seat.East].Left
-            let innerTop = handControlMap.[Seat.North].Bottom
-            let innerBottom = handControlMap.[Seat.South].Top
+            let innerLeft = handControlMap[Seat.West].Right
+            let innerRight = handControlMap[Seat.East].Left
+            let innerTop = handControlMap[Seat.North].Bottom
+            let innerBottom = handControlMap[Seat.South].Top
             let innerWidth = innerRight - innerLeft
             let innerHeight = innerBottom - innerTop
             let size = Size(innerWidth, innerHeight) - 2 * Size(padding, padding)
@@ -106,7 +106,7 @@ type MainForm() as this =
 
             // go button
         goButton.Location <-
-            let handCtrl = handControlMap.[Seat.South]
+            let handCtrl = handControlMap[Seat.South]
             let size =
                 Size(
                     (handCtrl.Size.Width - goButton.Size.Width) / 2,
@@ -146,8 +146,8 @@ type MainForm() as this =
                 |> Seat.cycle
                 |> Seq.indexed
         for (iPlayer, seat) in indexedSeats do
-            let handCtrl = handControlMap.[seat]
-            handCtrl.Cards <- deal.UnplayedCards.[iPlayer]
+            let handCtrl = handControlMap[seat]
+            handCtrl.Cards <- deal.UnplayedCards[iPlayer]
 
     /// A deal has started.
     let delayDealStart args =
@@ -163,7 +163,7 @@ type MainForm() as this =
 
     /// A player has bid.
     let onBid (seat, bid, _) =
-        handControlMap.[seat].Bid <- bid
+        handControlMap[seat].Bid <- bid
 
     /// A player has bid.
     let delayBid args =
@@ -200,7 +200,7 @@ type MainForm() as this =
                     trickControl.Trump <- card.Suit
 
                     // remove card from hand
-                let ctrl = handControlMap.[seat]
+                let ctrl = handControlMap[seat]
                 ctrl.Remove(card)
 
                     // add card to trick
@@ -245,7 +245,7 @@ type MainForm() as this =
 
     /// User player
     let userPlayer =
-        let handControl = handControlMap.[Seat.South]
+        let handControl = handControlMap[Seat.South]
         User.player bidControl handControl actionQueue
 
     /// Underlying session.

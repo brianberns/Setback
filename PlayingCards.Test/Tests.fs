@@ -15,7 +15,7 @@ type TestClass () =
         for iCard = 0 to Card.numCards - 1 do
             let counts =
                 decks
-                    |> Seq.map (fun deck -> deck.Cards.[iCard])
+                    |> Seq.map (fun deck -> deck.Cards[iCard])
                     |> Seq.groupBy id
                     |> Seq.map (fun (_, cards) -> cards |> Seq.length)
                     |> Seq.toArray

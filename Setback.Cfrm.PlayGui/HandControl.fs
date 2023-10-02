@@ -54,7 +54,7 @@ type HandPanel() as this =
                         card.Suit, card.Rank)
                     |> Seq.indexed
             for (iCard, card) in indexedCards do
-                cardControls.[iCard].Card <-card
+                cardControls[iCard].Card <-card
 
         and get() =
             cardControls
