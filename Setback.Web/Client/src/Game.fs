@@ -53,7 +53,7 @@ module PersistentState =
     let get () =
         let json = WebStorage.localStorage[key] 
         if isNull json then
-            let initial = { create () with GameScore = AbstractScore [|9;9|] }
+            let initial = create ()
             save initial
             initial
         else
