@@ -13,47 +13,31 @@ module Session =
         /// Plays a pair of duplicate deals.
         let rec loop persState =
             async {
-                match persState.DuplicateDealState with
+                    // run first game of a pair
+                console.log("Duplicate hand: 1 of 2")
+                let! persState1, nDeals1 = Game.run surface persState
 
-                        // first game of a pair has already run
-                    | Some (rndState1, nDeals1) ->
-                        let persState1 =
-                            { persState with RandomState = rndState1 }   // reset RNG to repeat deals
-                        return! finish persState1 nDeals1
-
-                        // run first game of a pair
-                    | None ->
-                        console.log("Duplicate hand: 1 of 2")
-                        let! persState1, nDeals1 = Game.run surface persState
-                        return! finish persState1 nDeals1
-            }
-
-        and finish persState1 nDeals1 =
-            async {
-                    // run second game of the pair w/ duplicate deals
+                    // run second game of a pair w/ duplicate deals
                 console.log("Duplicate hand: 2 of 2")
-                let persState' =
+                let persState =
                     { persState1 with
                         RandomState = persState.RandomState   // reset RNG to repeat deals
-                        DuplicateDealState =
-                            Some (persState1.RandomState, nDeals1)
-                        Dealer = persState.Dealer.Next }      // rotate from first dealer of game
+                        Dealer = persState.Dealer.Next }      // rotate from first dealer of previous game
                         .Save()
-                let! persState2, nDeals2 = Game.run surface persState'
+                let! persState2, nDeals2 = Game.run surface persState
                 assert(nDeals1 <> nDeals2
                     || persState1.RandomState = persState2.RandomState)
 
-                    // continue with unseen rnd state
-                let persState' =
+                    // continue with unseen random state
+                let persState =
                     let rndState =
                         if nDeals1 > nDeals2 then persState1.RandomState
                         else persState2.RandomState
                     { persState2 with
                         RandomState = rndState
-                        DuplicateDealState = None
-                        Dealer = persState.Dealer.Next.Next }
+                        Dealer = persState.Dealer.Next }
                         .Save()
-                do! loop persState'
+                do! loop persState
         }
 
         async {

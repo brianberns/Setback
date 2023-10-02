@@ -22,9 +22,6 @@ type PersistentState =
         /// State of random number generator.
         RandomState : uint64   // can't persist entire RNG
 
-        /// Duplicate deal state.
-        DuplicateDealState : Option<uint64 (*random state*) * int (*# deals*)>
-
         /// Current dealer.
         Dealer : Seat
     }
@@ -37,7 +34,6 @@ module PersistentState =
             GamesWon = AbstractScore.zero
             GameScore = AbstractScore.zero
             RandomState = Random().State   // start with arbitrary seed
-            DuplicateDealState = None
             Dealer = Seat.South
         }
 
