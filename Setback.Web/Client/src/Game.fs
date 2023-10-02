@@ -31,12 +31,12 @@ type PersistentState =
 
 module PersistentState =
 
-    /// Initial state.
-    let private initial =
+    /// Creates initial persistent state.
+    let private create () =
         {
             GamesWon = AbstractScore.zero
             GameScore = AbstractScore.zero
-            RandomState = Random().State
+            RandomState = Random().State   // start with arbitrary seed
             DuplicateDealState = None
             Dealer = Seat.South
         }
@@ -44,17 +44,20 @@ module PersistentState =
     /// Local storage key.
     let private key = "PersistentState"
 
-    /// Answers the current state.
-    let get () =
-        WebStorage.localStorage[key]
-            |> Option.ofObj
-            |> Option.map Json.parseAs<PersistentState>
-            |> Option.defaultValue initial
-
     /// Saves the given state.
     let save (persistentState : PersistentState) =
         WebStorage.localStorage[key]
             <- Json.serialize persistentState
+
+    /// Answers the current state.
+    let get () =
+        let json = WebStorage.localStorage[key] 
+        if isNull json then
+            let initial = { create () with GameScore = AbstractScore [|9;9|] }
+            save initial
+            initial
+        else
+            Json.parseAs<PersistentState>(json)
 
 [<AutoOpen>]
 module PersitentStateExt =
