@@ -80,7 +80,7 @@ module Deal =
             // display banner
         let banner =
             let html =
-                $"<p>{Seat.toString bidder} bid {Bid.toString bid}</p><p>East + West makes {dealScore.[0]}<br />North + South makes {dealScore.[1]}</p>"
+                $"<p>{Seat.toString bidder} bid {Bid.toString bid}</p><p>East + West make {dealScore.[0]}<br />North + South make {dealScore.[1]}</p>"   // to-do: use team names from Game module
             ~~HTMLDivElement.Create(innerHTML = html)
         banner.addClass("banner")
         surface.append(banner)

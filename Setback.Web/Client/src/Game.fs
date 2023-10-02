@@ -60,7 +60,7 @@ module PersistentState =
 module PersitentStateExt =
 
     /// Saves the given state.
-    let (!) persistentState =
+    let (!!) persistentState =
         PersistentState.save persistentState
         persistentState
 
@@ -104,18 +104,17 @@ module Game =
             persistentState.GamesWon + AbstractScore.forTeam iTeam 1
         console.log($"{teamNames[iTeam]} has won {gamesWon[iTeam]} game(s)")
 
-            // update display
-        displayGamesWon gamesWon
-
             // update persistent state
-        { persistentState with GamesWon = gamesWon }
+        { persistentState with
+            GamesWon = gamesWon
+            GameScore = AbstractScore.zero }
 
     /// Handles the end of a game.
-    let private gameOver (surface : JQueryElement) iTeam persistentState =
+    let private gameOver (surface : JQueryElement) iTeam gamesWon =
 
             // display banner
         let banner =
-            let text = $"{teamNames[iTeam]} wins the game!"
+            let text = $"{teamNames[iTeam]} win the game!"
             console.log(text)
             ~~HTMLDivElement.Create(innerText = text)
         banner.addClass("banner")
@@ -125,9 +124,8 @@ module Game =
         Promise.create (fun resolve _reject ->
             banner.click(fun () ->
                 banner.remove()
-                persistentState
-                    |> incrGamesWon iTeam
-                    |> resolve))
+                displayGamesWon gamesWon
+                resolve ()))
 
     /// Runs one new game.
     let run surface persistentState =
@@ -165,7 +163,7 @@ module Game =
                 let winningTeamIdxOpt =
                     gameScore |> Game.winningTeamIdxOpt dealer
                 let persistentState' =
-                    !{ persistentState with
+                    { persistentState with
                         GameScore = absScore
                         RandomState = rng.State
                         Dealer = dealer.Next }
@@ -174,13 +172,16 @@ module Game =
 
                         // game is over
                     | Some iTeam ->
-                        let! persistentState'' =
-                            gameOver surface iTeam persistentState'
-                                |> Async.AwaitPromise
-                        return !persistentState'', nDeals'
+                        let persistentState'' =
+                            incrGamesWon iTeam persistentState'
+                        PersistentState.save persistentState''
+                        do! gameOver surface iTeam persistentState''.GamesWon
+                            |> Async.AwaitPromise
+                        return persistentState'', nDeals'
 
                         // run another deal
                     | None ->
+                        PersistentState.save persistentState'
                         let score'' = gameScore |> AbstractScore.shift 1
                         let game' = { game with Score = score'' }
                         return! loop game' persistentState' nDeals'
