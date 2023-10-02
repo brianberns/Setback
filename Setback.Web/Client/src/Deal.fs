@@ -80,7 +80,7 @@ module Deal =
             // display banner
         let banner =
             let html =
-                $"<p>{Seat.toString bidder} bid {Bid.toString bid}</p><p>East + West make {dealScore.[0]}<br />North + South make {dealScore.[1]}</p>"   // to-do: use team names from Game module
+                $"<p>{Seat.toString bidder} bid {Bid.toString bid}</p><p>East + West make {dealScore[0]}<br />North + South make {dealScore[1]}</p>"   // to-do: use team names from Game module
             ~~HTMLDivElement.Create(innerHTML = html)
         banner.addClass("banner")
         surface.append(banner)
@@ -98,7 +98,7 @@ module Deal =
                 // create random deal
             console.log($"Deal #{string rng.State}")
             console.log($"Dealer is {Seat.toString dealer}")
-            console.log($"{document.URL.Split('?').[0]}?seed={rng.State}&dealer={Seat.toString dealer}")
+            console.log($"{document.URL.Split('?')[0]}?seed={rng.State}&dealer={Seat.toString dealer}")
             let deal =
                 Deck.shuffle rng
                     |> AbstractOpenDeal.fromDeck dealer

@@ -50,7 +50,7 @@ type Session
                 ||> Seq.fold (fun deal _ ->
                     let seat = getSeat dealer deal
                     let bid =
-                        let player = playerMap.[seat]
+                        let player = playerMap[seat]
                         player.MakeBid game.Score deal
                     let deal = deal |> AbstractOpenDeal.addBid bid
                     trigger bidEvent (seat, bid, deal)
@@ -72,7 +72,7 @@ type Session
                                     trigger trickStartEvent seat
 
                                 let card =
-                                    let player = playerMap.[seat]
+                                    let player = playerMap[seat]
                                     player.MakePlay game.Score deal
                                 let deal = deal |> AbstractOpenDeal.addPlay card
                                 trigger playEvent (seat, card, deal)

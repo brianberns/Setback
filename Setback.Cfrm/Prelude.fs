@@ -24,11 +24,11 @@ module Char =
 
     /// Converts the given decimal digit to a single character.
     let fromDigit digit =
-        "0123456789".[digit]
+        "0123456789"[digit]
 
     /// Converts the given hex digit to a single character.
     let fromHexDigit digit =
-        "0123456789ABCDEF".[digit]
+        "0123456789ABCDEF"[digit]
 
 #if FABLE_COMPILER
 
@@ -53,7 +53,7 @@ type Span<'t>(array : 't[], start : int, length : int) =
     /// Fills the span with the given item.
     member _.Fill(item) =
         for i = 0 to length - 1 do
-            array.[start + i] <- item
+            array[start + i] <- item
 
 /// Fake span action.
 type SpanAction<'t, 'targ> =
@@ -88,11 +88,11 @@ type ImmutableArray<'t>(items : 't[]) =
         member _.GetEnumerator() = getEnumerator () :> IEnumerator
 
     static member Empty = Array.empty<'t> |> ImmutableArray
-    member _.Item(index) = items.[index]
+    member _.Item(index) = items[index]
     member _.Length = items.Length
     member _.SetItem(index, item) =
         let items' = PlayingCards.Array.clone items
-        items'.[index] <- item
+        items'[index] <- item
         ImmutableArray(items')
     member _.ToArray() = PlayingCards.Array.clone items
 

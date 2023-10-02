@@ -41,9 +41,9 @@ module LeadAction =
                             |> Array.map fst
                     let suit1Opt =
                         if suits.Length > 1 then
-                            Some suits.[1]
+                            Some suits[1]
                         else None
-                    suits.[0], suit1Opt
+                    suits[0], suit1Opt
                 if card.Suit = suit0 then
                     EstablishTrump 0 |> Some
                 elif Some card.Suit = suit1Opt then
@@ -133,7 +133,7 @@ module LeadAction =
                     BidAction.chooseTrumpRanks hand
                 match action with
                     | EstablishTrump iSuit ->
-                        let suit, ranks = suitRanks.[iSuit]
+                        let suit, ranks = suitRanks[iSuit]
                         let rank = establishTrumpRank ranks
                         let card = Card(rank, suit)
                         assert

@@ -23,7 +23,7 @@ module BootstrapPlayer =
                 auction |> AbstractAuction.legalBids
             match legalBids.Length with
                 | 0 -> failwith "Unexpected"
-                | 1 -> legalBids.[0]   // trivial case
+                | 1 -> legalBids[0]   // trivial case
 
                     // must choose between multiple legal bids
                 | _ ->
@@ -32,14 +32,14 @@ module BootstrapPlayer =
                         let hand =
                             let iPlayer =
                                 deal |> AbstractOpenDeal.currentPlayerIndex
-                            deal.UnplayedCards.[iPlayer]
+                            deal.UnplayedCards[iPlayer]
                         assert(hand.Count = Setback.numCardsPerHand)
                         BootstrapGameState.toAbbr auction score hand
 
                         // profile contains key?
                     profile.Best(key)
                         |> Option.map (fun iAction ->
-                            legalBids.[iAction])
+                            legalBids[iAction])
 
                             // fallback
                         |> Option.defaultWith (fun () ->

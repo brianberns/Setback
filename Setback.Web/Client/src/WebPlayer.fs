@@ -32,7 +32,7 @@ module WebPlayer =
 
         match legalBids.Length with
             | 0 -> failwith "Unexpected"
-            | 1 -> async.Return(legalBids.[0])          // trivial case
+            | 1 -> async.Return(legalBids[0])          // trivial case
 
                 // must choose between multiple legal bids
             | _ ->
@@ -42,14 +42,14 @@ module WebPlayer =
                         let hand =
                             let iPlayer =
                                 deal |> AbstractOpenDeal.currentPlayerIndex
-                            deal.UnplayedCards.[iPlayer]
+                            deal.UnplayedCards[iPlayer]
                         assert(hand.Count = Setback.numCardsPerHand)
                         BootstrapGameState.toAbbr auction score hand             // score-sensitive bidding
 
                         // profile contains key?
                     match! Remoting.api.GetActionIndex(key) with
                         | Some iAction ->
-                            return legalBids.[iAction]
+                            return legalBids[iAction]
                         | None ->
                             return
                                 if legalBids |> Array.contains(Bid.Three) then   // assumption: unusual hand is probably strong
@@ -61,7 +61,7 @@ module WebPlayer =
     let private chooseAction (legalPlayActions : _[]) deal =
         match legalPlayActions.Length with
             | 0 -> failwith "Unexpected"
-            | 1 -> async.Return(legalPlayActions.[0])   // trivial case
+            | 1 -> async.Return(legalPlayActions[0])   // trivial case
 
                 // choose action
             | _ ->
@@ -76,9 +76,9 @@ module WebPlayer =
                         // profile contains key?
                     match! Remoting.api.GetActionIndex(key) with
                         | Some iAction ->
-                            return legalPlayActions.[iAction]
+                            return legalPlayActions[iAction]
                         | None ->
-                            return legalPlayActions.[0]
+                            return legalPlayActions[0]
                 }
 
     /// Plays a card in the given deal.
@@ -101,7 +101,7 @@ module WebPlayer =
 
         match legalPlays.Length with
             | 0 -> failwith "Unexpected"
-            | 1 -> async.Return(legalPlays.[0])          // trivial case
+            | 1 -> async.Return(legalPlays[0])          // trivial case
 
                 // must choose between multiple legal plays
             | _ ->

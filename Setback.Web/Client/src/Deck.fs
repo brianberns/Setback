@@ -51,9 +51,9 @@ module Deck =
     /// From http://rosettacode.org/wiki/Knuth_shuffle#F.23
     let private knuthShuffle (rng : Random) (items : _[]) =
         let swap i j =
-            let item = items.[i]
-            items.[i] <- items.[j]
-            items.[j] <- item
+            let item = items[i]
+            items[i] <- items[j]
+            items[j] <- item
         let len = items.Length
         [0 .. len - 2]
             |> Seq.iter (fun i -> swap i (rng.Next(i, len)))

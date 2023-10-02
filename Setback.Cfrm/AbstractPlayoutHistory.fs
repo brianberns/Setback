@@ -72,7 +72,7 @@ module AbstractPlayoutHistory =
         assert(history |> isComplete |> not)
 
             // first card played on trick
-        let firstPlay = trick.Plays.[0]
+        let firstPlay = trick.Plays[0]
 
             // determine index of team that won the trick,
             // relative to the dealer's team
@@ -86,7 +86,7 @@ module AbstractPlayoutHistory =
             ||> Array.fold (fun acc iPlay ->
 
                     // trump taken?
-                let play = trick.Plays.[iPlay]
+                let play = trick.Plays[iPlay]
                 let takenOpt =
                     if play.IsTrump then
                         Some (play.Rank, iTrickWinnerTeam)

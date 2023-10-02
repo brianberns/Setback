@@ -38,7 +38,7 @@ module Game =
     /// Displays the number of games won by all teams.
     let private displayGamesWon (gamesWon : AbstractScore) =
         for iTeam = 0 to Setback.numTeams - 1 do
-            let gamesWonElem = gamesWonElems.[iTeam]
+            let gamesWonElem = gamesWonElems[iTeam]
             gamesWonElem.text(string gamesWon[iTeam])
 
     /// Increments the number of games won by the given team.

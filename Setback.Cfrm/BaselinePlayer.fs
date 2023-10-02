@@ -34,7 +34,7 @@ module BaselinePlayer =
                 auction |> AbstractAuction.legalBids
             match legalBids.Length with
                 | 0 -> failwith "Unexpected"
-                | 1 -> legalBids.[0]   // trivial case
+                | 1 -> legalBids[0]   // trivial case
 
                     // must choose between multiple legal bids
                 | _ ->
@@ -46,7 +46,7 @@ module BaselinePlayer =
                     let bidAction =
                         match legalBidActions.Length with
                             | 0 -> failwith "Unexpected"
-                            | 1 -> legalBidActions.[0]   // trivial case
+                            | 1 -> legalBidActions[0]   // trivial case
 
                                 // choose action
                             | _ ->
@@ -59,7 +59,7 @@ module BaselinePlayer =
                                     // profile contains key?
                                 profile.Best(key)
                                     |> Option.map (fun iAction ->
-                                        legalBidActions.[iAction])
+                                        legalBidActions[iAction])
 
                                         // fallback
                                     |> Option.defaultWith (fun () ->
@@ -89,7 +89,7 @@ module BaselinePlayer =
                     | _ -> failwith "Unexpected"
             match legalPlays.Length with
                 | 0 -> failwith "Unexpected"
-                | 1 -> legalPlays.[0]   // trivial case
+                | 1 -> legalPlays[0]   // trivial case
 
                     // must choose between multiple legal plays
                 | _ ->
@@ -101,7 +101,7 @@ module BaselinePlayer =
                     let action =
                         match legalPlayActions.Length with
                             | 0 -> failwith "Unexpected"
-                            | 1 -> legalPlayActions.[0]   // trivial case
+                            | 1 -> legalPlayActions[0]   // trivial case
 
                                 // choose action
                             | _ ->
@@ -115,11 +115,11 @@ module BaselinePlayer =
                                     // profile contains key?
                                 profile.Best(key)
                                     |> Option.map (fun iAction ->
-                                        legalPlayActions.[iAction])
+                                        legalPlayActions[iAction])
 
                                         // fallback
                                     |> Option.defaultWith (fun () ->
-                                        legalPlayActions.[0])
+                                        legalPlayActions[0])
 
                         // convert action to card
                     PlayAction.getPlay

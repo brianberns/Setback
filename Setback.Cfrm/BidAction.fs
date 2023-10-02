@@ -15,8 +15,8 @@ module BidAction =
             if index = minLength then
                 compare itemsA.Length itemsB.Length
             else
-                let itemA = itemsA.[index]
-                let itemB = itemsB.[index]
+                let itemA = itemsA[index]
+                let itemB = itemsB[index]
                 match compare itemA itemB with
                     | 0 -> loop (index + 1)
                     | value -> value
@@ -59,12 +59,12 @@ module BidAction =
         let result =
             [|
                     // always choose strongest suit
-                let strength0, (suit0, ranks0) = pairs.[0]
+                let strength0, (suit0, ranks0) = pairs[0]
                 yield suit0, ranks0
 
                     // also choose second-strongest suit?
                 if pairs.Length > 1 then
-                    let strength1, (suit1, ranks1) = pairs.[1]
+                    let strength1, (suit1, ranks1) = pairs[1]
                     assert(strength0 > strength1
                         || (strength0 = strength1 && compareArrays ranks0 ranks1 >= 0))
                     if strength0 - strength1 < 2

@@ -47,7 +47,7 @@ module AbstractOpenDeal =
                 dealer
                     |> Seat.cycle
                     |> Seq.map (fun seat ->
-                        set hands.[seat])
+                        set hands[seat])
                     |> ImmutableArray.CreateRange
             HandLowTrumpRankOpts =
                 Seq.replicate Seat.numSeats None
@@ -208,12 +208,12 @@ module AbstractOpenDeal =
     /// Current player's hand.
     let currentHand deal =
         let iPlayer = currentPlayerIndex deal
-        deal.UnplayedCards.[iPlayer] :> Hand
+        deal.UnplayedCards[iPlayer] :> Hand
 
     /// Current player's lowest dealt trump rank, if any.
     let currentLowTrumpRankOpt deal =
         let iPlayer = currentPlayerIndex deal
-        deal.HandLowTrumpRankOpts.[iPlayer]
+        deal.HandLowTrumpRankOpts[iPlayer]
 
     /// Actions available to the current player with the given
     /// hand in the given deal.
@@ -315,7 +315,7 @@ module AbstractOpenDeal =
                     // remove card from player's hand
                 UnplayedCards =
                     let iPlayer = currentPlayerIndex deal
-                    let hand = deal.UnplayedCards.[iPlayer]
+                    let hand = deal.UnplayedCards[iPlayer]
                     assert(hand |> Seq.contains card)
                     let hand' = hand.Remove(card)
                     deal.UnplayedCards.SetItem(iPlayer, hand')

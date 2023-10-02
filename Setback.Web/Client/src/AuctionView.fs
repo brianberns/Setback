@@ -30,10 +30,10 @@ module AuctionView =
             |}
         JQueryElement.setPosition (Position.ofInts (50, 50)) bidView
         surface.append(bidView)
-        bidViewMap.[seat] <- bidView
+        bidViewMap[seat] <- bidView
 
             // animate the the bid view to its destination
-        let dest = destMap.[seat]
+        let dest = destMap[seat]
         [|
             AnimationAction.moveTo dest
                 |> ElementAction.create bidView
@@ -63,12 +63,12 @@ module AuctionView =
     let establishTrumpAnim seat trump =
 
             // get existing bid view
-        let oldBidView = bidViewMap.[seat]
+        let oldBidView = bidViewMap[seat]
         let bid = oldBidView |> BidView.bid
 
             // create new bid view
         let newBidView = BidView.createTrump bid trump
-        bidViewMap.[seat] <- newBidView
+        bidViewMap[seat] <- newBidView
 
             // create animation
         AnimationAction.ReplaceWith newBidView

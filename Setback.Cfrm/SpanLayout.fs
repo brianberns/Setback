@@ -17,7 +17,7 @@ type SpanLayout<'t> =
     /// Answers the slice of the given span that corresponds to
     /// the given child layout.
     member layout.Slice(iChild, span : Span<'t>) =
-        let start, child = layout.ChildPositions.[iChild]
+        let start, child = layout.ChildPositions[iChild]
         span.Slice(start, child.Length)
 
 module SpanLayout =

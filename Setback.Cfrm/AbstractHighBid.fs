@@ -49,13 +49,13 @@ module AbstractHighBid =
             assert(nBid > 0)
 
                 // apply penalty?
-            if dealScore.[iBidderTeam] < nBid then
+            if dealScore[iBidderTeam] < nBid then
                 AbstractScore [|
                     for iTeam = 0 to Setback.numTeams - 1 do
                         if iTeam = iBidderTeam then
                             yield -nBid
                         else
-                            yield dealScore.[iTeam]
+                            yield dealScore[iTeam]
                 |]
             else dealScore
 

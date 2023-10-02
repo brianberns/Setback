@@ -24,7 +24,7 @@ module Rank =
 
     /// Converts the given rank to a character.
     let toChar rank = 
-        "23456789TJQKA".[int rank - 2]
+        "23456789TJQKA"[int rank - 2]
 
     /// Converts the given character to a rank.
     let fromChar = function

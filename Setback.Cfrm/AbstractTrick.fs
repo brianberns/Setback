@@ -218,7 +218,7 @@ module AbstractTrick =
 
                 // copy each play into its correct position in the span
             for iPlay = 0 to plays.Length - 1 do
-                let play = plays.[iPlay]
+                let play = plays[iPlay]
                 let slice = layout.Slice(iPlay, span)
                 AbstractTrickPlay.copyTo
                     slice

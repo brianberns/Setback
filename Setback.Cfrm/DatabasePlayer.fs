@@ -51,7 +51,7 @@ module DatabasePlayer =
                 auction |> AbstractAuction.legalBids
             match legalBids.Length with
                 | 0 -> failwith "Unexpected"
-                | 1 -> legalBids.[0]   // trivial case
+                | 1 -> legalBids[0]   // trivial case
 
                     // must choose between multiple legal bids
                 | _ ->
@@ -60,7 +60,7 @@ module DatabasePlayer =
                         let hand =
                             let iPlayer =
                                 deal |> AbstractOpenDeal.currentPlayerIndex
-                            deal.UnplayedCards.[iPlayer]
+                            deal.UnplayedCards[iPlayer]
                         assert(hand.Count = Setback.numCardsPerHand)
                         BootstrapGameState.toAbbr auction score hand
 
@@ -68,7 +68,7 @@ module DatabasePlayer =
                     key
                         |> getActionIndex
                         |> Option.map (fun iAction ->
-                            legalBids.[iAction])
+                            legalBids[iAction])
 
                             // fallback
                         |> Option.defaultWith (fun () ->
@@ -94,7 +94,7 @@ module DatabasePlayer =
                     | _ -> failwith "Unexpected"
             match legalPlays.Length with
                 | 0 -> failwith "Unexpected"
-                | 1 -> legalPlays.[0]   // trivial case
+                | 1 -> legalPlays[0]   // trivial case
 
                     // must choose between multiple legal plays
                 | _ ->
@@ -106,7 +106,7 @@ module DatabasePlayer =
                     let action =
                         match legalPlayActions.Length with
                             | 0 -> failwith "Unexpected"
-                            | 1 -> legalPlayActions.[0]   // trivial case
+                            | 1 -> legalPlayActions[0]   // trivial case
 
                                 // choose action
                             | _ ->
@@ -121,11 +121,11 @@ module DatabasePlayer =
                                 key
                                     |> getActionIndex
                                     |> Option.map (fun iAction ->
-                                        legalPlayActions.[iAction])
+                                        legalPlayActions[iAction])
 
                                         // fallback
                                     |> Option.defaultWith (fun () ->
-                                        legalPlayActions.[0])
+                                        legalPlayActions[0])
 
                         // convert action to card
                     PlayAction.getPlay

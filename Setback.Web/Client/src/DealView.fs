@@ -52,17 +52,17 @@ module DealView =
 
                 // create closed hand views for dealing
             let! backs = getCardBacks surface
-            let closed1 = closedView backs.[0.. 2] backs.[12..14]
-            let closed2 = closedView backs.[3.. 5] backs.[15..17]
-            let closed3 = closedView backs.[6.. 8] backs.[18..20]
-            let closed0 = closedView backs.[9..11] backs.[21..23]   // dealer receives cards last
+            let closed1 = closedView backs[0.. 2] backs[12..14]
+            let closed2 = closedView backs[3.. 5] backs[15..17]
+            let closed3 = closedView backs[6.. 8] backs[18..20]
+            let closed0 = closedView backs[9..11] backs[21..23]   // dealer receives cards last
             let closedHandViews =
                 [| closed0; closed1; closed2; closed3 |]
 
                 // create open hand view for user
             let iUser = Seat.getIndex Seat.User dealer
             let! openHandView =
-                deal.UnplayedCards.[iUser]
+                deal.UnplayedCards[iUser]
                     |> OpenHandView.ofHand
 
                 // deal animation
@@ -77,12 +77,12 @@ module DealView =
 
                     // animate user's hand reveal
                 let animReveal =
-                    let closedHandView = closedHandViews.[iUser]
+                    let closedHandView = closedHandViews[iUser]
                     OpenHandView.revealAnim closedHandView openHandView
 
                     // animate remaining deck removal
                 let animRemove =
-                    backs.[24..]
+                    backs[24..]
                         |> Array.map (fun back ->
                             Animation.create back Remove)
                         |> Animation.Parallel
@@ -151,7 +151,7 @@ module DealView =
                 let elem =
                     let iAbsoluteTeam =
                         (int dealer + iTeam) % Setback.numTeams
-                    elems.[iAbsoluteTeam]
+                    elems[iAbsoluteTeam]
                 let! trump = playout.TrumpOpt
                 let card = Card(rank, trump)
                 elem.text(card.String)
@@ -171,11 +171,11 @@ module DealView =
                         |> Game.absoluteScore dealer
                 | None -> AbstractScore.zero
         for iTeam = 0 to Setback.numTeams - 1 do
-            let gamePointsElem = gamePointsElems.[iTeam]
+            let gamePointsElem = gamePointsElems[iTeam]
             let text =
-                let teamScore = absoluteGameScore.[iTeam]
+                let teamScore = absoluteGameScore[iTeam]
                 assert(Setback.numTeams = 2)
-                if teamScore > absoluteGameScore.[1 - iTeam] then
+                if teamScore > absoluteGameScore[1 - iTeam] then
                     $"▶ {teamScore}"
                 else string teamScore
             gamePointsElem.text(text)

@@ -27,7 +27,7 @@ module BaselineGameState =
             for iRank = 0 to Setback.numCardsPerHand - 1 do
                 let cRank =
                     if iRank < ranks.Length then
-                        let rank = ranks.[iRank]
+                        let rank = ranks[iRank]
                         if rank >= Rank.Ten || rank = minRank then
                             rank.Char
                         else 'x'
@@ -45,7 +45,7 @@ module BaselineGameState =
             for iRanks = 0 to BidAction.numSuitsMax - 1 do
                 let slice = layout.Slice(iRanks, span)
                 if iRanks < ranksArrays.Length then
-                    copySuitTo ranksArrays.[iRanks] slice
+                    copySuitTo ranksArrays[iRanks] slice
                 else
                     assert(iRanks > 0)
                     slice.Fill('.')
@@ -63,7 +63,7 @@ module BaselineGameState =
             assert(dealActions.Length <= PlayAction.maxPerHand)
             assert(span.Length = layout.Length)
             for iAction = 0 to dealActions.Length - 1 do
-                let action = dealActions.[iAction]
+                let action = dealActions[iAction]
                 let slice = layout.Slice(iAction, span)
                 DealAction.copyTo slice action
             span.Slice(2 * dealActions.Length).Fill('.')

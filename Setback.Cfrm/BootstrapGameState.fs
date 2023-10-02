@@ -36,8 +36,8 @@ module BootstrapGameState =
                     yield Setback.winThreshold
                 } |> Seq.max
             assert(Setback.numTeams = 2)
-            winThreshold - scores.[0],  // "us" need
-            winThreshold - scores.[1]   // "them" need
+            winThreshold - scores[0],  // "us" need
+            winThreshold - scores[1]   // "them" need
 
         /// String representation of the given game score, which is
         /// relative to the current player's team.
@@ -45,7 +45,7 @@ module BootstrapGameState =
 
             let toChar need =
                 if need <= Setback.numDealPoints then
-                    "0123456789".[need]
+                    "0123456789"[need]
                 else 'x'
 
             let usNeed, themNeed = toNeed gameScore
@@ -119,7 +119,7 @@ module BootstrapGameState =
                 | _ -> failwith "Unexpected"
         match legalPlays.Length with
             | 0 -> failwith "Unexpected"
-            | 1 -> legalPlays.[0]   // trivial case
+            | 1 -> legalPlays[0]   // trivial case
 
                 // must choose between multiple legal plays
             | _ ->
@@ -132,7 +132,7 @@ module BootstrapGameState =
                 let action =
                     match legalPlayActions.Length with
                         | 0 -> failwith "Unexpected"
-                        | 1 -> legalPlayActions.[0]   // trivial case
+                        | 1 -> legalPlayActions[0]   // trivial case
 
                             // choose action
                         | _ ->
@@ -147,11 +147,11 @@ module BootstrapGameState =
                                 // profile contains key?
                             baselineProfile.Best(key)
                                 |> Option.map (fun iAction ->
-                                    legalPlayActions.[iAction])
+                                    legalPlayActions[iAction])
 
                                     // fallback
                                 |> Option.defaultWith (fun () ->
-                                    legalPlayActions.[0])
+                                    legalPlayActions[0])
 
                     // convert action to card
                 PlayAction.getPlay
@@ -215,7 +215,7 @@ type BootstrapGameState
             let iPlayer =
                 openDeal
                     |> AbstractOpenDeal.currentPlayerIndex
-            openDeal.UnplayedCards.[iPlayer]
+            openDeal.UnplayedCards[iPlayer]
         assert(hand.Count = Setback.numCardsPerHand)
         BootstrapGameState.toAbbr
             openDeal.ClosedDeal.Auction

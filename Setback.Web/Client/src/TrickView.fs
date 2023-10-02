@@ -25,7 +25,7 @@ module TrickView =
         cardViewMap.Add(seat, cardView)
 
             // animate playing the card
-        playPosMap.[seat]
+        playPosMap[seat]
             |> AnimationAction.moveTo
             |> Animation.create cardView
 
@@ -54,10 +54,10 @@ module TrickView =
 
             // move cards to trick winner
         let step1 =
-            let centerLoc = finishPosMap.[winnerSeat]
+            let centerLoc = finishPosMap[winnerSeat]
             cardViewMap
                 |> Seq.map (fun (KeyValue(seat, cardView)) ->
-                    centerLoc + finishOffsetMap.[seat]
+                    centerLoc + finishOffsetMap[seat]
                         |> AnimationAction.moveTo
                         |> Animation.create cardView)
                 |> Seq.toArray

@@ -107,7 +107,7 @@ module CardView =
 
     /// Creates a view of the given card.
     let ofCard isTrump card =
-        create srcMap.[card] card.String isTrump
+        create srcMap[card] card.String isTrump
 
     /// Image of card back.
     let private srcBack =

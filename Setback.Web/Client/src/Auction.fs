@@ -107,7 +107,7 @@ module Auction =
                 let seat =
                     AbstractOpenDeal.getCurrentSeat dealer deal
                 let animBid =
-                    auctionMap.[seat]
+                    auctionMap[seat]
                 let bidder =
                     if seat.IsUser then
                         bidUser chooser >> Async.AwaitPromise

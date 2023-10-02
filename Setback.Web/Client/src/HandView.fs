@@ -45,17 +45,17 @@ module HandView =
         let batchSize = Setback.numCardsPerHand / 2
         let batch1, batch2 =
             let cardViews = Seq.toArray handView
-            cardViews.[..batchSize-1],
-            cardViews.[batchSize..]
+            cardViews[..batchSize-1],
+            cardViews[batchSize..]
 
         /// Animate the given batch of cards.
         let animate cardOffset (cardViews : CardView[]) =
             let numCards = Setback.numCardsPerHand
             [|
                 for iCard = 0 to batchSize - 1 do
-                    let cardView = cardViews.[iCard]
+                    let cardView = cardViews[iCard]
                     let actions =
-                        let centerPos = centerPosMap.[seat]
+                        let centerPos = centerPosMap[seat]
                         let iCard' = iCard + cardOffset
                         seq {
                             animateCard centerPos numCards iCard'
@@ -72,7 +72,7 @@ module HandView =
         let numCards = handView.Count
         handView
             |> Seq.mapi (fun iCard cardView ->
-                let centerPos = centerPosMap.[seat]
+                let centerPos = centerPosMap[seat]
                 animateCard centerPos numCards iCard
                     |> Animation.create cardView)
             |> Seq.toArray

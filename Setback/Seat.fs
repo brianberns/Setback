@@ -17,7 +17,7 @@ module Seat =
 
     /// Converts the given seat to a character.
     let toChar seat =
-        "WNES".[int seat]
+        "WNES"[int seat]
 
 #if FABLE_COMPILER
     /// Display name.

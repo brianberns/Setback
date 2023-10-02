@@ -11,7 +11,7 @@ type AbstractScore =
     /// base team.
     member this.Item(teamIdx) =
         let (AbstractScore points) = this
-        points.[teamIdx]
+        points[teamIdx]
 
     /// Adds two scores.
     static member (+) (AbstractScore pointsA, AbstractScore pointsB) =
@@ -41,11 +41,11 @@ module AbstractScore =
             for iTeam = 0 to points.Length - 1 do
                 let iShift =
                     (teamIdx + iTeam) % points.Length
-                yield points.[iShift]
+                yield points[iShift]
         |]
 
     /// The difference between "our" score and "their" score.
     let delta iTeam (score : AbstractScore) =
         assert(Setback.numTeams = 2)
         assert(iTeam >= 0 && iTeam < Setback.numTeams)
-        score.[iTeam] - score.[1 - iTeam]
+        score[iTeam] - score[1 - iTeam]

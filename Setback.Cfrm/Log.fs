@@ -50,7 +50,7 @@ module Log =
             logn ""
             for iSeat = 1 to Seat.numSeats do
                 let seat = dealer |> Seat.incr iSeat
-                let hand = deal.UnplayedCards.[iSeat % Seat.numSeats]
+                let hand = deal.UnplayedCards[iSeat % Seat.numSeats]
                 logn $"{seat}: {Hand.toString hand}"
 
         /// An auction has started.
@@ -85,16 +85,16 @@ module Log =
                     |> Game.absoluteScore dealer
             logn ""
             logn "Deal points:"
-            logn $"   E+W: {dealScore.[0]}"
-            logn $"   N+S: {dealScore.[1]}"
+            logn $"   E+W: {dealScore[0]}"
+            logn $"   N+S: {dealScore[1]}"
 
             let gameScore =
                 gameScore
                     |> Game.absoluteScore dealer
             logn ""
             logn "Game score:"
-            logn $"   E+W: {gameScore.[0]}"
-            logn $"   N+S: {gameScore.[1]}"
+            logn $"   E+W: {gameScore[0]}"
+            logn $"   N+S: {gameScore[1]}"
 
             // setup event handlers
         session.GameStartEvent.Add(onGameStart)

@@ -197,7 +197,7 @@ module Playout =
                     animCardPlay,
                     animTrickFinish,
                     animEstablishTrump =
-                        playoutMap.[seat]
+                        playoutMap[seat]
                 let player =
                     if seat.IsUser then
                         playUser handView >> Async.AwaitPromise
