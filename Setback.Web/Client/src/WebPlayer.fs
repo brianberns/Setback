@@ -11,22 +11,10 @@ module Remoting =
         sprintf "/Setback/%s/%s" typeName methodName
 
     /// Server API.
-    let private rawApi =
+    let api =
         Remoting.createApi()
             |> Remoting.withRouteBuilder routeBuilder
             |> Remoting.buildProxy<ISetbackApi>
-
-    /// Server API.
-    let api =
-        {
-            GetActionIndex =
-                fun key ->
-                    async {
-                        let! index = rawApi.GetActionIndex(key)
-                        console.log($"Key '{key}': {index}")
-                        return index
-                    }
-        }
 
 /// Plays Setback by calling a remote server.
 module WebPlayer =
