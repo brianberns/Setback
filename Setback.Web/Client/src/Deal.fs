@@ -118,10 +118,8 @@ module Deal =
                                 DealOpt = Some deal }.Save()
                         deal, persState
 
-                // reset game points won
-            DealView.displayStatus dealer deal
-
                 // animate dealing the cards
+            DealView.displayStatus dealer deal
             let! seatViews =
                 DealView.start surface dealer deal
                     |> Async.AwaitPromise
@@ -132,7 +130,7 @@ module Deal =
                 // force cleanup after all-pass auction
             if persState.Deal.ClosedDeal.Auction.HighBid.Bid = Bid.Pass then
                 for (_, handView) in seatViews do
-                    for (cardView : CardView) in handView do
+                    for cardView in handView do
                         cardView.remove()
                 return persState
 
