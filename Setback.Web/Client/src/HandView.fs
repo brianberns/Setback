@@ -114,7 +114,7 @@ module ClosedHandView =
 module OpenHandView =
 
     /// Creates an open view of the given hand.
-    let ofHand (hand : Hand) =
+    let ofHand (hand : Hand) : Fable.Core.JS.Promise<HandView> =
         hand
             |> Seq.sortByDescending (fun card ->
                 let iSuit =
