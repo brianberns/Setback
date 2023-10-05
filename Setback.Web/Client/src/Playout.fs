@@ -190,36 +190,36 @@ module Playout =
         /// Plays a single card and then loops recursively.
         let rec loop deal =
             async {
-                    // prepare current player
-                let seat =
-                    AbstractOpenDeal.getCurrentSeat dealer deal
-                let (handView : HandView),
-                    animCardPlay,
-                    animTrickFinish,
-                    animEstablishTrump =
-                        playoutMap[seat]
-                let player =
-                    if seat.IsUser then
-                        playUser handView >> Async.AwaitPromise
-                    else
-                        playAuto
-
-                    // invoke player
-                let! deal' =
-                    player {
-                        Dealer = dealer
-                        Deal = deal
-                        AnimCardPlay = animCardPlay
-                        AnimTrickFinish = animTrickFinish
-                        AnimEstablishTrump = animEstablishTrump
-                    }
-
-                    // recurse until auction is complete
                 let isComplete =
-                    deal' |> AbstractOpenDeal.isComplete
+                    deal |> AbstractOpenDeal.isComplete
                 if isComplete then
-                    return deal'
+                    return deal
                 else
+                        // prepare current player
+                    let seat =
+                        AbstractOpenDeal.getCurrentSeat dealer deal
+                    let (handView : HandView),
+                        animCardPlay,
+                        animTrickFinish,
+                        animEstablishTrump =
+                            playoutMap[seat]
+                    let player =
+                        if seat.IsUser then
+                            playUser handView >> Async.AwaitPromise
+                        else
+                            playAuto
+
+                        // invoke player
+                    let! deal' =
+                        player {
+                            Dealer = dealer
+                            Deal = deal
+                            AnimCardPlay = animCardPlay
+                            AnimTrickFinish = animTrickFinish
+                            AnimEstablishTrump = animEstablishTrump
+                        }
+
+                        // recurse until playout is complete
                     return! loop deal'
             }
 
