@@ -22,6 +22,9 @@ type PersistentState =
 
         /// Current dealer.
         Dealer : Seat
+
+        /// Current deal, if any.
+        DealOpt : Option<AbstractOpenDeal>
     }
 
 module PersistentState =
@@ -33,6 +36,7 @@ module PersistentState =
             GameScore = AbstractScore.zero
             RandomState = Random().State   // start with arbitrary seed
             Dealer = Seat.South
+            DealOpt = None
         }
 
     /// Local storage key.

@@ -75,7 +75,7 @@ module Game =
     let run surface persState =
 
         /// Runs one deal.
-        let rec loop game persState nDeals =
+        let rec loop persState game nDeals =
             async {
                     // display current score of the game
                 let dealer = persState.Dealer
@@ -85,11 +85,14 @@ module Game =
 
                     // run a deal
                 let rng = Random(persState.RandomState)
-                let! deal = Deal.run surface rng dealer game.Score
+                let! persState = Deal.run surface persState game.Score
 
                     // determine score of this deal
                 let dealScore =
-                    deal |> AbstractOpenDeal.dealScore
+                    persState.DealOpt
+                        |> Option.map AbstractOpenDeal.dealScore
+                        |> Option.defaultWith (fun () ->
+                            failwith "No current deal")
                 do
                     let absScore = Game.absoluteScore dealer dealScore
                     console.log($"E+W make {absScore[0]} point(s)")
@@ -111,7 +114,8 @@ module Game =
                     { persState with
                         GameScore = absScore
                         RandomState = rng.State
-                        Dealer = dealer.Next }
+                        Dealer = dealer.Next
+                        DealOpt = None }
                 let nDeals' = nDeals + 1
                 match winningTeamIdxOpt with
 
@@ -134,7 +138,7 @@ module Game =
                         PersistentState.save persState'
                         let score'' = gameScore |> AbstractScore.shift 1
                         let game' = { game with Score = score'' }
-                        return! loop game' persState' nDeals'
+                        return! loop persState' game' nDeals'
             }
 
             // start a new game
@@ -146,4 +150,4 @@ module Game =
                 persState.GameScore
                     |> AbstractScore.shift iTeam
             { Score = score }
-        loop game persState 0   // to-do: simplify absolute vs. relative scores
+        loop persState game 0   // to-do: simplify absolute vs. relative scores

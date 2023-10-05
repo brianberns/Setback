@@ -91,17 +91,21 @@ module Deal =
                 banner.remove()
                 resolve ()))
 
-    /// Runs one new deal.
-    let run surface (rng : Random) dealer score =
+    /// Runs one deal.
+    let run surface persState score =
         async {
 
                 // create random deal
-            console.log($"Deal #{string rng.State}")
-            console.log($"Dealer is {Seat.toString dealer}")
-            console.log($"{document.URL.Split('?')[0]}?seed={rng.State}&dealer={Seat.toString dealer}")
+            let rng = Random(persState.RandomState)
+            let dealer = persState.Dealer
+            do
+                console.log($"Deal #{string rng.State}")
+                console.log($"Dealer is {Seat.toString dealer}")
             let deal =
-                Deck.shuffle rng
-                    |> AbstractOpenDeal.fromDeck dealer
+                persState.DealOpt
+                    |> Option.defaultWith (fun () ->
+                            Deck.shuffle rng
+                                |> AbstractOpenDeal.fromDeck dealer)
 
                 // reset game points won
             DealView.displayStatus dealer deal
@@ -111,20 +115,29 @@ module Deal =
                 DealView.start surface dealer deal
                     |> Async.AwaitPromise
 
-                // run the auction and then playout
-            let! deal' =
+                // run the auction
+            let! postAuctionDeal =
                 auction surface dealer score deal
 
+            /// Completes the given deal.
+            let complete completedDeal =
+                {
+                    persState with
+                        RandomState = rng.State
+                        DealOpt = Some completedDeal
+                }
+
                 // force cleanup after all-pass auction
-            if deal'.ClosedDeal.Auction.HighBid.Bid = Bid.Pass then
+            if postAuctionDeal.ClosedDeal.Auction.HighBid.Bid = Bid.Pass then
                 for (_, handView) in seatViews do
                     for (cardView : CardView) in handView do
                         cardView.remove()
-                return deal'
+                return complete postAuctionDeal
 
+                // run the playout
             else
-                let! deal'' = playout dealer deal' seatViews
-                do! dealOver surface dealer deal''
+                let! postPlayoutDeal = playout dealer postAuctionDeal seatViews
+                do! dealOver surface dealer postPlayoutDeal
                     |> Async.AwaitPromise
-                return deal''
+                return complete postPlayoutDeal
         }
