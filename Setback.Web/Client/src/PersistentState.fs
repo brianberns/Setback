@@ -27,6 +27,12 @@ type PersistentState =
         DealOpt : Option<AbstractOpenDeal>
     }
 
+    /// Current deal.
+    member this.Deal =
+        match this.DealOpt with
+            | Some deal -> deal
+            | None -> failwith "No current deal"
+
 module PersistentState =
 
     /// Creates initial persistent state.

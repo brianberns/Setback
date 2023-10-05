@@ -12,7 +12,7 @@ open Setback.Web.Client   // ugly - force AutoOpen
 module Deal =
 
     /// Runs the auction of the given deal.
-    let private auction (surface : JQueryElement) dealer score deal =
+    let private auction (surface : JQueryElement) persState score =
 
             // create bid chooser
         let chooser = BidChooser.create ()
@@ -28,7 +28,7 @@ module Deal =
                 |> Map
 
             // run the auction
-        Auction.run dealer score deal chooser auctionMap
+        Auction.run persState score chooser auctionMap
 
     /// Runs the playout of the given deal.
     let private playout dealer deal handViews =
@@ -95,17 +95,28 @@ module Deal =
     let run surface persState score =
         async {
 
-                // create random deal
-            let rng = Random(persState.RandomState)
+                // new deal needed?
             let dealer = persState.Dealer
-            do
-                console.log($"Deal #{string rng.State}")
-                console.log($"Dealer is {Seat.toString dealer}")
-            let deal =
-                persState.DealOpt
-                    |> Option.defaultWith (fun () ->
+            let deal, persState =
+                match persState.DealOpt with
+
+                        // use existing deal
+                    | Some deal -> deal, persState
+
+                        // create random deal
+                    | None ->
+                        let rng = Random(persState.RandomState)
+                        do
+                            console.log($"Deal #{string rng.State}")
+                            console.log($"Dealer is {Seat.toString dealer}")
+                        let deal =
                             Deck.shuffle rng
-                                |> AbstractOpenDeal.fromDeck dealer)
+                                |> AbstractOpenDeal.fromDeck dealer
+                        let persState =
+                            { persState with
+                                RandomState = rng.State
+                                DealOpt = Some deal }.Save()
+                        deal, persState
 
                 // reset game points won
             DealView.displayStatus dealer deal
@@ -116,28 +127,19 @@ module Deal =
                     |> Async.AwaitPromise
 
                 // run the auction
-            let! postAuctionDeal =
-                auction surface dealer score deal
-
-            /// Completes the given deal.
-            let complete completedDeal =
-                {
-                    persState with
-                        RandomState = rng.State
-                        DealOpt = Some completedDeal
-                }
+            let! persState = auction surface persState score
 
                 // force cleanup after all-pass auction
-            if postAuctionDeal.ClosedDeal.Auction.HighBid.Bid = Bid.Pass then
+            if persState.Deal.ClosedDeal.Auction.HighBid.Bid = Bid.Pass then
                 for (_, handView) in seatViews do
                     for (cardView : CardView) in handView do
                         cardView.remove()
-                return complete postAuctionDeal
+                return persState
 
                 // run the playout
             else
-                let! postPlayoutDeal = playout dealer postAuctionDeal seatViews
+                let! postPlayoutDeal = playout dealer persState.Deal seatViews
                 do! dealOver surface dealer postPlayoutDeal
                     |> Async.AwaitPromise
-                return complete postPlayoutDeal
+                return { persState with DealOpt = Some postPlayoutDeal }
         }

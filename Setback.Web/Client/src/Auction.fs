@@ -98,18 +98,20 @@ module Auction =
         }
 
     /// Runs the given deal's auction.
-    let run dealer score deal chooser (auctionMap : Map<_, _>) =
+    let run persState score chooser (auctionMap : Map<_, _>) =
 
         /// Makes a single bid and then loops recursively.
-        let rec loop deal =
+        let rec loop (persState : PersistentState) =
             async {
+                let deal = persState.Deal
                 let isComplete =
                     deal.ClosedDeal.Auction
                         |> AbstractAuction.isComplete
                 if isComplete then
-                    return deal
+                    return persState
                 else
                         // prepare current player
+                    let dealer = persState.Dealer
                     let seat =
                         AbstractOpenDeal.getCurrentSeat dealer deal
                     let animBid = auctionMap[seat]
@@ -128,7 +130,9 @@ module Auction =
                         }
 
                         // recurse until auction is complete
-                    return! loop deal'
+                    let persState' =
+                        { persState with DealOpt = Some deal' }.Save()
+                    return! loop persState'
             }
 
-        loop deal
+        loop persState

@@ -89,10 +89,8 @@ module Game =
 
                     // determine score of this deal
                 let dealScore =
-                    persState.DealOpt
-                        |> Option.map AbstractOpenDeal.dealScore
-                        |> Option.defaultWith (fun () ->
-                            failwith "No current deal")
+                    persState.Deal
+                        |> AbstractOpenDeal.dealScore
                 do
                     let absScore = Game.absoluteScore dealer dealScore
                     console.log($"E+W make {absScore[0]} point(s)")
