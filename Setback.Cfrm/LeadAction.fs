@@ -135,7 +135,7 @@ module LeadAction =
                     | EstablishTrump iSuit ->
                         let suit, ranks = suitRanks[iSuit]
                         let rank = establishTrumpRank ranks
-                        let card = Card(rank, suit)
+                        let card = Card.create rank suit
                         assert
                             (playout
                                 |> AbstractPlayout.legalPlays hand
@@ -145,7 +145,7 @@ module LeadAction =
             | Some trump ->
                 match action with
                     | LeadTrump (Some rank) ->
-                        let card = Card(rank, trump)
+                        let card = Card.create rank trump
                         assert
                             (playout
                                 |> AbstractPlayout.legalPlays hand

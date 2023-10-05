@@ -109,7 +109,7 @@ module FollowAction =
             | Some trump, Some suitLed ->
                 match action with
                     | PlayTrump rank ->
-                        let card = Card(rank, trump)
+                        let card = Card.create rank trump
                         assert
                             (playout
                                 |> AbstractPlayout.legalPlays hand

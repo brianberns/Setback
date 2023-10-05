@@ -75,35 +75,41 @@ module StringExt =
 open System.Collections
 open System.Collections.Generic
 
-type ImmutableArray<'t>(items : 't[]) =
+type ImmutableArray<'t> =
+    private {
+        Items : 't[]
+    }
 
-    let getEnumerator () = (items :> seq<'t>).GetEnumerator()
-
-    new(items : seq<_>) = ImmutableArray(Seq.toArray items)
+    with
 
     interface IEnumerable<'t> with
-        member _.GetEnumerator() = getEnumerator ()
+        member this.GetEnumerator() =
+            (this.Items :> seq<'t>).GetEnumerator()
 
     interface IEnumerable with
-        member _.GetEnumerator() = getEnumerator () :> IEnumerator
+        member this.GetEnumerator() =
+            (this.Items :> seq<'t>).GetEnumerator()
 
-    static member Empty = Array.empty<'t> |> ImmutableArray
-    member _.Item(index) = items[index]
-    member _.Length = items.Length
-    member _.SetItem(index, item) =
-        let items' = PlayingCards.Array.clone items
+    // new(items : seq<_>) = ImmutableArray(Seq.toArray items)
+
+    static member Empty = { Items = Array.empty<'t> }
+    member this.Item(index) = this.Items[index]
+    member this.Length = this.Items.Length
+    member this.SetItem(index, item) =
+        let items' = PlayingCards.Array.clone this.Items
         items'[index] <- item
-        ImmutableArray(items')
-    member _.ToArray() = PlayingCards.Array.clone items
+        { Items = items' }
+    member this.ToArray() = PlayingCards.Array.clone this.Items
 
 type ImmutableArrayBuilder<'t>(n) =
     let items = ResizeArray(n : int)
     member _.AddRange(range : seq<'t>) = items.AddRange(range)
     member _.Add(item) = items.Add(item)
-    member _.ToImmutable() = items |> Seq.toArray |> ImmutableArray
+    member _.ToImmutable() = { Items = Seq.toArray items }
 
 type ImmutableArray =
     static member CreateBuilder<'t>(n) = ImmutableArrayBuilder<'t>(n)
-    static member CreateRange<'t>(range : seq<'t>) = ImmutableArray<'t>(range)
+    static member CreateRange<'t>(range : seq<'t>) =
+        { Items = Seq.toArray range }
 
 #endif

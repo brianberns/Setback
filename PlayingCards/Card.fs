@@ -3,6 +3,12 @@
 /// A card has a rank and a suit.
 [<StructuredFormatDisplay("{String}")>]
 type Card =
+#if FABLE_COMPILER
+    {
+        Rank : Rank
+        Suit : Suit
+    }
+#else
     struct
 
         /// Rank of this card.
@@ -16,6 +22,7 @@ type Card =
             { Rank = rank; Suit = suit }
 
     end
+#endif
 
     /// Converts this card to a string.
     override this.ToString() =
@@ -32,6 +39,14 @@ type Card =
 
 module Card =
 
+    /// Creates a card.
+    let inline create rank suit =
+#if FABLE_COMPILER
+        { Rank = rank; Suit = suit }
+#else
+        Card(rank, suit)
+#endif
+
     /// Number of cards in a deck.
     let numCards = Suit.numSuits * Rank.numRanks
 
@@ -40,12 +55,12 @@ module Card =
         assert(str.Length = 2)
         let rank = Rank.fromChar str[0]
         let suit = Suit.fromChar str[1]
-        Card(rank, suit)
+        create rank suit
 
     /// All the cards in a deck, in order.
     let allCards =
         [|
             for suit in Enum.getValues<Suit> do
                 for rank in Enum.getValues<Rank> do
-                    yield Card(rank, suit)
+                    yield create rank suit
         |]

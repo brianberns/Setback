@@ -153,7 +153,7 @@ module DealView =
                         (int dealer + iTeam) % Setback.numTeams
                     elems[iAbsoluteTeam]
                 let! trump = playout.TrumpOpt
-                let card = Card(rank, trump)
+                let card = Card.create rank trump
                 elem.text(card.String)
             } |> ignore
 
