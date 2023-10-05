@@ -103,32 +103,31 @@ module Auction =
         /// Makes a single bid and then loops recursively.
         let rec loop deal =
             async {
-                    // prepare current player
-                let seat =
-                    AbstractOpenDeal.getCurrentSeat dealer deal
-                let animBid =
-                    auctionMap[seat]
-                let bidder =
-                    if seat.IsUser then
-                        bidUser chooser >> Async.AwaitPromise
-                    else bidAuto
-
-                    // invoke bidder
-                let! deal' =
-                    bidder {
-                        Dealer = dealer
-                        Score = score
-                        Deal = deal
-                        AnimBid = animBid
-                    }
-
-                    // recurse until auction is complete
                 let isComplete =
-                    deal'.ClosedDeal.Auction
+                    deal.ClosedDeal.Auction
                         |> AbstractAuction.isComplete
                 if isComplete then
-                    return deal'
+                    return deal
                 else
+                        // prepare current player
+                    let seat =
+                        AbstractOpenDeal.getCurrentSeat dealer deal
+                    let animBid = auctionMap[seat]
+                    let bidder =
+                        if seat.IsUser then
+                            bidUser chooser >> Async.AwaitPromise
+                        else bidAuto
+
+                        // invoke bidder
+                    let! deal' =
+                        bidder {
+                            Dealer = dealer
+                            Score = score
+                            Deal = deal
+                            AnimBid = animBid
+                        }
+
+                        // recurse until auction is complete
                     return! loop deal'
             }
 
