@@ -5,7 +5,10 @@
 type Card =
 #if FABLE_COMPILER
     {
+        /// Rank of this card.
         Rank : Rank
+
+        /// Suit of this card.
         Suit : Suit
     }
 #else
