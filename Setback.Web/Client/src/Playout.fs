@@ -114,11 +114,6 @@ module Playout =
 
                 | None -> ()
 
-                // cleanup at end of deal
-            if dealComplete then
-                do! AuctionView.removeAnim ()
-                    |> Animation.run
-
             return deal
         }
 
@@ -193,6 +188,12 @@ module Playout =
                 let isComplete =
                     deal |> AbstractOpenDeal.isComplete
                 if isComplete then
+
+                        // cleanup at end of deal
+                    do! AuctionView.removeAnim ()
+                        |> Animation.run
+                        |> Async.AwaitPromise
+
                     return persState
                 else
                         // prepare current player
