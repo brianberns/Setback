@@ -182,18 +182,21 @@ module Playout =
         }
 
     /// Runs the given deal's playout
-    let run dealer deal (playoutMap : Map<_, _>) =
+    let run (persState : PersistentState) (playoutMap : Map<_, _>) =
         assert(
-            deal.ClosedDeal.Auction
+            persState.Deal.ClosedDeal.Auction
                 |> AbstractAuction.isComplete)
 
+        let dealer = persState.Dealer
+
         /// Plays a single card and then loops recursively.
-        let rec loop deal =
+        let rec loop (persState : PersistentState) =
             async {
+                let deal = persState.Deal
                 let isComplete =
                     deal |> AbstractOpenDeal.isComplete
                 if isComplete then
-                    return deal
+                    return persState
                 else
                         // prepare current player
                     let seat =
@@ -220,7 +223,9 @@ module Playout =
                         }
 
                         // recurse until playout is complete
-                    return! loop deal'
+                    let persState' =
+                        { persState with DealOpt = Some deal' }.Save()
+                    return! loop persState'
             }
 
-        loop deal
+        loop persState

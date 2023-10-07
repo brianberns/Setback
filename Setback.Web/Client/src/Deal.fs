@@ -48,7 +48,7 @@ module Deal =
         Auction.run persState score chooser auctionMap
 
     /// Runs the playout of the given deal.
-    let private playout dealer deal handViews =
+    let private playout persState handViews =
 
         /// Establishes trump.
         let establishTrumpAnim seat trump =
@@ -78,7 +78,7 @@ module Deal =
                 |> Map
 
             // run the playout
-        Playout.run dealer deal playoutMap
+        Playout.run persState playoutMap
 
     /// Handles the end of a deal.
     let private dealOver (surface : JQueryElement) dealer deal =
@@ -153,8 +153,8 @@ module Deal =
 
                 // run the playout
             else
-                let! postPlayoutDeal = playout dealer persState.Deal seatViews
-                do! dealOver surface dealer postPlayoutDeal
+                let! persState = playout persState seatViews
+                do! dealOver surface dealer persState.Deal
                     |> Async.AwaitPromise
-                return { persState with DealOpt = Some postPlayoutDeal }
+                return persState
         }
