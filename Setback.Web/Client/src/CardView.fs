@@ -18,7 +18,7 @@ module CardView =
                 // create the image
             let img = Image.Create(src = src, alt = name)
 
-                // set image properties view JQuery
+                // set image properties via JQuery
             let cardView = ~~img : CardView
             cardView.attr("data-card", name)
             cardView.addClass("card")
