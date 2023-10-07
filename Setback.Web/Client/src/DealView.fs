@@ -46,8 +46,16 @@ module DealView =
         Seq.append backsA backsB
             |> ClosedHandView.ofCardViews
 
+    /// Creates an open hand view of the user's cards.
+    let private openView dealer deal =
+        promise {
+            let iUser = Seat.getIndex Seat.User dealer
+            return! deal.UnplayedCards[iUser]
+                |> OpenHandView.ofHand
+        }
+
     /// Animates the start of the given deal on the given surface.
-    let start surface dealer deal =
+    let private animate surface dealer deal =
         promise {
 
                 // create closed hand views for dealing
@@ -61,9 +69,7 @@ module DealView =
 
                 // create open hand view for user
             let iUser = Seat.getIndex Seat.User dealer
-            let! openHandView =
-                deal.UnplayedCards[iUser]
-                    |> OpenHandView.ofHand
+            let! openHandView = openView dealer deal
 
                 // deal animation
             let anim =
@@ -106,6 +112,54 @@ module DealView =
                     let seat = Seat.incr iPlayer dealer
                     seat, handView)
         }
+
+    /// Creates and positions hand views for the given deal.
+    let private createHandViews (surface : JQueryElement) dealer deal =
+
+        /// Sets positions of cards in the given hand.
+        let setPositions seat handView =
+            HandView.setPositions seat handView
+            for cardView in handView do
+                surface.append(cardView)
+
+        /// Creates and positions a closed hand view for the given seat.
+        let closedViewPair seat =
+            promise {
+                let! handView =
+                    let iSeat = Seat.getIndex seat dealer
+                    Array.init
+                        deal.UnplayedCards[iSeat].Count
+                        (fun _ -> CardView.ofBack ())
+                        |> Promise.all
+                        |> Promise.map ResizeArray
+                setPositions seat handView
+                return seat, (handView : HandView)
+            }
+
+        promise {
+
+                // create closed hand views
+            let! closedHandViewPairs =
+                [ Seat.West; Seat.North; Seat.East ]
+                    |> Seq.map closedViewPair
+                    |> Promise.all
+
+                // create open hand view for user
+            let! openHandView = openView dealer deal
+            setPositions Seat.South openHandView
+
+            return [|
+                yield! closedHandViewPairs
+                yield Seat.South, openHandView
+            |]
+        }
+
+    /// Creates hand views for the given deal.
+    let start surface dealer deal =
+        if deal.ClosedDeal.Auction.NumBids = 0 then
+            animate surface dealer deal
+        else
+            createHandViews surface dealer deal   // no animation
 
     /// Elements tracking high trump taken.
     let private highElems =

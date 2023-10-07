@@ -22,10 +22,14 @@ module HandView =
         (delta * float iCard) - shift
             |> Percent
 
+    /// Gets the position of a card in a hand.
+    let private getPosition centerPos numCards iCard =
+        { centerPos with
+            left = getLeft numCards iCard + centerPos.left }
+
     /// Animates a card to its target position in a hand.
-    let private animateCard pos numCards iCard =
-        { pos with
-            left = getLeft numCards iCard + pos.left }
+    let private animateCard centerPos numCards iCard =
+        getPosition centerPos numCards iCard
             |> AnimationAction.moveTo
 
     /// Center position of each hand.
@@ -66,6 +70,16 @@ module HandView =
             |] |> Animation.Parallel
 
         animate 0 batch1, animate batchSize batch2
+
+    /// Sets the positions of the cards in the given hand, without
+    /// animation.
+    let setPositions seat (handView : HandView) =
+        for iCard = 0 to handView.Count - 1 do
+            let cardView = handView[iCard]
+            let pos =
+                let centerPos = centerPosMap[seat]
+                getPosition centerPos handView.Count iCard
+            JQueryElement.setPosition pos cardView
 
     /// Animates adjustment of remaining unplayed cards in a hand.
     let adjustAnim seat (handView : HandView) =
