@@ -224,7 +224,7 @@ module Playout =
                         { persState with DealOpt = Some deal' }
                     let trick =
                         deal'.ClosedDeal.Playout.CurrentTrick
-                    if AbstractTrick.isComplete trick then
+                    if trick.NumPlays = 0 then   // save at start of new trick
                         PersistentState.save persState'
                     return! loop persState'
             }
