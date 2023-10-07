@@ -108,15 +108,11 @@ module BootstrapGameState =
             AbstractOpenDeal.currentHand deal
         let handLowTrumpRankOpt =
             AbstractOpenDeal.currentLowTrumpRankOpt deal
-        let playout, legalPlays =
-            match deal.ClosedDeal.PlayoutOpt with
-                | Some playout ->
-                    let legalPlays =
-                        playout
-                            |> AbstractPlayout.legalPlays hand
-                            |> Seq.toArray
-                    playout, legalPlays
-                | _ -> failwith "Unexpected"
+        let playout = deal.ClosedDeal.Playout
+        let legalPlays =
+            playout
+                |> AbstractPlayout.legalPlays hand
+                |> Seq.toArray
         match legalPlays.Length with
             | 0 -> failwith "Unexpected"
             | 1 -> legalPlays[0]   // trivial case

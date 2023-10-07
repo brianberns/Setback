@@ -63,25 +63,22 @@ type Session
             if deal.ClosedDeal.Auction.HighBid.Bid > Bid.Pass then
                 (deal, [1 .. Setback.numCardsPerDeal])
                     ||> Seq.fold (fun deal _ ->
-                        match deal.ClosedDeal.PlayoutOpt with
-                            | Some playout ->
+                        let numPlays =
+                            deal.ClosedDeal.Playout.CurrentTrick.NumPlays
+                        let seat = getSeat dealer deal
+                        if numPlays = 0 then
+                            trigger trickStartEvent seat
 
-                                let numPlays = playout.CurrentTrick.NumPlays
-                                let seat = getSeat dealer deal
-                                if numPlays = 0 then
-                                    trigger trickStartEvent seat
+                        let card =
+                            let player = playerMap[seat]
+                            player.MakePlay game.Score deal
+                        let deal = deal |> AbstractOpenDeal.addPlay card
+                        trigger playEvent (seat, card, deal)
 
-                                let card =
-                                    let player = playerMap[seat]
-                                    player.MakePlay game.Score deal
-                                let deal = deal |> AbstractOpenDeal.addPlay card
-                                trigger playEvent (seat, card, deal)
+                        if numPlays = Seat.numSeats - 1 then
+                            trigger trickFinishEvent ()
 
-                                if numPlays = Seat.numSeats - 1 then
-                                    trigger trickFinishEvent ()
-
-                                deal
-                            | None -> failwith "Unexpected")
+                        deal)
             else deal
                 
             // update the game

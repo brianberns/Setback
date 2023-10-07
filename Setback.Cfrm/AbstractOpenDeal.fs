@@ -239,71 +239,69 @@ module AbstractOpenDeal =
         }
 
     /// Plays a card in the given deal.
-    let addPlay (card : Card) deal : AbstractOpenDeal =
+    let addPlay (card : Card) deal =
 
             // determine High, Low, and Jack cards when trump is first established
         let highTrumpOpt, lowTrumpOpt, jackTrumpOpt, handLowTrumpRankOpts =
-            match deal.ClosedDeal.PlayoutOpt with
-                | Some playout ->
 
-                        // already established?
-                    if playout.TrumpOpt.IsSome then
-                        assert(deal.HighTrumpOpt.IsSome)
-                        assert(deal.LowTrumpOpt.IsSome)
-                        assert(deal.JackTrumpOpt.IsSome)
-                        deal.HighTrumpOpt,
-                        deal.LowTrumpOpt,
-                        deal.JackTrumpOpt,
-                        deal.HandLowTrumpRankOpts
+                // already established?
+            let playout = deal.ClosedDeal.Playout
+            if playout.TrumpOpt.IsSome then
+                assert(deal.HighTrumpOpt.IsSome)
+                assert(deal.LowTrumpOpt.IsSome)
+                assert(deal.JackTrumpOpt.IsSome)
+                deal.HighTrumpOpt,
+                deal.LowTrumpOpt,
+                deal.JackTrumpOpt,
+                deal.HandLowTrumpRankOpts
 
-                    else
-                        assert(playout.History.NumTricksCompleted = 0)
-                        assert(playout.CurrentTrick.NumPlays = 0)
-                        assert(deal.HighTrumpOpt.IsNone)
-                        assert(deal.LowTrumpOpt.IsNone)
-                        assert(deal.JackTrumpOpt.IsNone)
-                        assert(
-                            deal.UnplayedCards
-                                |> Seq.concat
-                                |> Seq.length = Setback.numCardsPerDeal)
-                        let trump = card.Suit
+            else
+                assert(playout.History.NumTricksCompleted = 0)
+                assert(playout.CurrentTrick.NumPlays = 0)
+                assert(deal.HighTrumpOpt.IsNone)
+                assert(deal.LowTrumpOpt.IsNone)
+                assert(deal.JackTrumpOpt.IsNone)
+                assert(
+                    deal.UnplayedCards
+                        |> Seq.concat
+                        |> Seq.length = Setback.numCardsPerDeal)
+                let trump = card.Suit
 
-                            // determine High, Low, and Jack cards
-                        let rankTeams =
-                            deal.UnplayedCards
-                                |> Seq.indexed
-                                |> Seq.collect (fun (iPlayer, cards) ->
-                                    let iTeam = iPlayer % Setback.numTeams
-                                    cards
-                                        |> Seq.where (fun c -> c.Suit = trump)
-                                        |> Seq.map (fun card -> card.Rank, iTeam))
-                                |> Seq.toArray
-                        let ranks = rankTeams |> Seq.map fst
-                        let highTrumpOpt =
-                            rankTeams |> Array.max |> Some
-                        let lowTrumpOpt =
-                            ranks |> Seq.min |> Some
-                        let jackTrumpOpt =
-                            ranks |> Seq.contains Rank.Jack |> Some
+                    // determine High, Low, and Jack cards
+                let rankTeams =
+                    deal.UnplayedCards
+                        |> Seq.indexed
+                        |> Seq.collect (fun (iPlayer, cards) ->
+                            let iTeam = iPlayer % Setback.numTeams
+                            cards
+                                |> Seq.where (fun c -> c.Suit = trump)
+                                |> Seq.map (fun card -> card.Rank, iTeam))
+                        |> Seq.toArray
+                let ranks = rankTeams |> Seq.map fst
+                let highTrumpOpt =
+                    rankTeams |> Array.max |> Some
+                let lowTrumpOpt =
+                    ranks |> Seq.min |> Some
+                let jackTrumpOpt =
+                    ranks |> Seq.contains Rank.Jack |> Some
 
-                            // determine low trump ranks dealt
-                        let handLowTrumpRankOpts =
-                            deal.UnplayedCards
-                                |> Seq.map (fun hand ->
-                                    hand
-                                        |> Seq.where (fun card ->
-                                            card.Suit = trump)
-                                        |> Seq.map (fun card ->
-                                            card.Rank)
-                                        |> Seq.tryMin)
-                                |> ImmutableArray.CreateRange
+                    // determine low trump ranks dealt
+                let handLowTrumpRankOpts =
+                    deal.UnplayedCards
+                        |> Seq.map (fun hand ->
+                            hand
+                                |> Seq.where (fun card ->
+                                    card.Suit = trump)
+                                |> Seq.map (fun card ->
+                                    card.Rank)
+                                |> Seq.tryMin)
+                        |> ImmutableArray.CreateRange
 
-                        highTrumpOpt,
-                        lowTrumpOpt,
-                        jackTrumpOpt,
-                        handLowTrumpRankOpts
+                highTrumpOpt,
+                lowTrumpOpt,
+                jackTrumpOpt,
+                handLowTrumpRankOpts
 
-                | None -> failwith "Unexpected"
         {
             deal with
 
@@ -343,10 +341,6 @@ module AbstractOpenDeal =
 
                 // playout
             | DealPlayAction playAction ->
-                let playout =
-                    match deal.ClosedDeal.PlayoutOpt with
-                        | Some playout -> playout
-                        | None -> failwith "Unexpected"
                 let card =
                     let hand = currentHand deal
                     let handLowTrumpRankOpt =
@@ -355,5 +349,5 @@ module AbstractOpenDeal =
                         |> PlayAction.getPlay
                             hand
                             handLowTrumpRankOpt
-                            playout
+                            deal.ClosedDeal.Playout
                 deal |> addPlay card

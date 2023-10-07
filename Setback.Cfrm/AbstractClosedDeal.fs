@@ -13,6 +13,12 @@ type AbstractClosedDeal =
         PlayoutOpt : Option<AbstractPlayout>
     }
 
+    /// Playout phase of this deal.
+    member deal.Playout =
+        match deal.PlayoutOpt with
+            | Some playout -> playout
+            | None -> failwith "Playout has not started"
+
 module AbstractClosedDeal =
 
     /// Initial closed deal state.
@@ -28,7 +34,7 @@ module AbstractClosedDeal =
             | None ->
                 let auction = closedDeal.Auction
                 (AbstractAuction.isComplete auction)
-                    && auction.HighBid.Bid = Bid.Pass
+                    && auction.HighBid.Bid = Bid.Pass   // all-pass auction ends deal
             | Some playout ->
                 playout |> AbstractPlayout.isComplete
 

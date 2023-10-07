@@ -11,13 +11,10 @@ open Setback.Cfrm
 module Playout =
 
     /// Answers legal plays in the given hand and deal.
-    let private getLegalPlays hand closedDeal =
-        match closedDeal.PlayoutOpt with
-            | Some playout ->
-                playout
-                    |> AbstractPlayout.legalPlays hand
-                    |> Set.ofSeq
-            | _ -> failwith "Unexpected"
+    let private getLegalPlays hand (closedDeal : AbstractClosedDeal) =
+        closedDeal.Playout
+            |> AbstractPlayout.legalPlays hand
+            |> Set.ofSeq
 
     /// Playout context.
     type private Context =
@@ -224,7 +221,11 @@ module Playout =
 
                         // recurse until playout is complete
                     let persState' =
-                        { persState with DealOpt = Some deal' }.Save()
+                        { persState with DealOpt = Some deal' }
+                    let trick =
+                        deal'.ClosedDeal.Playout.CurrentTrick
+                    if AbstractTrick.isComplete trick then
+                        PersistentState.save persState'
                     return! loop persState'
             }
 
