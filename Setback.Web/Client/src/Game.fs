@@ -84,7 +84,6 @@ module Game =
                     scoreElems[iTeam].text(string absScore[iTeam])
 
                     // run a deal
-                let rng = Random(persState.RandomState)
                 let! persState = Deal.run surface persState game.Score
 
                     // determine score of this deal
@@ -111,7 +110,6 @@ module Game =
                 let persState' =
                     { persState with
                         GameScore = absScore
-                        RandomState = rng.State
                         Dealer = dealer.Next
                         DealOpt = None }
                 let nDeals' = nDeals + 1

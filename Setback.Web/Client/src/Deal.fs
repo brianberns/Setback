@@ -126,7 +126,7 @@ module Deal =
                     | None ->
                         let rng = Random(persState.RandomState)
                         do
-                            console.log($"Deal #{string rng.State}")
+                            console.log($"Deal #{rng.State}")
                             console.log($"Dealer is {Seat.toString dealer}")
                         let deal =
                             Deck.shuffle rng
