@@ -41,6 +41,15 @@ module AuctionView =
             Animation.Sleep 1000
         |] |> Animation.Serial
 
+    /// Creates a view of the given bid for the given seat without
+    /// animation.
+    let createBidView (surface : JQueryElement) seat bid =
+        let bidView = BidView.createStatic bid
+        JQueryElement.setPosition destMap[seat] bidView
+        surface.append(bidView)
+        bidViewMap[seat] <- bidView
+        bidView
+
     /// Animates the removal of the current bid views.
     let removeAnim () =
 

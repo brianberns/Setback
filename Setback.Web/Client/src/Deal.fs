@@ -12,7 +12,10 @@ open Setback.Web.Client   // ugly - force AutoOpen
 module Deal =
 
     /// Runs the auction of the given deal.
-    let private auction (surface : JQueryElement) persState score =
+    let private auction
+        (surface : JQueryElement)
+        (persState : PersistentState)
+        score =
 
             // create bid chooser
         let chooser = BidChooser.create ()
@@ -26,6 +29,20 @@ module Deal =
                         AuctionView.bidAnim surface seat
                     seat, animBid)
                 |> Map
+
+            // create views for bids already made
+        let dealer = persState.Dealer
+        let auction = persState.Deal.ClosedDeal.Auction
+        for iBid = 0 to auction.NumBids - 1 do
+            let iPlayer = (iBid + 1) % Seat.numSeats
+            let bid =
+                if iPlayer = auction.HighBid.BidderIndex then
+                    auction.HighBid.Bid
+                else
+                    Bid.Pass   // HORRIBLE HACK - we don't track the actual bid
+            let seat = Seat.incr iPlayer dealer
+            if seat = Seat.User then chooser.Element.remove()   // won't need this
+            AuctionView.createBidView surface seat bid |> ignore
 
             // run the auction
         Auction.run persState score chooser auctionMap
