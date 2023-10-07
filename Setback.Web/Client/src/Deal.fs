@@ -15,7 +15,8 @@ module Deal =
     let private auction
         (surface : JQueryElement)
         (persState : PersistentState)
-        score =
+        score
+        trumpOpt =
 
             // create bid chooser
         let chooser = BidChooser.create ()
@@ -35,14 +36,15 @@ module Deal =
         let auction = persState.Deal.ClosedDeal.Auction
         for iBid = 0 to auction.NumBids - 1 do
             let iPlayer = (iBid + 1) % Seat.numSeats
-            let bid =
+            let bid, trumpOpt' =
                 if iPlayer = auction.HighBid.BidderIndex then
-                    auction.HighBid.Bid
+                    auction.HighBid.Bid, trumpOpt
                 else
-                    Bid.Pass   // HORRIBLE HACK - we don't track the actual bid
+                    Bid.Pass, None   // HORRIBLE HACK - we don't track the actual bid
             let seat = Seat.incr iPlayer dealer
             if seat = Seat.User then chooser.Element.remove()   // won't need this
-            AuctionView.createBidView surface seat bid |> ignore
+            AuctionView.createBidView surface seat bid trumpOpt'
+                |> ignore
 
             // run the auction
         Auction.run persState score chooser auctionMap
@@ -142,7 +144,13 @@ module Deal =
                     |> Async.AwaitPromise
 
                 // run the auction
-            let! persState = auction surface persState score
+            let! persState =
+                let trumpOpt =   // needed when auction is already complete
+                    option {
+                        let! playout = deal.ClosedDeal.PlayoutOpt
+                        return! playout.TrumpOpt
+                    }
+                auction surface persState score trumpOpt
 
                 // force cleanup after all-pass auction
             if persState.Deal.ClosedDeal.Auction.HighBid.Bid = Bid.Pass then

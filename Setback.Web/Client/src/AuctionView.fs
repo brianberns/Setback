@@ -43,8 +43,11 @@ module AuctionView =
 
     /// Creates a view of the given bid for the given seat without
     /// animation.
-    let createBidView (surface : JQueryElement) seat bid =
-        let bidView = BidView.createStatic bid
+    let createBidView (surface : JQueryElement) seat bid trumpOpt =
+        let bidView =
+            match trumpOpt with
+                | Some trump -> BidView.createTrump bid trump
+                | None -> BidView.createStatic bid
         JQueryElement.setPosition destMap[seat] bidView
         surface.append(bidView)
         bidViewMap[seat] <- bidView
