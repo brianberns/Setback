@@ -18,7 +18,7 @@ module AbstractOpenDeal =
 module Auction =
 
     /// Auction context.
-    type private Context<'t> =
+    type private Context =
         {
             /// Current dealer's seat.
             Dealer : Seat
