@@ -103,6 +103,7 @@ module Auction =
         /// Makes a single bid and then loops recursively.
         let rec loop (persState : PersistentState) =
             async {
+                    // is deal complete?
                 let deal = persState.Deal
                 let isComplete =
                     deal.ClosedDeal.Auction
