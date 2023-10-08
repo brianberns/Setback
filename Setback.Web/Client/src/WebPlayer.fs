@@ -16,6 +16,15 @@ module Remoting =
             |> Remoting.withRouteBuilder routeBuilder
             |> Remoting.buildProxy<ISetbackApi>
 
+    let getActionIndex key =
+        async {
+            match! Async.Catch(api.GetActionIndex(key)) with
+                | Choice1Of2 indexOpt -> return indexOpt
+                | Choice2Of2 exn ->
+                    failwith exn.Message   // is there a better way to handle this?
+                    return None
+        }
+
 /// Plays Setback by calling a remote server.
 module WebPlayer =
 
@@ -47,7 +56,7 @@ module WebPlayer =
                         BootstrapGameState.toAbbr auction score hand             // score-sensitive bidding
 
                         // profile contains key?
-                    match! Remoting.api.GetActionIndex(key) with
+                    match! Remoting.getActionIndex key with
                         | Some iAction ->
                             return legalBids[iAction]
                         | None ->
@@ -74,7 +83,7 @@ module WebPlayer =
                         BaselineGameState.getKey legalDealActions deal
 
                         // profile contains key?
-                    match! Remoting.api.GetActionIndex(key) with
+                    match! Remoting.getActionIndex key with
                         | Some iAction ->
                             return legalPlayActions[iAction]
                         | None ->
