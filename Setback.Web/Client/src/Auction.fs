@@ -98,7 +98,7 @@ module Auction =
         }
 
     /// Runs the given deal's auction.
-    let run persState score chooser (auctionMap : Map<_, _>) =
+    let run persState chooser (auctionMap : Map<_, _>) =
 
         /// Makes a single bid and then loops recursively.
         let rec loop (persState : PersistentState) =
@@ -115,6 +115,8 @@ module Auction =
                     let dealer = persState.Dealer
                     let seat =
                         AbstractOpenDeal.getCurrentSeat dealer deal
+                    let score =
+                        Game.relativeScore dealer persState.GameScore
                     let animBid = auctionMap[seat]
                     let bidder =
                         if seat.IsUser then

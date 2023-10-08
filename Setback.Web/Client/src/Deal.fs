@@ -15,7 +15,6 @@ module Deal =
     let private auction
         (surface : JQueryElement)
         (persState : PersistentState)
-        score
         trumpOpt =
 
             // create bid chooser
@@ -47,7 +46,7 @@ module Deal =
                 |> ignore
 
             // run the auction
-        Auction.run persState score chooser auctionMap
+        Auction.run persState chooser auctionMap
 
     /// Runs the playout of the given deal.
     let private playout persState handViews =
@@ -111,7 +110,7 @@ module Deal =
                 resolve ()))
 
     /// Runs one deal.
-    let run surface persState score =
+    let run surface persState =
         async {
 
                 // new deal needed?
@@ -150,7 +149,7 @@ module Deal =
                         let! playout = deal.ClosedDeal.PlayoutOpt
                         return! playout.TrumpOpt
                     }
-                auction surface persState score trumpOpt
+                auction surface persState trumpOpt
 
                 // force cleanup after all-pass auction
             if persState.Deal.ClosedDeal.Auction.HighBid.Bid = Bid.Pass then

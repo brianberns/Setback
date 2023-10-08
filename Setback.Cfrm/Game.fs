@@ -23,11 +23,15 @@ module Game =
 
     /// Shifts from dealer-relative to absolute score.
     let absoluteScore (dealer : Seat) score =
-        let iDealerTeam =
-            int dealer % Setback.numTeams
+        let iDealerTeam = int dealer % Setback.numTeams
         let iAbsoluteTeam =
             (Setback.numTeams - iDealerTeam) % Setback.numTeams
         score |> AbstractScore.shift iAbsoluteTeam
+
+    /// Shifts from absolute to dealer-relative score
+    let relativeScore (dealer : Seat) score =
+        let iDealerTeam = int dealer % Setback.numTeams
+        score |> AbstractScore.shift iDealerTeam
 
     /// Absolute index of the winning team in the given score, if
     /// any.

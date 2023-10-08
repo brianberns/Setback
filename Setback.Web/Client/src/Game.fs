@@ -75,41 +75,41 @@ module Game =
     let run surface persState =
 
         /// Runs one deal.
-        let rec loop persState game nDeals =
+        let rec loop persState nDeals =
             async {
                     // display current score of the game
                 let dealer = persState.Dealer
-                let absScore = Game.absoluteScore dealer game.Score
                 for iTeam = 0 to Setback.numTeams - 1 do
-                    scoreElems[iTeam].text(string absScore[iTeam])
+                    scoreElems[iTeam].text(
+                        string persState.GameScore[iTeam])
 
                     // run a deal
-                let! persState = Deal.run surface persState game.Score
+                let! persState = Deal.run surface persState
 
                     // determine score of this deal
                 let dealScore =
                     persState.Deal
                         |> AbstractOpenDeal.dealScore
+                        |> Game.absoluteScore dealer
                 do
-                    let absScore = Game.absoluteScore dealer dealScore
-                    console.log($"E+W make {absScore[0]} point(s)")
-                    console.log($"N+S make {absScore[1]} point(s)")
+                    console.log($"E+W make {dealScore[0]} point(s)")
+                    console.log($"N+S make {dealScore[1]} point(s)")
 
                     // update game score
-                let gameScore = game.Score + dealScore
-                let absScore = Game.absoluteScore dealer gameScore
+                let gameScore = persState.GameScore + dealScore
                 for iTeam = 0 to Setback.numTeams - 1 do
-                    scoreElems[iTeam].text(string absScore[iTeam])
+                    scoreElems[iTeam].text(string gameScore[iTeam])
                 do
-                    console.log($"E+W have {absScore[0]} point(s)")
-                    console.log($"N+S have {absScore[1]} point(s)")
+                    console.log($"E+W have {gameScore[0]} point(s)")
+                    console.log($"N+S have {gameScore[1]} point(s)")
 
                     // is the game over?
                 let winningTeamIdxOpt =
-                    gameScore |> Game.winningTeamIdxOpt dealer
+                    
+                    BootstrapGameState.winningTeamOpt gameScore
                 let persState' =
                     { persState with
-                        GameScore = absScore
+                        GameScore = gameScore
                         Dealer = dealer.Next
                         DealOpt = None }
                 let nDeals' = nDeals + 1
@@ -132,18 +132,9 @@ module Game =
                         // run another deal in this game
                     | None ->
                         PersistentState.save persState'
-                        let score'' = gameScore |> AbstractScore.shift 1
-                        let game' = { game with Score = score'' }
-                        return! loop persState' game' nDeals'
+                        return! loop persState' nDeals'
             }
 
             // start a new game
         displayGamesWon persState.GamesWon
-        let game =
-            let iTeam =
-                int persState.Dealer % Setback.numTeams
-            let score =
-                persState.GameScore
-                    |> AbstractScore.shift iTeam
-            { Score = score }
-        loop persState game 0   // to-do: simplify absolute vs. relative scores
+        loop persState 0
