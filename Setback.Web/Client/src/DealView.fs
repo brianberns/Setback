@@ -50,8 +50,13 @@ module DealView =
     let private openView dealer deal =
         promise {
             let iUser = Seat.getIndex Seat.User dealer
-            return! deal.UnplayedCards[iUser]
-                |> OpenHandView.ofHand
+            let! handView =
+                deal.UnplayedCards[iUser]
+                    |> OpenHandView.ofHand
+            deal.ClosedDeal.Playout.TrumpOpt
+                |> Option.iter (fun trump ->
+                    OpenHandView.establishTrump trump handView)
+            return handView
         }
 
     /// Animates the start of the given deal on the given surface.
