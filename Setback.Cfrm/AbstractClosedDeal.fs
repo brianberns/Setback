@@ -19,6 +19,12 @@ type AbstractClosedDeal =
             | Some playout -> playout
             | None -> failwith "Playout has not started"
 
+    /// Trump suit, if it's been established.
+    member deal.TrumpOpt =
+        deal.PlayoutOpt
+            |> Option.bind (fun playout ->
+                playout.TrumpOpt)
+
 module AbstractClosedDeal =
 
     /// Initial closed deal state.

@@ -160,8 +160,7 @@ module Playout =
             let! cardView =
                 let isTrump =
                     option {
-                        let! playout = context.Deal.ClosedDeal.PlayoutOpt
-                        let! trump = playout.TrumpOpt
+                        let! trump = context.Deal.ClosedDeal.TrumpOpt
                         return card.Suit = trump
                     } |> Option.defaultValue true
                 card

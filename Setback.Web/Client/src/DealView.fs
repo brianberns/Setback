@@ -53,7 +53,7 @@ module DealView =
             let! handView =
                 deal.UnplayedCards[iUser]
                     |> OpenHandView.ofHand
-            deal.ClosedDeal.Playout.TrumpOpt
+            deal.ClosedDeal.TrumpOpt
                 |> Option.iter (fun trump ->
                     OpenHandView.establishTrump trump handView)
             return handView

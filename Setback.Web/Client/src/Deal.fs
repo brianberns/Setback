@@ -144,12 +144,8 @@ module Deal =
 
                 // run the auction
             let! persState =
-                let trumpOpt =   // needed when auction is already complete
-                    option {
-                        let! playout = deal.ClosedDeal.PlayoutOpt
-                        return! playout.TrumpOpt
-                    }
-                auction surface persState trumpOpt
+                deal.ClosedDeal.TrumpOpt   // needed when auction is already complete
+                    |> auction surface persState
 
                 // force cleanup after all-pass auction
             if persState.Deal.ClosedDeal.Auction.HighBid.Bid = Bid.Pass then
