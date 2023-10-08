@@ -40,6 +40,7 @@
     <Compile Include="..\..\Shared\SharedTypes.fs" />
     <Compile Include="WebPlayer.fs" />
     <Compile Include="JQuery.fs" />
+    <Compile Include="Settings.fs" />
     <Compile Include="Animation.fs" />
     <Compile Include="BidView.fs" />
     <Compile Include="CardView.fs" />

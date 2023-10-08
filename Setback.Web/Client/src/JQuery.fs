@@ -118,6 +118,9 @@ type JQueryElement =
     /// Sets the element's text contents.
     abstract text : text : string -> unit
 
+    /// Sets the element's value.
+    abstract ``val`` : int -> unit
+
     /// Gets the element's value.
     abstract ``val`` : unit -> int
 

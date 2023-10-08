@@ -60,8 +60,11 @@ module App =
 
         // track animation speed slider
     let speedSlider = ~~"#animationSpeed"
+    speedSlider.``val``(Settings.Current.AnimationSpeed)
     speedSlider.change(fun () ->
-        console.log(speedSlider.``val``()))
+        { Settings.Current with
+            AnimationSpeed = speedSlider.``val``() }
+            |> Settings.save)
 
         // start a session when the browser is ready
     (~~document).ready(fun () ->

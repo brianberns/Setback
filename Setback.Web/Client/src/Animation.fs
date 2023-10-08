@@ -20,7 +20,7 @@ module AnimationAction =
     /// Moves to the given position with the system duration.
     let moveTo position =
         let duration =
-            let speed = (~~"#animationSpeed").``val``()
+            let speed = Settings.Current.AnimationSpeed
             600 - speed   // duration is inverse of speed
         MoveTo (position, duration)
 
