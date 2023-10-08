@@ -58,6 +58,11 @@ module Session =
 
 module App =
 
+        // track animation speed slider
+    let speedSlider = ~~"#animationSpeed"
+    speedSlider.change(fun () ->
+        console.log(speedSlider.``val``()))
+
         // start a session when the browser is ready
     (~~document).ready(fun () ->
         let surface = ~~"main"
