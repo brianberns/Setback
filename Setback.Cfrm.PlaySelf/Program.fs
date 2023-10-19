@@ -37,7 +37,8 @@ let onGameFinish (dealer, score) =
 [<EntryPoint>]
 let main argv =
     session.GameFinishEvent.Add(onGameFinish)
-    session.Run(100000)
-    printfn $"Defending champion: {gamesWon[0]}"
-    printfn $"Challenger: {gamesWon[1]}"
+    let nGamePairs = 100000
+    session.Run(nGamePairs)
+    printfn $"Defending champion: {gamesWon[0]}, {float gamesWon[0] / (2.0 * float nGamePairs)}"
+    printfn $"Challenger: {gamesWon[1]}, {float gamesWon[1] / (2.0 * float nGamePairs)}"
     0
