@@ -348,6 +348,7 @@ healthchecksdb
 
 # FABLE output
 *.fs.js
+fable_modules
 
 # Webpack output
 /Setback.Web/Client/public/*.svg
