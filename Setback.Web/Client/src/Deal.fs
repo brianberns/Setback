@@ -49,7 +49,10 @@ module Deal =
         Auction.run persState chooser auctionMap
 
     /// Runs the playout of the given deal.
-    let private playout persState handViews =
+    let private playout
+        (surface : JQueryElement)
+        persState
+        handViews =
 
         /// Establishes trump.
         let establishTrumpAnim seat trump =
@@ -57,6 +60,10 @@ module Deal =
                 if seat.IsUser then
                     handView |> OpenHandView.establishTrump trump
             AuctionView.establishTrumpAnim seat trump
+
+            // create play chooser
+        let chooser = PlayChooser.create ()
+        surface.append(chooser.Element)
 
             // get animations for each seat
         let playoutMap =
@@ -79,7 +86,11 @@ module Deal =
                 |> Map
 
             // run the playout
-        Playout.run persState playoutMap
+        async {
+            let! persState' = Playout.run persState chooser playoutMap
+            chooser.Element.remove()
+            return persState'
+        }
 
     /// Handles the end of a deal.
     let private dealOver (surface : JQueryElement) dealer deal =
@@ -156,7 +167,7 @@ module Deal =
 
                 // run the playout
             else
-                let! persState = playout persState seatViews
+                let! persState = playout surface persState seatViews
                 do! dealOver surface dealer persState.Deal
                     |> Async.AwaitPromise
                 return persState

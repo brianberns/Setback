@@ -118,7 +118,7 @@ module Playout =
         }
 
     /// Allows user to play a card.
-    let private playUser (handView : HandView) context =
+    let private playUser chooser (handView : HandView) context =
 
             // determine all legal plays
         let legalPlays =
@@ -129,6 +129,7 @@ module Playout =
 
             // enable user to select one of the corresponding card views
         Promise.create(fun resolve _reject ->
+            chooser |> PlayChooser.display
             for cardView in handView do
                 let card = cardView |> CardView.card
                 if legalPlays.Contains(card) then
@@ -136,6 +137,7 @@ module Playout =
                     cardView.click(fun () ->
 
                             // prevent further clicks
+                        chooser |> PlayChooser.hide
                         for cardView in handView do
                             cardView.removeClass("active")
                             cardView.removeClass("inactive")
@@ -173,7 +175,7 @@ module Playout =
         }
 
     /// Runs the given deal's playout
-    let run (persState : PersistentState) (playoutMap : Map<_, _>) =
+    let run (persState : PersistentState) chooser (playoutMap : Map<_, _>) =
         assert(
             persState.Deal.ClosedDeal.Auction
                 |> AbstractAuction.isComplete)
@@ -205,7 +207,7 @@ module Playout =
                             playoutMap[seat]
                     let player =
                         if seat.IsUser then
-                            playUser handView >> Async.AwaitPromise
+                            playUser chooser handView >> Async.AwaitPromise
                         else
                             playAuto
 

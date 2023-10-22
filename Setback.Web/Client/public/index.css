@@ -39,7 +39,7 @@ a {
     top: 87%;
 }
 
-.chooser {
+.bid-chooser {
     display: none; /* hidden when created */
     font-size: min(2vw, 2vh);
     text-align: center;
@@ -107,6 +107,19 @@ a {
 
 .inactive {
     filter: contrast(70%);
+}
+
+.play-chooser {
+    display: none; /* hidden when created */
+    font-size: min(2vw, 2vh);
+    text-align: center;
+    width: fit-content;
+    height: fit-content;
+    /* https://www.w3schools.com/howto/howto_css_center-vertical.asp */
+    position: absolute;
+    top: 72%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 .banner {

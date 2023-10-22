@@ -89,7 +89,7 @@ module BidChooser =
 
             // create an element to hold the bid views
         let div = ~~HTMLDivElement.Create(innerHTML = "<p>Your Bid?</p>")
-        div.addClass("chooser")
+        div.addClass("bid-chooser")
 
             // create bid views
         let bidViews =
