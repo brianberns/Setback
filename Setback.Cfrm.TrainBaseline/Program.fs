@@ -41,6 +41,7 @@ module Program =
                     inBatch
                         |> CounterFactualRegret.minimizeBatch batchSize
                 outBatch.StrategyProfile.Save("Baseline.strategy")
+                outBatch |> CfrBatch.save "Baseline.batch"
                 stopwatch.Stop()
 
                     // report results from this batch
