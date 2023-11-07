@@ -2,6 +2,7 @@
 
 open System
 open System.Diagnostics
+open System.IO
 
 open Cfrm
 
@@ -23,10 +24,15 @@ module Program =
 
             // initialize
         let rng = Random(0)
+        let batchFileName = "Baseline.batch"
         let initialState =
-            let numPlayers = 2
-            CfrBatch.create numPlayers (fun _ ->
-                createGame rng)
+            let getInitialState _ = createGame rng
+            if File.Exists(batchFileName) then
+                printfn "Loading existing file"
+                CfrBatch.load getInitialState batchFileName
+            else
+                let numPlayers = 2
+                CfrBatch.create numPlayers getInitialState
         let batchNums = Seq.initInfinite ((+) 1)   // 1, 2, 3, ...
         let stopwatch = Stopwatch()
 
