@@ -23,9 +23,9 @@ module Program =
     let minimize batchSize =
 
             // initialize
-        let rng = Random(0)
         let batchFileName = "Baseline.batch"
         let initialState =
+            let rng = Random(0)
             let getInitialState _ = createGame rng
             if File.Exists(batchFileName) then
                 printfn "Loading existing file"
