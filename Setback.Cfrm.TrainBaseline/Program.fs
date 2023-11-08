@@ -25,14 +25,15 @@ module Program =
             // initialize
         let batchFileName = "Baseline.batch"
         let initialState =
-            let rng = Random(0)
-            let getInitialState _ = createGame rng
-            if File.Exists(batchFileName) then
+            let fileInfo = FileInfo(batchFileName)
+            if fileInfo.Exists then
                 printfn "Loading existing file"
-                CfrBatch.load batchFileName getInitialState
+                let rng = Random(int fileInfo.Length)   // avoid revisiting original deals
+                CfrBatch.load batchFileName (fun _ -> createGame rng)
             else
                 let numPlayers = 2
-                CfrBatch.create numPlayers getInitialState
+                let rng = Random(0)
+                CfrBatch.create numPlayers (fun _ -> createGame rng)
         let batchNums = Seq.initInfinite ((+) 1)   // 1, 2, 3, ...
         let stopwatch = Stopwatch()
 
