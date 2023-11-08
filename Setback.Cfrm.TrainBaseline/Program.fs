@@ -29,7 +29,7 @@ module Program =
             let getInitialState _ = createGame rng
             if File.Exists(batchFileName) then
                 printfn "Loading existing file"
-                CfrBatch.load getInitialState batchFileName
+                CfrBatch.load batchFileName getInitialState
             else
                 let numPlayers = 2
                 CfrBatch.create numPlayers getInitialState
