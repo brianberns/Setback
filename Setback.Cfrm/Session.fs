@@ -85,7 +85,7 @@ type Session
         let game =
             let dealScore =
                 deal |> AbstractOpenDeal.dealScore
-            { game with Score = game.Score + dealScore }
+            { Score = game.Score + dealScore }
         trigger dealFinishEvent (dealer, deal, game.Score)
         game
 
@@ -111,7 +111,7 @@ type Session
                     // obtain score relative to next dealer's team
                 let game =
                     let score = game.Score |> AbstractScore.shift 1
-                    { game with Score = score }
+                    { Score = score }
                 game |> loop dealer.Next
 
         trigger gameStartEvent ()

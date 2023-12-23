@@ -83,9 +83,8 @@ module AbstractClosedDeal =
                     |> Some
             else None
         {
-            closedDeal with
-                Auction = auction
-                PlayoutOpt = playoutOpt
+            Auction = auction
+            PlayoutOpt = playoutOpt
         }
 
     /// Plays a card in the given deal.

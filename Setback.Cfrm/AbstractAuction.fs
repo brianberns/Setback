@@ -66,9 +66,8 @@ module AbstractAuction =
                         || (iBidder = 0 && bid = Bid.Four))
                 AbstractHighBid.create iBidder bid
         {
-            auction with
-                NumBids = auction.NumBids + 1
-                HighBid = highBid
+            NumBids = auction.NumBids + 1
+            HighBid = highBid
         }
 
     /// String representation of an auction.

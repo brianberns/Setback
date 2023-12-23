@@ -2,7 +2,7 @@
 
   <PropertyGroup>
 	<OutputType>WinExe</OutputType>
-	<TargetFramework>net6.0-windows</TargetFramework>
+	<TargetFramework>net8.0-windows</TargetFramework>
 	<UseWindowsForms>true</UseWindowsForms>
 	<Platforms>AnyCPU;x64</Platforms>
 	<AssemblyName>BernsriteSetback</AssemblyName>
@@ -63,9 +63,6 @@
     <EmbeddedResource Include="Images\TD.png" />
     <EmbeddedResource Include="Images\TH.png" />
     <EmbeddedResource Include="Images\TS.png" />
-    <None Include="Setback.db">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <Compile Include="CardControl.fs" />
     <Compile Include="HandControl.fs" />
     <Compile Include="BidControl.fs" />
