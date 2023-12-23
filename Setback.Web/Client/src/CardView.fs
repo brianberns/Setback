@@ -140,7 +140,7 @@ module PlayChooser =
     let create () =
 
             // create an element to prompt the user
-        let div = ~~HTMLDivElement.Create(innerHTML = "<p>Your Play?</p>")
+        let div = ~~HTMLDivElement.Create(innerText = "Your Play?")
         div.addClass("play-chooser")
 
         { Element = div }

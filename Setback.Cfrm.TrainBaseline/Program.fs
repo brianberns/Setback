@@ -2,6 +2,7 @@
 
 open System
 open System.Diagnostics
+open System.IO
 
 open Cfrm
 
@@ -22,11 +23,17 @@ module Program =
     let minimize batchSize =
 
             // initialize
-        let rng = Random(0)
+        let batchFileName = "Baseline.batch"
         let initialState =
-            let numPlayers = 2
-            CfrBatch.create numPlayers (fun _ ->
-                createGame rng)
+            let fileInfo = FileInfo(batchFileName)
+            if fileInfo.Exists then
+                printfn "Loading existing file"
+                let rng = Random(int fileInfo.Length)   // avoid revisiting original deals
+                CfrBatch.load batchFileName (fun _ -> createGame rng)
+            else
+                let numPlayers = 2
+                let rng = Random(0)
+                CfrBatch.create numPlayers (fun _ -> createGame rng)
         let batchNums = Seq.initInfinite ((+) 1)   // 1, 2, 3, ...
         let stopwatch = Stopwatch()
 
@@ -41,6 +48,7 @@ module Program =
                     inBatch
                         |> CounterFactualRegret.minimizeBatch batchSize
                 outBatch.StrategyProfile.Save("Baseline.strategy")
+                outBatch |> CfrBatch.save batchFileName
                 stopwatch.Stop()
 
                     // report results from this batch
