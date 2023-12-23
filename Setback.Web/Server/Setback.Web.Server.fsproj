@@ -7,9 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="Setback.db">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <Compile Include="..\Shared\SharedTypes.fs" />
     <Compile Include="WebPart.fs" />
   </ItemGroup>
