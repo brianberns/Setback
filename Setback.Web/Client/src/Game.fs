@@ -105,7 +105,6 @@ module Game =
 
                     // is the game over?
                 let winningTeamIdxOpt =
-                    
                     BootstrapGameState.winningTeamOpt gameScore
                 let persState' =
                     { persState with
