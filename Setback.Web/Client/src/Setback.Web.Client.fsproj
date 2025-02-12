@@ -56,12 +56,12 @@
     <Compile Include="App.fs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Fable.Browser.Css" Version="2.4.0" />
-    <PackageReference Include="Fable.Browser.Dom" Version="2.15.0" />
-    <PackageReference Include="Fable.Browser.Url" Version="1.3.2" />
-    <PackageReference Include="Fable.Core" Version="4.2.0" />
+    <PackageReference Include="Fable.Browser.Css" Version="2.5.0" />
+    <PackageReference Include="Fable.Browser.Dom" Version="2.18.1" />
+    <PackageReference Include="Fable.Browser.Url" Version="1.4.0" />
+    <PackageReference Include="Fable.Core" Version="4.3.0" />
     <PackageReference Include="Fable.Promise" Version="3.2.0" />
-    <PackageReference Include="Fable.Remoting.Client" Version="7.29.0" />
+    <PackageReference Include="Fable.Remoting.Client" Version="7.32.0" />
     <PackageReference Include="Fable.SimpleJson" Version="3.24.0" />
   </ItemGroup>
 </Project>
