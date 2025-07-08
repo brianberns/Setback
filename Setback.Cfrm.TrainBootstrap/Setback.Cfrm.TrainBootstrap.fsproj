@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Cfrm" Version="2.5.0" />
+    <PackageReference Include="Cfrm" Version="2.6.0" />
   </ItemGroup>
 
   <ItemGroup>
