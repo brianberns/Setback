@@ -5,71 +5,43 @@ open System.IO
 
 open PlayingCards
 
-/// Logs messages to both console and file.
-type Log() =
-
-    static member WriteLine format =
-        let writeline (message : string) =
-            Console.WriteLine message
-            use wtr = new IO.StreamWriter("Setback.log", true)
-            wtr.WriteLine message
-        Printf.ksprintf writeline format
-
 /// Killer Setback integration
 module Killer =
 
-    let folder = "C:\Program Files\KSetback"
+    let folder = @"C:\Program Files\KSetback"
 
     /// Tokenizes the contents of the given file.
     let tokenize (fileInfo : FileInfo) =
-        
-        let mutable rdr : StreamReader = null
+        use mutable rdr : StreamReader = null
         while rdr = null do
-            try
-                rdr <- fileInfo.OpenText()
-            with
-                ex -> Threading.Thread.Sleep 0
-        let tokens =
-            rdr.ReadToEnd().Trim().Split([|' '|], StringSplitOptions.RemoveEmptyEntries)
-                |> Seq.map (fun token -> Int32.Parse(token))
-                |> Seq.toArray
-        rdr.Dispose()
-        tokens
+            try rdr <- fileInfo.OpenText()
+            with _ -> Threading.Thread.Sleep 0
+        rdr.ReadToEnd()
+            .Trim()
+            .Split(
+                [|' '|],
+                StringSplitOptions.RemoveEmptyEntries)
+            |> Seq.map Int32.Parse
+            |> Seq.toArray
 
     /// Receives a message from KS.
-    let readMessage key =
-        // Log.WriteLine "Read message %A" key
-        let fileInfo = new FileInfo(System.IO.Path.Combine(folder, "KSetback.msg.master"))
+    let readMessage () =
+        let fileInfo = FileInfo(Path.Combine(folder, "KSetback.msg.master"))
         while not fileInfo.Exists do
             fileInfo.Refresh()
         let tokens = tokenize fileInfo
-        if tokens[0] <> key then failwith (sprintf "Expected key: %d, received key: %d" key tokens[0])
+        assert(tokens.Length = 5)
         fileInfo.Delete()
-        tokens[1], tokens[2], tokens[3], tokens[4]
+        tokens
 
     /// Sends a message to KS.
     let writeMessage key value =
-        // Log.WriteLine "Write message %A" key
-        let mutable wtr : StreamWriter = null
+        use mutable wtr : StreamWriter = null
         while wtr = null do
-            try
-                wtr <- new IO.StreamWriter(System.IO.Path.Combine(folder, "KSetback.msg.slave"))
-            with
-                ex -> Threading.Thread.Sleep 0
+            try wtr <- new StreamWriter(Path.Combine(folder, "KSetback.msg.slave"))
+            with _ -> Threading.Thread.Sleep(0)
         let message = sprintf "%d %d" key value
         wtr.Write message
-        wtr.Dispose()
-
-    /// Establishes initial communication with KS.
-    let handshake () =
-        Log.WriteLine "Killer Setback handshake"
-        let fileInfo = new FileInfo(System.IO.Path.Combine(folder, "KSetback.msg.master"))
-        if fileInfo.Exists then
-            let tokens = tokenize fileInfo
-            if tokens[0] <> 1 then
-                fileInfo.Delete()
-        readMessage 1 |> ignore
-        writeMessage 101 0
 
     /// Converts the given KS card into a native card.
     let asCard cardNum =

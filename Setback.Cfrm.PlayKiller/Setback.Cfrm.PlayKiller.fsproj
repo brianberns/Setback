@@ -2,13 +2,16 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <AssemblyName>KillerSetbackClient</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Client.fs" />
     <Compile Include="Killer.fs" />
+    <Compile Include="Client.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 

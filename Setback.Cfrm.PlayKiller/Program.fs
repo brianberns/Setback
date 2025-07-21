@@ -14,7 +14,7 @@ type MainWindow() as this =
         Width = 400.0,
         Height = 100.0)
     do
-        Program.mkSimple Client.init Client.update Client.view
+        Program.mkSimple Model.init Message.update View.view
         |> Program.withHost this
         // |> Program.withConsoleTrace
         |> Program.runWithAvaloniaSyncDispatch ()
