@@ -1,11 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <TargetFramework>net9.0</TargetFramework>
+    <AssemblyName>KillerSetbackClient</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Client.fs" />
     <Compile Include="Killer.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
@@ -14,6 +16,13 @@
     <ProjectReference Include="..\PlayingCards\PlayingCards.fsproj" />
     <ProjectReference Include="..\Setback.Cfrm\Setback.Cfrm.fsproj" />
     <ProjectReference Include="..\Setback\Setback.fsproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.1" />
+    <PackageReference Include="Avalonia.FuncUI" Version="1.5.1" />
+    <PackageReference Include="Avalonia.FuncUI.Elmish" Version="1.5.1" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.1" />
   </ItemGroup>
 
 </Project>
