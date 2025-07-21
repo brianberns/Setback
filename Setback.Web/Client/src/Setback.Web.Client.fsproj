@@ -57,11 +57,11 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Fable.Browser.Css" Version="2.5.0" />
-    <PackageReference Include="Fable.Browser.Dom" Version="2.18.1" />
+    <PackageReference Include="Fable.Browser.Dom" Version="2.20.0" />
     <PackageReference Include="Fable.Browser.Url" Version="1.4.0" />
-    <PackageReference Include="Fable.Core" Version="4.3.0" />
+    <PackageReference Include="Fable.Core" Version="4.5.0" />
     <PackageReference Include="Fable.Promise" Version="3.2.0" />
-    <PackageReference Include="Fable.Remoting.Client" Version="7.32.0" />
+    <PackageReference Include="Fable.Remoting.Client" Version="7.35.0" />
     <PackageReference Include="Fable.SimpleJson" Version="3.24.0" />
   </ItemGroup>
 </Project>
