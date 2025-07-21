@@ -13,7 +13,7 @@ type Log() =
     static member WriteLine format =
         let writeline (message : string) =
             Console.WriteLine message
-            use wtr = new IO.StreamWriter("MSetback.log", true)
+            use wtr = new IO.StreamWriter("Setback.log", true)
             wtr.WriteLine message
         Printf.ksprintf writeline format
 
@@ -193,7 +193,7 @@ module Killer =
 
     /// KS "slave" player.
     let slavePlayer =
-        let dbPlayer = DatabasePlayer.player "Champion.db"
+        let dbPlayer = DatabasePlayer.player "Setback.db"
         {
             MakeBid =
                 fun score deal ->
