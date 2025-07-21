@@ -19,7 +19,7 @@ type TestClass () =
                     |> Seq.groupBy id
                     |> Seq.map (fun (_, cards) -> cards |> Seq.length)
                     |> Seq.toArray
-            Assert.AreEqual(Card.numCards, counts.Length)
+            Assert.AreEqual<int>(Card.numCards, counts.Length)
             let maxCount = Seq.max counts
             let minCount = Seq.min counts
             let ratio = (float decks.Length) / (float Card.numCards)
