@@ -119,6 +119,9 @@ type Session
         trigger gameFinishEvent (dealer, score)
         dealer
 
+    member _.PlayDeal(dealer, deal, game) =
+        playDeal dealer deal game
+
     /// Runs a session of the given number of duplicate game pairs.
     member _.Run(?nGamePairsOpt) =
         let init =

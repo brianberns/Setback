@@ -45,9 +45,9 @@ module Killer =
         while not fileInfo.Exists do
             fileInfo.Refresh()
         let tokens = tokenize fileInfo
-        if tokens.[0] <> key then failwith (sprintf "Expected key: %d, received key: %d" key tokens.[0])
+        if tokens[0] <> key then failwith (sprintf "Expected key: %d, received key: %d" key tokens[0])
         fileInfo.Delete()
-        tokens.[1], tokens.[2], tokens.[3], tokens.[4]
+        tokens[1], tokens[2], tokens[3], tokens[4]
 
     /// Sends a message to KS.
     let writeMessage key value =
@@ -68,7 +68,7 @@ module Killer =
         let fileInfo = new FileInfo(System.IO.Path.Combine(folder, "KSetback.msg.master"))
         if fileInfo.Exists then
             let tokens = tokenize fileInfo
-            if tokens.[0] <> 1 then
+            if tokens[0] <> 1 then
                 fileInfo.Delete()
         readMessage 1 |> ignore
         writeMessage 101 0
@@ -192,37 +192,47 @@ module Killer =
         }
 
     /// KS "slave" player.
-    let slavePlayer innerPlayer =
+    let slavePlayer =
+        let dbPlayer = DatabasePlayer.player "Champion.db"
         {
             MakeBid =
                 fun score deal ->
-                    let bid = sendBid deal score innerPlayer
+                    let bid = sendBid deal score dbPlayer
                     // Log.WriteLine "Slave bid: %A" bid
                     bid
             MakePlay =
                 fun score deal ->
-                    let play = sendPlay deal score innerPlayer
+                    let play = sendPlay deal score dbPlayer
                     // Log.WriteLine "Slave play: %A" play
                     play
         }
 
+    let playerMap =
+        Map [
+            Seat.West, slavePlayer
+            Seat.North, masterPlayer
+            Seat.East, slavePlayer
+            Seat.South, masterPlayer
+        ]
+
+    let session =
+        let dummyRng : Random = null
+        Session(playerMap, dummyRng)
+
     /// Wraps a game for use with KS.  
     type GameWrapper = { Game : Game }
 
-    let teamNS = { Seats = [ Seat.North; Seat.South ]; Number = 0}
-    let teamEW = { Seats = [ Seat.East ; Seat.West  ]; Number = 1 }
-
-    let createWrapper players =
+    let createWrapper () =
         readMessage 2 |> ignore
         writeMessage 102 0
-        { Game = Game.create players [|teamNS; teamEW|] }
+        { Game = Game.zero }
 
     let syncScore ewScore nsScore wrapper =
         let score = wrapper.Game.Score
-        if score.[teamEW] <> ewScore then failwith "Invalid EW score"
-        if score.[teamNS] <> nsScore then failwith "Invalid NS score"
+        if score[0] <> ewScore then failwith "Invalid EW score"
+        if score[1] <> nsScore then failwith "Invalid NS score"
 
-    let playHand wrapper =
+    let playDeal wrapper =
 
         let dealerNum, ewScore, nsScore, _ = readMessage 3
         let dealerSeat = enum<Seat> dealerNum
@@ -235,30 +245,32 @@ module Killer =
                     let msgNum = 4 + (i / 4)
                     let seatNum, cardNum1, cardNum2, cardNum3 = readMessage msgNum
                     let seat = enum<Seat> seatNum
-                    let cards = 
+                    let seatCards = 
                         [
-                            (seat, asCard cardNum1)
-                            (seat, asCard cardNum2)
-                            (seat, asCard cardNum3)
+                            seat, asCard cardNum1
+                            seat, asCard cardNum2
+                            seat, asCard cardNum3
                         ]
                     writeMessage (msgNum + 100) 0
-                    cards)
-                |> Seq.groupBy (fun (seat, _) -> seat)
-                |> Seq.sortBy (fun (seat, _) -> seat)
-                |> Seq.map (fun (_, pairs) -> pairs |> Seq.map snd |> Seq.toArray)
-                |> Seq.toArray
+                    seatCards)
+                |> Seq.groupBy fst
+                |> Seq.map (fun (seat, pairs) ->
+                    seat,
+                    pairs |> Seq.map snd)
+                |> Map
 
-        let teams = [| teamEW; teamNS |]
-        let deal = OpenDeal.fromHands teams dealerSeat hands
-        wrapper.Game.PlayDeal deal
+        let deal = AbstractOpenDeal.fromHands dealerSeat hands
+        let game = session.PlayDeal(dealerSeat, deal, wrapper.Game)
+        { wrapper with Game = game }
 
-    let play i wrapper =
+    let play wrapper =
 
         let rec loop wrapper =
 
-            let innerGame, matchPoints = wrapper |> playHand
+            let wrapper = wrapper |> playDeal
 
-            if matchPoints.Points |> Seq.forall (fun points -> points = 0) then
+            let (AbstractScore points) = wrapper.Game.Score
+            if points |> Seq.forall (fun points -> points = 0) then
                 let bidderNum, bidNum, _, _ = readMessage 7
                 if bidderNum <> -1 then failwith "Unexpected bidder"
                 if bidNum <> 0 then failwith "Unexpected bid"
@@ -268,19 +280,23 @@ module Killer =
                 writeMessage 110 0
 
             let ewScore, nsScore, _, _ = readMessage 11
-            let wrapper = { Game = innerGame }
+            let wrapper =
+                { wrapper with
+                    Game = {
+                        Score =
+                            AbstractScore [| ewScore; nsScore |]} }
             wrapper |> syncScore ewScore nsScore
             writeMessage 111 0
 
-            match innerGame.WinningTeam with
+            match BootstrapGameState.winningTeamOpt wrapper.Game.Score with
                 | None -> loop wrapper
                 | Some localTeam ->
                     let ewScore, nsScore, killerTeamNum, _ = readMessage 12
                     wrapper |> syncScore ewScore nsScore
                     Log.WriteLine ""
                     match killerTeamNum with
-                        | 0 when localTeam = teamEW -> Log.WriteLine "E+W wins"
-                        | 1 when localTeam = teamNS -> Log.WriteLine "N+S wins"
+                        | 0 when localTeam = 0 -> Log.WriteLine "E+W wins"
+                        | 1 when localTeam = 1 -> Log.WriteLine "N+S wins"
                         | _ -> failwith "Unexpected winning team"
                     Log.WriteLine ""
                     Log.WriteLine "──────────────────────────────────────────────────────────────────"
