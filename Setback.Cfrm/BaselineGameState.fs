@@ -229,18 +229,18 @@ type BaselineGameState(openDeal : AbstractOpenDeal) =
     /// Current player's team's 0-based index, relative to the dealer's team.
     /// (This is at the team level, rather than the player level, in order to
     /// model Setback as a two-player game.)
-    override __.CurrentPlayerIdx =
+    override _.CurrentPlayerIdx =
         let iPlayer =
             openDeal
                 |> AbstractOpenDeal.currentPlayerIndex
         iPlayer % Setback.numTeams
 
     /// This state's unique identifier.
-    override __.Key =
+    override _.Key =
         BaselineGameState.getKey dealActions openDeal
 
     /// Final payoffs for this game, if it is now over.
-    override __.TerminalValuesOpt =
+    override _.TerminalValuesOpt =
         if openDeal |> AbstractOpenDeal.isExhausted then
             if openDeal.ClosedDeal.PlayoutOpt.IsSome then
 
@@ -263,11 +263,11 @@ type BaselineGameState(openDeal : AbstractOpenDeal) =
         else None
 
     /// Actions available to the current player in this state.
-    override __.LegalActions =
+    override _.LegalActions =
         dealActions
 
     /// Takes the given action, which moves the game to a new state.
-    override __.AddAction(action) =
+    override _.AddAction(action) =
         openDeal
             |> AbstractOpenDeal.addAction action
             |> BaselineGameState

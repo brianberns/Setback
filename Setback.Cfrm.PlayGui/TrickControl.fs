@@ -84,17 +84,17 @@ type TrickControl() as this =
         onResize ()
 
     /// Sets the card played by the given seat in this trick.
-    member __.SetCard(seat, card) =
+    member _.SetCard(seat, card) =
         let ctrl = cardControlMap[seat]
         ctrl.Card <- card
         ctrl.IsTrump <- (Some card.Suit = trumpOpt)
 
     /// Clears the card played by the given seat in this trick.
-    member __.ClearCard(seat) =
+    member _.ClearCard(seat) =
         cardControlMap[seat].Clear()
 
     /// Clears all cards in this trick.
-    member __.Clear() =
+    member _.Clear() =
         let ctrls =
             cardControlMap
                 |> Map.toSeq
@@ -103,16 +103,16 @@ type TrickControl() as this =
             ctrl.Clear()
 
     /// Sets the trump suit.
-    member __.Trump
+    member _.Trump
         with set(trump) =
             trumpOpt <- Some trump
 
     /// Clears the trump suit.
-    member __.ClearTrump() =
+    member _.ClearTrump() =
         trumpOpt <- None
 
     /// Identifies the leader's seat.
-    member __.Leader
+    member _.Leader
         with set(leader) =
             for (KeyValue(seat, label)) in labelMap do
                 label.Text <-

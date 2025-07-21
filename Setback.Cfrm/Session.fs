@@ -120,7 +120,7 @@ type Session
         dealer
 
     /// Runs a session of the given number of duplicate game pairs.
-    member __.Run(?nGamePairsOpt) =
+    member _.Run(?nGamePairsOpt) =
         let init =
             nGamePairsOpt
                 |> Option.map Seq.init
@@ -141,40 +141,40 @@ type Session
 
     /// A game has started.
     [<CLIEvent>]
-    member __.GameStartEvent = gameStartEvent.Publish
+    member _.GameStartEvent = gameStartEvent.Publish
 
     /// A deal has started.
     [<CLIEvent>]
-    member __.DealStartEvent = dealStartEvent.Publish
+    member _.DealStartEvent = dealStartEvent.Publish
 
     /// An auction has started.
     [<CLIEvent>]
-    member __.AuctionStartEvent = auctionStartEvent.Publish
+    member _.AuctionStartEvent = auctionStartEvent.Publish
 
     /// A bid has been made.
     [<CLIEvent>]
-    member __.BidEvent = bidEvent.Publish
+    member _.BidEvent = bidEvent.Publish
 
     /// An auction has finished.
     [<CLIEvent>]
-    member __.AuctionFinishEvent = auctionFinishEvent.Publish
+    member _.AuctionFinishEvent = auctionFinishEvent.Publish
 
     /// A trick has started.
     [<CLIEvent>]
-    member __.TrickStartEvent = trickStartEvent.Publish
+    member _.TrickStartEvent = trickStartEvent.Publish
 
     /// A card has been played.
     [<CLIEvent>]
-    member __.PlayEvent = playEvent.Publish
+    member _.PlayEvent = playEvent.Publish
 
     /// A trick has finished.
     [<CLIEvent>]
-    member __.TrickFinishEvent = trickFinishEvent.Publish
+    member _.TrickFinishEvent = trickFinishEvent.Publish
 
     /// A deal has finished.
     [<CLIEvent>]
-    member __.DealFinishEvent = dealFinishEvent.Publish
+    member _.DealFinishEvent = dealFinishEvent.Publish
 
     /// A game has finished.
     [<CLIEvent>]
-    member __.GameFinishEvent = gameFinishEvent.Publish
+    member _.GameFinishEvent = gameFinishEvent.Publish

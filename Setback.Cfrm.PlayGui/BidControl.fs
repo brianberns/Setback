@@ -43,9 +43,9 @@ type BidControl() as this =
         btn.Tag :?> Bid
 
     /// Answers the button that represents the given bid.
-    member __.GetBidButton(bid : Bid) =
+    member _.GetBidButton(bid : Bid) =
         buttonMap[bid]
 
     /// A bid button has been selected.
     [<CLIEvent>]
-    member __.BidSelectedEvent = bidSelectedEvent.Publish
+    member _.BidSelectedEvent = bidSelectedEvent.Publish

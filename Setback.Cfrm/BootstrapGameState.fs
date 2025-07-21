@@ -165,7 +165,7 @@ type BootstrapGameState
     inherit BaselineGameState(openDeal)
 
     /// Final payoffs for this game, if it is now over.
-    override __.TerminalValuesOpt =
+    override _.TerminalValuesOpt =
         if openDeal |> AbstractOpenDeal.isExhausted then
             if openDeal.ClosedDeal.PlayoutOpt.IsSome then
 
@@ -206,7 +206,7 @@ type BootstrapGameState
         else None
 
     /// This state's unique identifier.
-    override __.Key =
+    override _.Key =
         let hand =
             let iPlayer =
                 openDeal
@@ -219,13 +219,13 @@ type BootstrapGameState
             hand
 
     /// Actions available to the current player in this state.
-    override __.LegalActions =
+    override _.LegalActions =
         openDeal.ClosedDeal.Auction
             |> AbstractAuction.legalBids
             |> Array.map (BidAction >> DealBidAction)
 
     /// Takes the given action, which moves the game to a new state.
-    override __.AddAction(action) =
+    override _.AddAction(action) =
         assert(
             match action with
                 | DealBidAction _ -> true

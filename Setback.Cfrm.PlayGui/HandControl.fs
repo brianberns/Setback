@@ -36,11 +36,11 @@ type HandPanel() as this =
     static member Height = CardControl.Height + 2 * HandPanel.Padding
 
     /// This control's card controls.
-    member __.CardControls =
+    member _.CardControls =
         cardControls
 
     /// Cards displayed by this control.
-    member __.Cards
+    member _.Cards
         with set(cards) =
 
                 // clear all previous cards
@@ -61,7 +61,7 @@ type HandPanel() as this =
                 |> Seq.choose (fun ctrl -> ctrl.CardOpt)
 
     /// Sets trump suit.
-    member __.Trump
+    member _.Trump
         with set (trump : Suit) =
             for ctrl in cardControls do
                 match ctrl.CardOpt with
@@ -70,7 +70,7 @@ type HandPanel() as this =
                     | None -> ()
 
     /// Removes the given card from this control.
-    member __.Remove(card) =
+    member _.Remove(card) =
         let cardControl =
             cardControls
                 |> Seq.find (fun ctrl ->
@@ -132,14 +132,14 @@ type HandControl(seat : Seat) as this =
         HandPanel.Height + HandPanel.Padding + labelHeight
 
     /// Seat represented by this control.
-    member __.Seat = seat
+    member _.Seat = seat
 
     /// This control's card controls.
-    member __.CardControls =
+    member _.CardControls =
         panel.CardControls
 
     /// Cards displayed by this control.
-    member __.Cards
+    member _.Cards
         with set(cards) =
             panel.Cards <- cards
             label.Text <- defaultText
@@ -147,24 +147,24 @@ type HandControl(seat : Seat) as this =
             panel.Cards
 
     /// Bid displayed by this control.
-    member __.Bid
+    member _.Bid
         with set (bid : Bid) =
             label.Text <- $"{seat}: {bid}"
 
     /// Sets trump suit.
-    member __.Trump
+    member _.Trump
         with set(trump : Suit) =
             panel.Trump <- trump
 
     /// Removes the given card from this control.
-    member __.Remove(card) =
+    member _.Remove(card) =
         panel.Remove(card)
 
     /// Indicates whether to show card fronts or backs.
-    member __.ShowFront
+    member _.ShowFront
         with set(value : bool) =
             for ctrl in panel.CardControls do
                 ctrl.ShowFront <- value
 
     [<CLIEvent>]
-    member __.CardSelectedEvent = cardSelectedEvent.Publish
+    member _.CardSelectedEvent = cardSelectedEvent.Publish

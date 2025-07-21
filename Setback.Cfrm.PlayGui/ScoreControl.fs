@@ -79,11 +79,11 @@ type ScoreControl() as this =
         displayScore gamesWon gamesWonLabels
 
     /// Score of current game (absolute index).
-    member __.Score
+    member _.Score
         with set(score) =
             displayScore score scoreLabels
 
     /// The given team won a game (absolute index).
-    member __.IncrementGamesWon(iTeam) =
+    member _.IncrementGamesWon(iTeam) =
         gamesWon <- gamesWon + AbstractScore.forTeam iTeam 1
         displayScore gamesWon gamesWonLabels

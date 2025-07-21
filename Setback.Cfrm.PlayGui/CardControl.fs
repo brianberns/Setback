@@ -82,11 +82,11 @@ type CardControl() as this =
     static member Height = 106
 
     /// Card represented by this control, if any.
-    member __.CardOpt
+    member _.CardOpt
         with get () = cardOpt
 
     /// Sets the card represented by this control.
-    member __.Card
+    member _.Card
         with set(card) =
 
                 // remember card
@@ -102,7 +102,7 @@ type CardControl() as this =
             this.Visible <- true
 
     /// Clears the card displayed by this control.
-    member __.Clear() =
+    member _.Clear() =
 
             // forget card
         cardOpt <- None
@@ -116,7 +116,7 @@ type CardControl() as this =
 
     /// Indicates whether the card represented by this control
     /// is trump.
-    member __.IsTrump
+    member _.IsTrump
         with set(value) =
             let image =
                 if value then getImage "Trump"
@@ -124,7 +124,7 @@ type CardControl() as this =
             image |> assignImage trumpBadge
 
     /// Indicates whether to show the card front or back.
-    member __.ShowFront
+    member _.ShowFront
         with set(value) =
             frontPicture.Visible <- value
             trumpBadge.Visible <- value
@@ -136,10 +136,10 @@ type CardControl() as this =
         with set, get
 
     /// Allow click?
-    override __.OnClick(args) =
+    override _.OnClick(args) =
         if this.IsClickable then
             base.OnClick(args)
 
     /// Allows access to protected override.
-    member private __.TriggerClick(args) =
+    member private _.TriggerClick(args) =
         this.OnClick(args)

@@ -8,7 +8,7 @@ open PlayingCards
 type TestClass () =
 
     [<TestMethod>]
-    member __.RandomShuffle() =
+    member _.RandomShuffle() =
         let rng = Random(0)
         let decks =
             Array.init 100000 (fun _ -> Deck.shuffle rng)

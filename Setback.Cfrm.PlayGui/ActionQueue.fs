@@ -27,10 +27,10 @@ type ActionQueue(interval, sync : ISynchronizeInvoke) =
         timer.Start()
 
     /// Adds the given action to the queue.
-    member __.Enqueue(action) =
+    member _.Enqueue(action) =
         queue.Enqueue(action)
 
     /// Indicates whether the queue's timer is running.
-    member __.Enabled
+    member _.Enabled
         with set(value) = timer.Enabled <- value
         and get() = timer.Enabled
