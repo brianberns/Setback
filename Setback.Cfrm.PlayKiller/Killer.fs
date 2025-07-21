@@ -99,6 +99,11 @@ module Killer =
 
     type AbstractOpenDeal with
         member this.Auction = this.ClosedDeal.Auction
+        member this.NextBidder = failwith "Not implemented"
+        member this.Tricks : List<_> = failwith "Not implemented"
+        member this.HighBidderOpt = failwith "Not implemented"
+        member this.HighBid = failwith "Not implemented"
+        member this.NextPlayer : Option<_> * _ = failwith "Not implemented"
 
     type AbstractAuction with
         member this.Length = this.NumBids
@@ -151,8 +156,8 @@ module Killer =
         card
 
     /// Sends a bid to KS.
-    let sendBid deal (player : IPlayer) =
-        let bid = player.Bid deal
+    let sendBid deal (score : AbstractScore) (player : Player) =
+        let bid = player.MakeBid score deal
         let bidderNum, masterBidNum, slaveBidNum, _ = readMessage 6
         if masterBidNum <> -1 then failwith "Unexpected master bid"
         let bidderSeat = enum<Seat> bidderNum
@@ -161,9 +166,9 @@ module Killer =
         bid
 
     /// Sends a play to KS.
-    let sendPlay deal (player : IPlayer) =
+    let sendPlay deal (score : AbstractScore) (player : Player) =
         sync deal
-        let card = player.Play deal
+        let card = player.MakePlay score deal
         let playerNum, masterCardNum, slaveCardNum, _ = readMessage 9
         if masterCardNum <> -1 then failwith "Unexpected master play"
         let playerSeat = enum<Seat> playerNum
@@ -172,29 +177,34 @@ module Killer =
         card
 
     /// KS "master" player.
-    type MasterPlayer() =
-        interface IPlayer with
-            member this.Bid deal =
-                let bid = receiveBid deal
-                // Log.WriteLine "Master bid: %A" bid
-                bid
-            member this.Play deal =
-                let play = receivePlay deal
-                // Log.WriteLine "Master play: %A" play
-                play
+    let masterPlayer =
+        {
+            MakeBid =
+                fun _score deal ->
+                    let bid = receiveBid deal
+                    // Log.WriteLine "Master bid: %A" bid
+                    bid
+            MakePlay =
+                fun _score deal ->
+                    let play = receivePlay deal
+                    // Log.WriteLine "Master play: %A" play
+                    play
+        }
 
     /// KS "slave" player.
-    type SlavePlayer(player : IPlayer) =
-        member this.InnerPlayer = player
-        interface IPlayer with
-            member this.Bid deal =
-                let bid = sendBid deal player
-                // Log.WriteLine "Slave bid: %A" bid
-                bid
-            member this.Play deal =
-                let play = sendPlay deal player
-                // Log.WriteLine "Slave play: %A" play
-                play
+    let slavePlayer innerPlayer =
+        {
+            MakeBid =
+                fun score deal ->
+                    let bid = sendBid deal score innerPlayer
+                    // Log.WriteLine "Slave bid: %A" bid
+                    bid
+            MakePlay =
+                fun score deal ->
+                    let play = sendPlay deal score innerPlayer
+                    // Log.WriteLine "Slave play: %A" play
+                    play
+        }
 
     /// Wraps a game for use with KS.  
     type GameWrapper = { Game : Game }
@@ -278,117 +288,3 @@ module Killer =
                     wrapper
                     
         loop wrapper
-
-    let parseHand (rdr : TextReader) =
-
-        let line = rdr.ReadLine()
-        let tokens = line.Split([| ':'; ' ' |], StringSplitOptions.RemoveEmptyEntries)
-        let seat = Seat.fromChar tokens.[0].[0]
-        let cards =
-            [Suit.Spades; Suit.Hearts; Suit.Clubs; Suit.Diamonds]
-                |> Seq.zip (tokens |> Seq.skip 1)
-                |> Seq.collect (fun (token, suit) ->
-                    if token = "-" then
-                        Seq.empty
-                    else
-                        token |> Seq.map (fun c -> { Rank = Rank.fromChar c; Suit = suit }))
-                |> Seq.toArray
-        (seat, cards)
-
-    let parseAuction (rdr : TextReader) =
-
-        let parseSlaveBid () =
-            let line = rdr.ReadLine()
-            let tokens = line.Split([| ' ' |], StringSplitOptions.RemoveEmptyEntries)
-            let seat = Enum.Parse(typeof<Seat>, tokens.[1]) :?> Seat
-            let bid = tokens.[3] |> Int32.Parse |> enum<Bid>
-            (seat, bid)
-        let slaveBids =
-            [0..1]
-                |> Seq.map (fun _ -> parseSlaveBid ())
-                |> Map.ofSeq
-
-        let line = rdr.ReadLine()
-        let tokens = line.Split([| ' ' |], StringSplitOptions.RemoveEmptyEntries)
-        let seatBids =
-            tokens
-                |> Seq.skip 1
-                |> Seq.map (fun token ->
-                    let subtokens = token.Split([| ':' |])
-                    let seat = Seat.fromChar subtokens.[0].[0]
-                    let bid =
-                        match subtokens.[1] with
-                            | "P" -> Bid.Pass
-                            | str -> str.[0].ToString() |> Int32.Parse |> enum<Bid>
-                    (seat, bid))
-        seatBids
-            |> Seq.map (fun (seat, bid) ->
-                if slaveBids.ContainsKey seat then
-                    (seat, slaveBids.[seat])
-                else
-                    (seat, bid))
-            |> Seq.toArray
-
-    let parseTrick (deal : OpenDeal) (rdr : TextReader) =
-
-        let line = rdr.ReadLine()
-        let tokens = line.Split([| ' ' |], StringSplitOptions.RemoveEmptyEntries)
-        let plays =
-            tokens
-                |> Seq.skip 2
-                |> Seq.map (fun token ->
-                    let subtokens = token.Split([| ':' |])
-                    let seat = Seat.fromChar subtokens.[0].[0]
-                    let card = Card.fromString subtokens.[1]
-                    (seat, card))
-        (deal, plays)
-            ||> Seq.fold (fun deal (seat, card) ->
-                if (deal.NextPlayer |> snd) <> seat then
-                    failwith "Unexpected player"
-                deal.AddPlay card)
-
-    let parseDealPartial (rdr : TextReader) =
-
-        let mutable matched = false
-        while not matched do
-            let line = rdr.ReadLine()
-            let tokens = line.Split([| ' ' |], StringSplitOptions.RemoveEmptyEntries)
-            if tokens.Length = 4 then
-                let pairs = tokens |> Seq.zip([ "spades"; "hearts"; "clubs"; "diamonds" ])
-                matched <- pairs |> Seq.forall (fun (a, b) -> a = b)
-
-        let hands =
-            [1..4]
-                |> Seq.map (fun _ -> parseHand rdr)
-                |> Seq.sortBy fst
-                |> Seq.map snd
-                |> Seq.toArray
-
-        let seatBids = parseAuction rdr
-        let dealer = seatBids |> Seq.last |> fst
-        let teams = [| teamEW; teamNS |]
-        let deal = OpenDeal.fromHands teams dealer hands
-        let deal =
-            (deal, seatBids)
-                ||> Seq.fold (fun deal (_, bid) -> deal.AddBid bid)
-
-        (deal, [1..OpenDeal.numCardsPerHand])
-            ||> Seq.fold (fun deal _ ->
-                if rdr.Peek() = -1 then
-                    deal
-                else
-                    parseTrick deal rdr)
-
-    let parseDeal (rdr : TextReader) =
-
-        let deal = parseDealPartial rdr
-
-        let line = rdr.ReadLine()
-        let tokens = line.Split([| ' ' |], StringSplitOptions.RemoveEmptyEntries)
-        let id = tokens |> Seq.last |> Int32.Parse
-
-        (id, deal)
-
-    type GameWrapper with
-        member this.PlayHand = this |> playHand
-        member this.Play i = this |> play i
