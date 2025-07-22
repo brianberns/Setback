@@ -2,9 +2,6 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <AssemblyName>KillerSetbackClient</AssemblyName>
   </PropertyGroup>
