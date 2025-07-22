@@ -44,7 +44,7 @@ module Killer =
         wtr.Write message
 
     /// Converts the given KS card into a native card.
-    let asCard cardNum =
+    let toCard cardNum =
         let suit =
             match cardNum % 4 with
                 | 0 -> Suit.Spades
@@ -56,7 +56,7 @@ module Killer =
         Card(rank, suit)
 
     /// Converts the given native card into a KS card.
-    let asNum (card : Card) =
+    let toNum (card : Card) =
         let suitNum =
             match card.Suit with
                 | Suit.Spades -> 0

@@ -46,6 +46,7 @@ type MessageKey =
     | MakeBid = 6
     | EndOfBidding = 7
     | StartOfTrick = 8
+    | MakePlay = 9
 
 type Message =
     {
@@ -98,7 +99,7 @@ module Message =
         let cards =
             Array.append
                 cardMap[seat]
-                (Array.map Killer.asCard values[1..])
+                (Array.map Killer.toCard values[1..])
         Map.add seat cards cardMap
 
     let private onCardsReceived message = function
@@ -187,6 +188,31 @@ module Message =
             model
         | model -> Error $"Invalid state: {model}"
 
+    let private onMakePlay message = function
+        | Playing playing ->
+            let seat = enum<Seat> message.Values[0]
+            assert(
+                let trick =
+                    playing.Deal.ClosedDeal.Playout.CurrentTrick
+                Seat.incr
+                    (trick.LeaderIndex + trick.NumPlays)
+                    playing.Dealer = seat)
+            let card =
+                if message.Values[2] = -1 then
+                    let card =
+                        dbPlayer.MakePlay
+                            playing.Score playing.Deal
+                    respond message.Key (Killer.toNum card)
+                    card
+                else
+                    respond message.Key -1
+                    Killer.toCard message.Values[1]
+            let deal =
+                playing.Deal
+                    |> AbstractOpenDeal.addPlay card
+            Playing {| playing with Deal = deal |}
+        | model -> Error $"Invalid state: {model}"
+
     let update (message : Message) model =
         match message.Key with
 
@@ -211,6 +237,9 @@ module Message =
 
             | MessageKey.StartOfTrick ->
                 onStartOfTrick message model
+
+            | MessageKey.MakePlay ->
+                onMakePlay message model
 
             | _ -> Error $"Unexpected message key: {message.Key}"
 
