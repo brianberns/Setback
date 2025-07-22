@@ -13,6 +13,7 @@ type Model =
     | Start
     | Initialized
     | NewGameStarted
+    | Error of string
 
 module Model =
 
@@ -30,26 +31,30 @@ type Message =
 
 module Message =
 
-    let onInitialize (values : _[]) model =
+    let private respond key value =
+        let key = int key + 100
+        Killer.writeMessage key value
+
+    let private onInitialize message model =
         let response =
-            if values[0] = 0
-                && values[1] &&& 1 = 1
-                && values[1] &&& 2 = 0 then 0
+            if message.Values[0] = 0
+                && message.Values[1] &&& 1 = 1          // play to 11
+                && message.Values[1] &&& 2 = 0 then 0   // no smudge
             else -1
-        let key = int MessageKey.Initialize + 100
-        Killer.writeMessage key response
+        respond message.Key response
         Initialized
 
-    let onStartNewGame (values : _[]) model =
+    let private onStartNewGame message model =
+        respond message.Key 0
         NewGameStarted
 
     let update (message : Message) model =
         match message.Key with
             | MessageKey.Initialize ->
-                onInitialize message.Values model
+                onInitialize message model
             | MessageKey.StartNewGame ->
-                onStartNewGame message.Values model
-            | _ -> failwith $"Unexpected message key: {message.Key}"
+                onStartNewGame message model
+            | _ -> Error $"Unexpected message key: {message.Key}"
 
     let private onMasterFileChanged dispatch _args =
         let tokens = Killer.readMessage ()
