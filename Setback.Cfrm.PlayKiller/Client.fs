@@ -1,5 +1,6 @@
 ﻿namespace Setback
 
+open System
 open System.IO
 
 open Elmish
@@ -49,15 +50,37 @@ module Message =
                 onStartNewGame message.Values model
             | _ -> failwith $"Unexpected message key: {message.Key}"
 
- module View =
-
-    let view model dispatch =
-
+    let private onMasterFileChanged dispatch _args =
         let tokens = Killer.readMessage ()
         dispatch {
             Key = enum<MessageKey> tokens[0]
             Values = tokens[1..]
         }
 
+    let private watch : Subscribe<_> =
+        fun dispatch ->
+
+            let watcher =
+                new FileSystemWatcher(
+                    @"C:\Program Files\KSetback",
+                    "KSetback.msg.master",
+                    EnableRaisingEvents = true)
+            watcher.Changed.Add(
+                onMasterFileChanged dispatch)
+
+            {
+                new IDisposable with
+                    member _.Dispose() =
+                        watcher.Dispose()
+            }
+
+    let subscribe model : Sub<_> =
+        [
+            [ "watch" ], watch
+        ]
+
+ module View =
+
+    let view model dispatch =
         DockPanel.create [
         ]

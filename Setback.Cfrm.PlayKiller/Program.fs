@@ -15,9 +15,10 @@ type MainWindow() as this =
         Height = 100.0)
     do
         Program.mkSimple Model.init Message.update View.view
-        |> Program.withHost this
-        // |> Program.withConsoleTrace
-        |> Program.runWithAvaloniaSyncDispatch ()
+            |> Program.withSubscription Message.subscribe
+            |> Program.withHost this
+            // |> Program.withConsoleTrace
+            |> Program.runWithAvaloniaSyncDispatch ()
 
 type App() =
     inherit Application()
