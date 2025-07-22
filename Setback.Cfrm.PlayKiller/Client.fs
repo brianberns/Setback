@@ -387,15 +387,16 @@ module Message =
 
     let view (model : Model) dispatch =
         Grid.create [
-            Grid.rowDefinitions "*"
-            Grid.columnDefinitions "*, *"
-            Grid.children [
-                match model with
-                    | Error msg ->
+            match model with
+                | Error msg ->
+                    Grid.children [
                         createTextBlock 0 msg
-                    | _ ->
+                    ]
+                | _ ->
+                    Grid.columnDefinitions "*, *"
+                    Grid.children [
                         let ewGamesWon, nsGamesWon = model.GamesWon
                         createTextBlock 1 $"E+W games won: {ewGamesWon}"
                         createTextBlock 0 $"N+S games won: {nsGamesWon}"
-                ]
+                    ]
         ]
