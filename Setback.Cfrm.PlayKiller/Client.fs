@@ -9,14 +9,17 @@ open Avalonia.Controls
 open Avalonia.FuncUI.DSL
 open Avalonia.Layout
 
+open PlayingCards
+
 type Model =
     | Start
     | Initialized
     | NewGameStarted
-    | NewHandDealt of {|
+    | Dealing of {|
         Dealer : Seat
         EwScore : int
-        NsScore : int |}
+        NsScore : int
+        CardMap : Map<Seat, Card[]> |}
     | Error of string
 
 module Model =
@@ -27,6 +30,8 @@ type MessageKey =
     | Initialize = 1
     | StartNewGame = 2
     | DealNewHand = 3
+    | First3Cards = 4
+    | Second3Cards = 5
 
 type Message =
     {
@@ -55,11 +60,34 @@ module Message =
 
     let private onDealNewHand message model =
         respond message.Key 0
-        NewHandDealt {|
+        Dealing {|
             Dealer = enum<Seat> message.Values[1]
             EwScore = message.Values[2]
             NsScore = message.Values[3]
+            CardMap =
+                Enum.getValues<Seat>
+                    |> Seq.map (fun seat ->
+                        seat, Array.empty)
+                    |> Map
         |}
+
+    let private onCardsReceived message = function
+        | Dealing dealing ->
+            respond message.Key 0
+            let seat = enum<Seat> message.Values[0]
+            let cards =
+                let newCards =
+                    message.Values[1..]
+                        |> Array.map Killer.asCard
+                Array.append
+                    dealing.CardMap[seat]
+                    newCards
+            Dealing {|
+                dealing with
+                    CardMap =
+                        Map.add seat cards dealing.CardMap
+            |}
+        | model -> Error $"Invalid state: {model}"
 
     let update (message : Message) model =
         match message.Key with
@@ -69,6 +97,9 @@ module Message =
                 onStartNewGame message model
             | MessageKey.DealNewHand ->
                 onDealNewHand message model
+            | MessageKey.First3Cards
+            | MessageKey.Second3Cards ->
+                onCardsReceived message model
             | _ -> Error $"Unexpected message key: {message.Key}"
 
     let private onMasterFileChanged dispatch _args =
