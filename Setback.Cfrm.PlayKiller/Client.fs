@@ -10,6 +10,7 @@ open Avalonia.FuncUI.DSL
 open Avalonia.Layout
 
 open PlayingCards
+open Setback.Cfrm
 
 type Model =
     | Start
@@ -19,7 +20,9 @@ type Model =
         Dealer : Seat
         EwScore : int
         NsScore : int
+        NumCards : int
         CardMap : Map<Seat, Card[]> |}
+    | NewDealStarted of AbstractOpenDeal
     | Error of string
 
 module Model =
@@ -64,6 +67,7 @@ module Message =
             Dealer = enum<Seat> message.Values[1]
             EwScore = message.Values[2]
             NsScore = message.Values[3]
+            NumCards = 0
             CardMap =
                 Enum.getValues<Seat>
                     |> Seq.map (fun seat ->
@@ -71,22 +75,35 @@ module Message =
                     |> Map
         |}
 
+    let private updateCardMap (values : _[]) (cardMap : Map<_, _>) =
+        let seat = enum<Seat> values[0]
+        let cards =
+            Array.append
+                cardMap[seat]
+                (Array.map Killer.asCard values[1..])
+        Map.add seat cards cardMap
+
     let private onCardsReceived message = function
         | Dealing dealing ->
             respond message.Key 0
-            let seat = enum<Seat> message.Values[0]
-            let cards =
-                let newCards =
-                    message.Values[1..]
-                        |> Array.map Killer.asCard
-                Array.append
-                    dealing.CardMap[seat]
-                    newCards
-            Dealing {|
-                dealing with
-                    CardMap =
-                        Map.add seat cards dealing.CardMap
-            |}
+            let numCards = dealing.NumCards + 3
+            let cardMap =
+                updateCardMap
+                    message.Values
+                    dealing.CardMap
+            if numCards < Setback.numCardsPerDeal then
+                Dealing {|
+                    dealing with
+                        NumCards = numCards
+                        CardMap = cardMap
+                |}
+            else
+                cardMap
+                    |> Map.map (fun _ cards ->
+                        Seq.ofArray cards)
+                    |> AbstractOpenDeal.fromHands dealing.Dealer
+                    |> NewDealStarted
+            
         | model -> Error $"Invalid state: {model}"
 
     let update (message : Message) model =
