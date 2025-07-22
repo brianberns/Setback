@@ -31,7 +31,9 @@ type Model =
         Score : AbstractScore
         Deal : AbstractOpenDeal |}
 
-    | Complete of AbstractScore
+    | Complete of {|
+        EwScore : int
+        NsScore : int |}
 
     | Error of string
 
@@ -238,21 +240,36 @@ module Message =
         | Playing playing ->
             assert(
                 AbstractOpenDeal.isExhausted playing.Deal)
-            let gameScore =
-                let dealScore =
-                    AbstractOpenDeal.dealScore playing.Deal
-                playing.Score + dealScore
+            let ewScore = message.Values[0]
+            let nsScore = message.Values[1]
             assert(
-                let ewScore = message.Values[0]
-                let nsScore = message.Values[1]
+                let gameScore =
+                    let dealScore =
+                        AbstractOpenDeal.dealScore playing.Deal
+                    playing.Score + dealScore
                 toAbstractScore playing.Dealer ewScore nsScore
                     = gameScore)
             respond message.Key 0
-            Complete gameScore
+            Complete {|
+                EwScore = ewScore
+                NsScore = nsScore
+            |}
         | model -> Error $"Invalid state: {model}"
 
     let private onEndOfGame message = function
         | Complete complete as model ->
+            assert(
+                let dummyDealer = Seat.West
+                let gameScore =
+                    let ewScore = message.Values[0]
+                    let nsScore = message.Values[1]
+                    toAbstractScore dummyDealer ewScore nsScore
+                let winningTeamIdx = message.Values[2]
+                gameScore =
+                    toAbstractScore
+                        dummyDealer complete.EwScore complete.NsScore
+                    && BootstrapGameState.winningTeamOpt gameScore
+                        = Some winningTeamIdx)
             respond message.Key 0
             model
         | model -> Error $"Invalid state: {model}"
