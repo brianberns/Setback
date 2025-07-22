@@ -13,18 +13,24 @@ open PlayingCards
 open Setback.Cfrm
 
 type Model =
+
     | Start
+
     | Initialized
+
     | NewGameStarted
+
     | Dealing of {|
         Dealer : Seat
         Score : AbstractScore
         NumCards : int
         CardMap : Map<Seat, Card[]> |}
-    | Bidding of {|
+
+    | Playing of {|
         Dealer : Seat
         Score : AbstractScore
         Deal : AbstractOpenDeal |}
+
     | Error of string
 
 module Model =
@@ -38,6 +44,7 @@ type MessageKey =
     | First3Cards = 4
     | Second3Cards = 5
     | MakeBid = 6
+    | EndOfBidding = 7
 
 type Message =
     {
@@ -66,9 +73,9 @@ module Message =
 
     let private onDealNewHand message model =
         respond message.Key 0
-        let dealer = enum<Seat> message.Values[1]
-        let ewScore = message.Values[2]
-        let nsScore = message.Values[3]
+        let dealer = enum<Seat> message.Values[0]
+        let ewScore = message.Values[1]
+        let nsScore = message.Values[2]
         let points =
             match dealer with
                 | Seat.West | Seat.East -> [| ewScore; nsScore |]
@@ -113,7 +120,7 @@ module Message =
                         |> Map.map (fun _ cards ->
                             Seq.ofArray cards)
                         |> AbstractOpenDeal.fromHands dealing.Dealer
-                Bidding {|
+                Playing {|
                     Dealer = dealing.Dealer
                     Score = dealing.Score
                     Deal = deal
@@ -125,11 +132,11 @@ module Message =
         DatabasePlayer.player "Setback.db"
 
     let private onMakeBid message = function
-        | Bidding bidding ->
+        | Playing bidding ->
             let seat = enum<Seat> message.Values[0]
             assert(
                 Seat.incr
-                    bidding.Deal.ClosedDeal.Auction.NumBids
+                    (bidding.Deal.ClosedDeal.Auction.NumBids + 1)
                     bidding.Dealer = seat)
             let bid =
                 if message.Values[2] = -1 then
@@ -144,22 +151,47 @@ module Message =
             let deal =
                 bidding.Deal
                     |> AbstractOpenDeal.addBid bid
-            Bidding {| bidding with Deal = deal |}
+            Playing {| bidding with Deal = deal |}
+        | model -> Error $"Invalid state: {model}"
+
+    let private onEndOfBidding message = function
+        | Playing playing as model ->
+            let auction = playing.Deal.ClosedDeal.Auction
+            assert(AbstractAuction.isComplete auction)
+            assert(
+                message.Values[0]
+                    = int (
+                        Seat.incr
+                            auction.HighBid.BidderIndex
+                            playing.Dealer))
+            assert(
+                message.Values[1] = int auction.HighBid.Bid)
+            respond message.Key 0
+            model
         | model -> Error $"Invalid state: {model}"
 
     let update (message : Message) model =
         match message.Key with
+
             | MessageKey.Initialize ->
                 onInitialize message model
+
             | MessageKey.StartNewGame ->
                 onStartNewGame message model
+
             | MessageKey.DealNewHand ->
                 onDealNewHand message model
+
             | MessageKey.First3Cards
             | MessageKey.Second3Cards ->
                 onCardsReceived message model
+
             | MessageKey.MakeBid ->
                 onMakeBid message model
+
+            | MessageKey.EndOfBidding ->
+                onEndOfBidding message model
+
             | _ -> Error $"Unexpected message key: {message.Key}"
 
     let private onMasterFileChanged dispatch _args =
