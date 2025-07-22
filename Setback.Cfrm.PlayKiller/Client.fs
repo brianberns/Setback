@@ -7,6 +7,7 @@ open Elmish
 
 open Avalonia.Controls
 open Avalonia.FuncUI.DSL
+open Avalonia.Layout
 
 type Model =
     | Start
@@ -82,5 +83,8 @@ module Message =
  module View =
 
     let view model dispatch =
-        DockPanel.create [
+        TextBlock.create [
+            TextBlock.text (string model)
+            TextBlock.horizontalAlignment HorizontalAlignment.Center
+            TextBlock.verticalAlignment VerticalAlignment.Center
         ]
