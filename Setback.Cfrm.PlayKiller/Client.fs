@@ -225,7 +225,7 @@ module Message =
             model
         | model -> Error $"Invalid state: {model}"
 
-    let update (message : Message) model =
+    let update message model =
         match message.Key with
 
             | MessageKey.Initialize ->
