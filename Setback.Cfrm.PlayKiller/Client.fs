@@ -377,12 +377,16 @@ module Message =
  module View =
 
     let private createTextBlock row column text =
-        TextBlock.create [
-            TextBlock.text text
-            TextBlock.verticalAlignment VerticalAlignment.Center
-            TextBlock.margin 10.0
+        Border.create [
             Grid.row row
             Grid.column column
+            Border.child (
+                TextBlock.create [
+                    TextBlock.text text
+                    TextBlock.verticalAlignment VerticalAlignment.Center
+                    TextBlock.margin 10.0
+                ]
+            )
         ]
 
     /// 95% confidence interval.
@@ -400,18 +404,22 @@ module Message =
                         createTextBlock 0 0 msg
                     ]
                 | _ ->
-                    Grid.rowDefinitions "*, *"
-                    Grid.columnDefinitions "*, *"
+                    Grid.rowDefinitions "*, *, *"
+                    Grid.columnDefinitions "50*, 25*, 25*"
                     Grid.children [
-                        createTextBlock 1 0 "Projected E+W win rate:"
-                        createTextBlock 0 0 "Projected N+S win rate:"
+                        createTextBlock 1 0 "Projected E+W win rate"
+                        createTextBlock 2 0 "Projected N+S win rate"
+                        createTextBlock 0 1 "Min"
+                        createTextBlock 0 2 "Max"
                         let ewGamesWon, nsGamesWon = model.GamesWon
                         let total = float (ewGamesWon + nsGamesWon)
                         if total > 0.0 then
                             let ewWinRate = float ewGamesWon / total
                             let nsWinRate = float nsGamesWon / total
                             let moe = getMarginOfError ewWinRate total
-                            createTextBlock 1 1 (getWinRateString ewWinRate moe)
-                            createTextBlock 0 1 (getWinRateString nsWinRate moe)
+                            createTextBlock 1 1 $"%0.1f{(max (ewWinRate - moe) 0.0) * 100.0}%%"
+                            createTextBlock 2 1 $"%0.1f{(max (nsWinRate - moe) 0.0) * 100.0}%%"
+                            createTextBlock 1 2 $"%0.1f{(min (ewWinRate + moe) 1.0) * 100.0}%%"
+                            createTextBlock 2 2 $"%0.1f{(min (nsWinRate + moe) 1.0) * 100.0}%%"
                     ]
         ]
