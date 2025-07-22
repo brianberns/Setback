@@ -7,6 +7,7 @@ open Elmish
 
 open Avalonia.Controls
 open Avalonia.FuncUI.DSL
+open Avalonia.FuncUI.Types
 open Avalonia.Layout
 
 open PlayingCards
@@ -48,6 +49,17 @@ type Model =
         NsGamesWon : int |}
 
     | Error of string
+
+    member this.GamesWon =
+        match this with
+            | Start
+            | Initialized -> 0, 0
+            | NewGameStarted ngs -> ngs.EwGamesWon, ngs.NsGamesWon
+            | Dealing dealing -> dealing.EwGamesWon, dealing.NsGamesWon
+            | Playing playing -> playing.EwGamesWon, playing.NsGamesWon
+            | HandComplete complete -> complete.EwGamesWon, complete.NsGamesWon
+            | GameComplete complete -> complete.EwGamesWon, complete.NsGamesWon
+            | Error _ -> failwith "Invalid state"
 
 module Model =
 
@@ -364,13 +376,22 @@ module Message =
 
  module View =
 
-    let view model dispatch =
+    let createTextBlock text =
+        TextBlock.create [
+            TextBlock.text text
+            TextBlock.verticalAlignment VerticalAlignment.Center
+            TextBlock.margin 10.0
+        ]
+
+    let view (model : Model) dispatch =
         StackPanel.create [
             StackPanel.children [
-                TextBlock.create [
-                    TextBlock.text (string model)
-                    TextBlock.horizontalAlignment HorizontalAlignment.Center
-                    TextBlock.verticalAlignment VerticalAlignment.Center
-                ]
+            match model with
+                | Error msg ->
+                    createTextBlock msg
+                | _ ->
+                    let ewGamesWon, nsGamesWon = model.GamesWon
+                    createTextBlock $"E+W games won: {ewGamesWon}"
+                    createTextBlock $"N+S games won: {nsGamesWon}"
             ]
         ]
