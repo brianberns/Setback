@@ -51,6 +51,7 @@ type MessageKey =
     | MakePlay = 9
     | EndOfTrick = 10
     | EndOfHand = 11
+    | EndOfGame = 12
 
 type Message =
     {
@@ -250,6 +251,12 @@ module Message =
             Complete gameScore
         | model -> Error $"Invalid state: {model}"
 
+    let private onEndOfGame message = function
+        | Complete complete as model ->
+            respond message.Key 0
+            model
+        | model -> Error $"Invalid state: {model}"
+
     let update message model =
         match message.Key with
 
@@ -283,6 +290,9 @@ module Message =
 
             | MessageKey.EndOfHand ->
                 onEndOfHand message model
+
+            | MessageKey.EndOfGame ->
+                onEndOfGame message model
 
             | _ -> Error $"Unexpected message key: {message.Key}"
 
