@@ -47,6 +47,7 @@ type MessageKey =
     | EndOfBidding = 7
     | StartOfTrick = 8
     | MakePlay = 9
+    | EndOfTrick = 10
 
 type Message =
     {
@@ -190,13 +191,14 @@ module Message =
 
     let private onMakePlay message = function
         | Playing playing ->
-            let seat = enum<Seat> message.Values[0]
             assert(
+                let seat = enum<Seat> message.Values[0]
                 let trick =
                     playing.Deal.ClosedDeal.Playout.CurrentTrick
-                Seat.incr
-                    (trick.LeaderIndex + trick.NumPlays)
-                    playing.Dealer = seat)
+                seat
+                    = Seat.incr
+                        (trick.LeaderIndex + trick.NumPlays)
+                        playing.Dealer)
             let card =
                 if message.Values[2] = -1 then
                     let card =
@@ -211,6 +213,16 @@ module Message =
                 playing.Deal
                     |> AbstractOpenDeal.addPlay card
             Playing {| playing with Deal = deal |}
+        | model -> Error $"Invalid state: {model}"
+
+    let private onEndOfTrick message = function
+        | Playing playing as model ->
+            assert(
+                let playout = playing.Deal.ClosedDeal.Playout
+                AbstractPlayout.isComplete playout
+                    || playout.CurrentTrick.NumPlays = 0)
+            respond message.Key 0
+            model
         | model -> Error $"Invalid state: {model}"
 
     let update (message : Message) model =
@@ -240,6 +252,9 @@ module Message =
 
             | MessageKey.MakePlay ->
                 onMakePlay message model
+
+            | MessageKey.EndOfTrick ->
+                onEndOfTrick message model
 
             | _ -> Error $"Unexpected message key: {message.Key}"
 
