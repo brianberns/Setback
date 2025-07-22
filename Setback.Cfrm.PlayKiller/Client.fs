@@ -18,22 +18,34 @@ type Model =
 
     | Initialized
 
-    | NewGameStarted
+    | NewGameStarted of {|
+        EwGamesWon : int
+        NsGamesWon : int |}
 
     | Dealing of {|
+        EwGamesWon : int
+        NsGamesWon : int
         Dealer : Seat
-        Score : AbstractScore
+        GameScore : AbstractScore
         NumCards : int
         CardMap : Map<Seat, Card[]> |}
 
     | Playing of {|
+        EwGamesWon : int
+        NsGamesWon : int
         Dealer : Seat
-        Score : AbstractScore
+        GameScore : AbstractScore
         Deal : AbstractOpenDeal |}
 
-    | Complete of {|
-        EwScore : int
-        NsScore : int |}
+    | HandComplete of {|
+        EwGamesWon : int
+        NsGamesWon : int
+        EwGameScore : int
+        NsGameScore : int |}
+
+    | GameComplete of {|
+        EwGamesWon : int
+        NsGamesWon : int |}
 
     | Error of string
 
@@ -77,8 +89,16 @@ module Message =
         Initialized
 
     let private onStartNewGame message model =
+        let ewGamesWon, nsGamesWon =
+            match model with
+                | Initialized -> 0, 0
+                | GameComplete complete ->
+                    complete.EwGamesWon, complete.NsGamesWon
+                | _ -> failwith $"Invalid state: {model}"
         respond message.Key 0
-        NewGameStarted
+        NewGameStarted {|
+            EwGamesWon = ewGamesWon
+            NsGamesWon = nsGamesWon |}
 
     let private toAbstractScore dealer ewScore nsScore =
         let points =
@@ -89,13 +109,22 @@ module Message =
         AbstractScore points
 
     let private onDealNewHand message model =
-        respond message.Key 0
+        let ewGamesWon, nsGamesWon =
+            match model with
+                | NewGameStarted ngs ->
+                    ngs.EwGamesWon, ngs.NsGamesWon
+                | HandComplete complete ->
+                    complete.EwGamesWon, complete.NsGamesWon
+                | model -> failwith $"Invalid state: {model}"
         let dealer = enum<Seat> message.Values[0]
         let ewScore = message.Values[1]
         let nsScore = message.Values[2]
+        respond message.Key 0
         Dealing {|
+            EwGamesWon = ewGamesWon
+            NsGamesWon = nsGamesWon
             Dealer = dealer
-            Score =
+            GameScore =
                 toAbstractScore
                     dealer ewScore nsScore
             NumCards = 0
@@ -135,11 +164,13 @@ module Message =
                             Seq.ofArray cards)
                         |> AbstractOpenDeal.fromHands dealing.Dealer
                 Playing {|
+                    EwGamesWon = dealing.EwGamesWon
+                    NsGamesWon = dealing.NsGamesWon
                     Dealer = dealing.Dealer
-                    Score = dealing.Score
+                    GameScore = dealing.GameScore
                     Deal = deal
                 |}
-        | model -> Error $"Invalid state: {model}"
+        | model -> failwith $"Invalid state: {model}"
 
     let private dbPlayer =
         DatabasePlayer.player "Setback.db"
@@ -155,7 +186,7 @@ module Message =
                 if message.Values[2] = -1 then
                     let bid =
                         dbPlayer.MakeBid
-                            bidding.Score bidding.Deal
+                            bidding.GameScore bidding.Deal
                     respond message.Key (int bid)
                     bid
                 else
@@ -165,7 +196,7 @@ module Message =
                 bidding.Deal
                     |> AbstractOpenDeal.addBid bid
             Playing {| bidding with Deal = deal |}
-        | model -> Error $"Invalid state: {model}"
+        | model -> failwith $"Invalid state: {model}"
 
     let private onEndOfBidding message = function
         | Playing playing as model ->
@@ -181,7 +212,7 @@ module Message =
                 message.Values[1] = int auction.HighBid.Bid)
             respond message.Key 0
             model
-        | model -> Error $"Invalid state: {model}"
+        | model -> failwith $"Invalid state: {model}"
 
     let private onStartOfTrick message = function
         | Playing playing as model ->
@@ -198,7 +229,7 @@ module Message =
                     = playout.History.NumTricksCompleted + 1)
             respond message.Key 0
             model
-        | model -> Error $"Invalid state: {model}"
+        | model -> failwith $"Invalid state: {model}"
 
     let private onMakePlay message = function
         | Playing playing ->
@@ -214,7 +245,7 @@ module Message =
                 if message.Values[2] = -1 then
                     let card =
                         dbPlayer.MakePlay
-                            playing.Score playing.Deal
+                            playing.GameScore playing.Deal
                     respond message.Key (Killer.toNum card)
                     card
                 else
@@ -224,7 +255,7 @@ module Message =
                 playing.Deal
                     |> AbstractOpenDeal.addPlay card
             Playing {| playing with Deal = deal |}
-        | model -> Error $"Invalid state: {model}"
+        | model -> failwith $"Invalid state: {model}"
 
     let private onEndOfTrick message = function
         | Playing playing as model ->
@@ -234,7 +265,7 @@ module Message =
                     || playout.CurrentTrick.NumPlays = 0)
             respond message.Key 0
             model
-        | model -> Error $"Invalid state: {model}"
+        | model -> failwith $"Invalid state: {model}"
 
     let private onEndOfHand message = function
         | Playing playing ->
@@ -246,72 +277,61 @@ module Message =
                 let gameScore =
                     let dealScore =
                         AbstractOpenDeal.dealScore playing.Deal
-                    playing.Score + dealScore
+                    playing.GameScore + dealScore
                 toAbstractScore playing.Dealer ewScore nsScore
                     = gameScore)
             respond message.Key 0
-            Complete {|
-                EwScore = ewScore
-                NsScore = nsScore
+            HandComplete {|
+                EwGamesWon = playing.EwGamesWon
+                NsGamesWon = playing.NsGamesWon
+                EwGameScore = ewScore
+                NsGameScore = nsScore
             |}
-        | model -> Error $"Invalid state: {model}"
+        | model -> failwith $"Invalid state: {model}"
 
     let private onEndOfGame message = function
-        | Complete complete as model ->
+        | HandComplete complete as model ->
+            let winningTeamIdx = message.Values[2]
             assert(
                 let dummyDealer = Seat.West
                 let gameScore =
                     let ewScore = message.Values[0]
                     let nsScore = message.Values[1]
                     toAbstractScore dummyDealer ewScore nsScore
-                let winningTeamIdx = message.Values[2]
                 gameScore =
                     toAbstractScore
-                        dummyDealer complete.EwScore complete.NsScore
+                        dummyDealer complete.EwGameScore complete.NsGameScore
                     && BootstrapGameState.winningTeamOpt gameScore
                         = Some winningTeamIdx)
+            let ewGamesWon, nsGamesWon =
+                match winningTeamIdx with
+                    | 0 -> complete.EwGamesWon + 1, complete.NsGamesWon
+                    | 1 -> complete.NsGamesWon, complete.NsGamesWon + 1
+                    | _ -> failwith $"Invalid team index: {winningTeamIdx}"
             respond message.Key 0
-            model
-        | model -> Error $"Invalid state: {model}"
+            GameComplete {|
+                EwGamesWon = ewGamesWon
+                NsGamesWon = nsGamesWon
+            |}
+        | model -> failwith $"Invalid state: {model}"
 
     let update message model =
-        match message.Key with
-
-            | MessageKey.Initialize ->
-                onInitialize message model
-
-            | MessageKey.StartNewGame ->
-                onStartNewGame message model
-
-            | MessageKey.DealNewHand ->
-                onDealNewHand message model
-
-            | MessageKey.First3Cards
-            | MessageKey.Second3Cards ->
-                onCardsReceived message model
-
-            | MessageKey.MakeBid ->
-                onMakeBid message model
-
-            | MessageKey.EndOfBidding ->
-                onEndOfBidding message model
-
-            | MessageKey.StartOfTrick ->
-                onStartOfTrick message model
-
-            | MessageKey.MakePlay ->
-                onMakePlay message model
-
-            | MessageKey.EndOfTrick ->
-                onEndOfTrick message model
-
-            | MessageKey.EndOfHand ->
-                onEndOfHand message model
-
-            | MessageKey.EndOfGame ->
-                onEndOfGame message model
-
-            | _ -> Error $"Unexpected message key: {message.Key}"
+        try
+            match message.Key with
+                | MessageKey.Initialize -> onInitialize message model
+                | MessageKey.StartNewGame -> onStartNewGame message model
+                | MessageKey.DealNewHand -> onDealNewHand message model
+                | MessageKey.First3Cards
+                | MessageKey.Second3Cards -> onCardsReceived message model
+                | MessageKey.MakeBid -> onMakeBid message model
+                | MessageKey.EndOfBidding -> onEndOfBidding message model
+                | MessageKey.StartOfTrick -> onStartOfTrick message model
+                | MessageKey.MakePlay -> onMakePlay message model
+                | MessageKey.EndOfTrick -> onEndOfTrick message model
+                | MessageKey.EndOfHand -> onEndOfHand message model
+                | MessageKey.EndOfGame -> onEndOfGame message model
+                | _ -> failwith $"Unexpected message key: {message.Key}"
+        with exn -> Error exn.Message
 
     let private onMasterFileChanged dispatch _args =
         let tokens = Killer.readMessage ()
@@ -345,8 +365,12 @@ module Message =
  module View =
 
     let view model dispatch =
-        TextBlock.create [
-            TextBlock.text (string model)
-            TextBlock.horizontalAlignment HorizontalAlignment.Center
-            TextBlock.verticalAlignment VerticalAlignment.Center
+        StackPanel.create [
+            StackPanel.children [
+                TextBlock.create [
+                    TextBlock.text (string model)
+                    TextBlock.horizontalAlignment HorizontalAlignment.Center
+                    TextBlock.verticalAlignment VerticalAlignment.Center
+                ]
+            ]
         ]
