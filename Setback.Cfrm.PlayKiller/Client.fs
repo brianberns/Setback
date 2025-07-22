@@ -376,22 +376,26 @@ module Message =
 
  module View =
 
-    let createTextBlock text =
+    let createTextBlock column text =
         TextBlock.create [
             TextBlock.text text
+            TextBlock.horizontalAlignment HorizontalAlignment.Center
             TextBlock.verticalAlignment VerticalAlignment.Center
             TextBlock.margin 10.0
+            Grid.column column
         ]
 
     let view (model : Model) dispatch =
-        StackPanel.create [
-            StackPanel.children [
-            match model with
-                | Error msg ->
-                    createTextBlock msg
-                | _ ->
-                    let ewGamesWon, nsGamesWon = model.GamesWon
-                    createTextBlock $"E+W games won: {ewGamesWon}"
-                    createTextBlock $"N+S games won: {nsGamesWon}"
-            ]
+        Grid.create [
+            Grid.rowDefinitions "*"
+            Grid.columnDefinitions "*, *"
+            Grid.children [
+                match model with
+                    | Error msg ->
+                        createTextBlock 0 msg
+                    | _ ->
+                        let ewGamesWon, nsGamesWon = model.GamesWon
+                        createTextBlock 1 $"E+W games won: {ewGamesWon}"
+                        createTextBlock 0 $"N+S games won: {nsGamesWon}"
+                ]
         ]
