@@ -1,5 +1,8 @@
 ﻿namespace Setback
 
+open System.Diagnostics
+open System.IO
+
 open Elmish
 
 open Avalonia
@@ -36,8 +39,25 @@ type App() =
 
 module Program =
 
+    let configureKSetback () =
+
+        let iniPath = @"C:\Program Files\KSetback\KSetback.ini"
+        let oldLines = File.ReadAllLines(iniPath)
+        let newLines =
+            [
+                "Password = Rosie"
+                "Master = NS"
+            ]
+                |> Seq.where (fun newLine ->
+                    Array.contains newLine oldLines |> not)
+        File.AppendAllLines(iniPath, newLines)
+
+        Process.Start(@"C:\Program Files\KSetback\KSetback.exe")
+            |> ignore
+
     [<EntryPoint>]
     let main(args: string[]) =
+        configureKSetback ()
         AppBuilder
             .Configure<App>()
             .UsePlatformDetect()
