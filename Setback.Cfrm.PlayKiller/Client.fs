@@ -376,27 +376,42 @@ module Message =
 
  module View =
 
-    let createTextBlock column text =
+    let private createTextBlock row column text =
         TextBlock.create [
             TextBlock.text text
-            TextBlock.horizontalAlignment HorizontalAlignment.Center
             TextBlock.verticalAlignment VerticalAlignment.Center
             TextBlock.margin 10.0
+            Grid.row row
             Grid.column column
         ]
+
+    /// 95% confidence interval.
+    let private getMarginOfError rate total =
+        1.96 * sqrt ((rate * (1.0 - rate)) / total)
+
+    let private getWinRateString rate moe =
+        $"%0.1f{(max (rate - moe) 0.0) * 100.0}%% to %0.1f{(min (rate + moe) 1.0) * 100.0}%%"
 
     let view (model : Model) (dispatch : Message -> unit) =
         Grid.create [
             match model with
                 | Error msg ->
                     Grid.children [
-                        createTextBlock 0 msg
+                        createTextBlock 0 0 msg
                     ]
                 | _ ->
+                    Grid.rowDefinitions "*, *"
                     Grid.columnDefinitions "*, *"
                     Grid.children [
+                        createTextBlock 1 0 "Projected E+W win rate:"
+                        createTextBlock 0 0 "Projected N+S win rate:"
                         let ewGamesWon, nsGamesWon = model.GamesWon
-                        createTextBlock 1 $"E+W games won: {ewGamesWon}"
-                        createTextBlock 0 $"N+S games won: {nsGamesWon}"
+                        let total = float (ewGamesWon + nsGamesWon)
+                        if total > 0.0 then
+                            let ewWinRate = float ewGamesWon / total
+                            let nsWinRate = float nsGamesWon / total
+                            let moe = getMarginOfError ewWinRate total
+                            createTextBlock 1 1 (getWinRateString ewWinRate moe)
+                            createTextBlock 0 1 (getWinRateString nsWinRate moe)
                     ]
         ]
