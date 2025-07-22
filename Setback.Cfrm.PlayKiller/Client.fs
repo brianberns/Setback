@@ -7,7 +7,6 @@ open Elmish
 
 open Avalonia.Controls
 open Avalonia.FuncUI.DSL
-open Avalonia.FuncUI.Types
 open Avalonia.Layout
 
 open PlayingCards
@@ -93,7 +92,7 @@ module Message =
 
     let private onInitialize message model =
         let response =
-            if message.Values[0] = 0
+            if message.Values[0] = 0                    // client plays E+W
                 && message.Values[1] &&& 1 = 1          // play to 11
                 && message.Values[1] &&& 2 = 0 then 0   // no smudge
             else -1
@@ -385,7 +384,7 @@ module Message =
             Grid.column column
         ]
 
-    let view (model : Model) dispatch =
+    let view (model : Model) (dispatch : Message -> unit) =
         Grid.create [
             match model with
                 | Error msg ->
