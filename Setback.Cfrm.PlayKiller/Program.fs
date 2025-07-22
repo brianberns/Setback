@@ -14,8 +14,8 @@ open Avalonia.Controls.ApplicationLifetimes
 type MainWindow() as this =
     inherit HostWindow(
         Title = "Bernsrite Setback",
-        Width = 400.0,
-        Height = 150.0)
+        Width = 600.0,
+        Height = 400.0)
     do
         Program.mkSimple Model.init Message.update View.view
             |> Program.withSubscription Message.subscribe

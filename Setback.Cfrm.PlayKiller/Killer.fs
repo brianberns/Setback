@@ -15,7 +15,7 @@ module Killer =
         use mutable rdr : StreamReader = null
         while rdr = null do
             try rdr <- fileInfo.OpenText()
-            with _ -> Threading.Thread.Sleep 10
+            with _ -> Threading.Thread.Sleep 1
         rdr.ReadToEnd()
             .Trim()
             .Split(
