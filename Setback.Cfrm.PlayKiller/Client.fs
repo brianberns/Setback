@@ -45,6 +45,7 @@ type MessageKey =
     | Second3Cards = 5
     | MakeBid = 6
     | EndOfBidding = 7
+    | StartOfTrick = 8
 
 type Message =
     {
@@ -125,7 +126,6 @@ module Message =
                     Score = dealing.Score
                     Deal = deal
                 |}
-            
         | model -> Error $"Invalid state: {model}"
 
     let private dbPlayer =
@@ -170,6 +170,23 @@ module Message =
             model
         | model -> Error $"Invalid state: {model}"
 
+    let private onStartOfTrick message = function
+        | Playing playing as model ->
+            let playout = playing.Deal.ClosedDeal.Playout
+            assert(
+                message.Values[0]
+                    = int (
+                        Seat.incr
+                            (AbstractPlayout.currentPlayerIndex
+                                playout)
+                            playing.Dealer))
+            assert(
+                message.Values[1]
+                    = playout.History.NumTricksCompleted + 1)
+            respond message.Key 0
+            model
+        | model -> Error $"Invalid state: {model}"
+
     let update (message : Message) model =
         match message.Key with
 
@@ -191,6 +208,9 @@ module Message =
 
             | MessageKey.EndOfBidding ->
                 onEndOfBidding message model
+
+            | MessageKey.StartOfTrick ->
+                onStartOfTrick message model
 
             | _ -> Error $"Unexpected message key: {message.Key}"
 
