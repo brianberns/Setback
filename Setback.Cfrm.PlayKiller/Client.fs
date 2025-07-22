@@ -188,11 +188,11 @@ module Message =
 
     let private onMakeBid message = function
         | Playing bidding ->
-            let seat = enum<Seat> message.Values[0]
             assert(
-                Seat.incr
-                    (bidding.Deal.ClosedDeal.Auction.NumBids + 1)
-                    bidding.Dealer = seat)
+                enum<Seat> message.Values[0]
+                    = Seat.incr
+                        (bidding.Deal.ClosedDeal.Auction.NumBids + 1)
+                        bidding.Dealer)
             let bid =
                 if message.Values[2] = -1 then
                     let bid =
@@ -214,11 +214,13 @@ module Message =
             let auction = playing.Deal.ClosedDeal.Auction
             assert(AbstractAuction.isComplete auction)
             assert(
-                message.Values[0]
-                    = int (
-                        Seat.incr
-                            auction.HighBid.BidderIndex
-                            playing.Dealer))
+                match message.Values[0] with
+                    | -1 -> auction.HighBid.BidderIndex = -1
+                    | idx ->
+                        enum<Seat> idx =
+                            Seat.incr
+                                auction.HighBid.BidderIndex
+                                playing.Dealer)
             assert(
                 message.Values[1] = int auction.HighBid.Bid)
             respond message.Key 0
@@ -245,10 +247,9 @@ module Message =
     let private onMakePlay message = function
         | Playing playing ->
             assert(
-                let seat = enum<Seat> message.Values[0]
                 let trick =
                     playing.Deal.ClosedDeal.Playout.CurrentTrick
-                seat
+                enum<Seat> message.Values[0]
                     = Seat.incr
                         (trick.LeaderIndex + trick.NumPlays)
                         playing.Dealer)
