@@ -31,6 +31,8 @@ type Model =
         Score : AbstractScore
         Deal : AbstractOpenDeal |}
 
+    | Complete of AbstractScore
+
     | Error of string
 
 module Model =
@@ -48,6 +50,7 @@ type MessageKey =
     | StartOfTrick = 8
     | MakePlay = 9
     | EndOfTrick = 10
+    | EndOfHand = 11
 
 type Message =
     {
@@ -74,19 +77,24 @@ module Message =
         respond message.Key 0
         NewGameStarted
 
-    let private onDealNewHand message model =
-        respond message.Key 0
-        let dealer = enum<Seat> message.Values[0]
-        let ewScore = message.Values[1]
-        let nsScore = message.Values[2]
+    let private toAbstractScore dealer ewScore nsScore =
         let points =
             match dealer with
                 | Seat.West | Seat.East -> [| ewScore; nsScore |]
                 | Seat.North | Seat.South -> [| nsScore; ewScore |]
                 | _ -> failwith "Invalid dealer"
+        AbstractScore points
+
+    let private onDealNewHand message model =
+        respond message.Key 0
+        let dealer = enum<Seat> message.Values[0]
+        let ewScore = message.Values[1]
+        let nsScore = message.Values[2]
         Dealing {|
             Dealer = dealer
-            Score = AbstractScore points
+            Score =
+                toAbstractScore
+                    dealer ewScore nsScore
             NumCards = 0
             CardMap =
                 Enum.getValues<Seat>
@@ -225,6 +233,23 @@ module Message =
             model
         | model -> Error $"Invalid state: {model}"
 
+    let private onEndOfHand message = function
+        | Playing playing ->
+            assert(
+                AbstractOpenDeal.isExhausted playing.Deal)
+            let gameScore =
+                let dealScore =
+                    AbstractOpenDeal.dealScore playing.Deal
+                playing.Score + dealScore
+            assert(
+                let ewScore = message.Values[0]
+                let nsScore = message.Values[1]
+                toAbstractScore playing.Dealer ewScore nsScore
+                    = gameScore)
+            respond message.Key 0
+            Complete gameScore
+        | model -> Error $"Invalid state: {model}"
+
     let update message model =
         match message.Key with
 
@@ -255,6 +280,9 @@ module Message =
 
             | MessageKey.EndOfTrick ->
                 onEndOfTrick message model
+
+            | MessageKey.EndOfHand ->
+                onEndOfHand message model
 
             | _ -> Error $"Unexpected message key: {message.Key}"
 
