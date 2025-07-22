@@ -8,7 +8,9 @@
 
   <ItemGroup>
     <Compile Include="Killer.fs" />
-    <Compile Include="Client.fs" />
+    <Compile Include="Model.fs" />
+    <Compile Include="Update.fs" />
+    <Compile Include="View.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
