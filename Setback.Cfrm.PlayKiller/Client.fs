@@ -13,6 +13,10 @@ type Model =
     | Start
     | Initialized
     | NewGameStarted
+    | NewHandDealt of {|
+        Dealer : Seat
+        EwScore : int
+        NsScore : int |}
     | Error of string
 
 module Model =
@@ -22,6 +26,7 @@ module Model =
 type MessageKey =
     | Initialize = 1
     | StartNewGame = 2
+    | DealNewHand = 3
 
 type Message =
     {
@@ -48,12 +53,22 @@ module Message =
         respond message.Key 0
         NewGameStarted
 
+    let private onDealNewHand message model =
+        respond message.Key 0
+        NewHandDealt {|
+            Dealer = enum<Seat> message.Values[1]
+            EwScore = message.Values[2]
+            NsScore = message.Values[3]
+        |}
+
     let update (message : Message) model =
         match message.Key with
             | MessageKey.Initialize ->
                 onInitialize message model
             | MessageKey.StartNewGame ->
                 onStartNewGame message model
+            | MessageKey.DealNewHand ->
+                onDealNewHand message model
             | _ -> Error $"Unexpected message key: {message.Key}"
 
     let private onMasterFileChanged dispatch _args =
