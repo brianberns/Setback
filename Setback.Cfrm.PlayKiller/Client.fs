@@ -302,7 +302,7 @@ module Message =
         | model -> failwith $"Invalid state: {model}"
 
     let private onEndOfGame message = function
-        | HandComplete complete as model ->
+        | HandComplete complete ->
             let winningTeamIdx = message.Values[2]
             assert(
                 let dummyDealer = Seat.West
@@ -318,7 +318,7 @@ module Message =
             let ewGamesWon, nsGamesWon =
                 match winningTeamIdx with
                     | 0 -> complete.EwGamesWon + 1, complete.NsGamesWon
-                    | 1 -> complete.NsGamesWon, complete.NsGamesWon + 1
+                    | 1 -> complete.EwGamesWon, complete.NsGamesWon + 1
                     | _ -> failwith $"Invalid team index: {winningTeamIdx}"
             respond message.Key 0
             GameComplete {|
