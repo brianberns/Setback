@@ -6,6 +6,7 @@ open System.IO
 open Elmish
 
 open Avalonia
+open Avalonia.Styling
 open Avalonia.Themes.Fluent
 open Avalonia.FuncUI.Hosts
 open Avalonia.FuncUI.Elmish
@@ -24,11 +25,11 @@ type MainWindow() as this =
             |> Program.runWithAvaloniaSyncDispatch ()
 
 type App() =
-    inherit Application()
+    inherit Application(
+        RequestedThemeVariant = ThemeVariant.Dark)
 
     override this.Initialize() =
         this.Styles.Add (FluentTheme())
-        this.RequestedThemeVariant <- Styling.ThemeVariant.Dark
 
     override this.OnFrameworkInitializationCompleted() =
         match this.ApplicationLifetime with
