@@ -51,7 +51,7 @@ module View =
                 Border.create [
                     Border.background "cornflowerblue"
                     Grid.column 1
-                    Border.tip "95% confidence interval"
+                    Border.tip $"95%% confidence interval: %.1f{lower * 100.0}%% to %.1f{upper * 100.0}%%"
                 ]
 
                     // marker for the actual win rate
