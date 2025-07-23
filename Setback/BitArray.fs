@@ -5,7 +5,6 @@ type BitArray =
         Value : uint64
     }
 
-[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module BitArray =
 
     let private rotate index =

@@ -86,7 +86,6 @@ module Card =
         let suit = enum<Suit> (value / Rank.numRanks)
         Card(rank, suit)
 
-[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module ClosedDeal =
 
     /// Creates a new deal.

@@ -77,7 +77,6 @@ type OpenDeal =
 
         sb.ToString()
 
-[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module OpenDeal =
 
     /// Number of cards dealt to each player.
