@@ -34,14 +34,20 @@ module View =
 
         let barWidth = 300.0
         Grid.create [
-            Grid.height 20.0
+            Grid.height 40.0
             Grid.width barWidth
             Grid.margin 5.0
-            Grid.background "lightgray"
+            Grid.rowDefinitions "1*, 1*"
             Grid.columnDefinitions $"{lowerNorm}*, {upperNorm - lowerNorm}*, {1.0 - upperNorm}*"
             Grid.children [
 
-                    // confidence interval bar
+                    // background
+                Border.create [
+                    Border.background "lightgray"
+                    Border.columnSpan 3
+                ]
+
+                    // confidence interval
                 Border.create [
                     Border.background "cornflowerblue"
                     Grid.column 1
@@ -58,6 +64,13 @@ module View =
                         winRateNorm * barWidth - (markerWidth / 2.0),
                         0.0, 0.0, 0.0)
                 ]
+
+                TextBlock.create [
+                    TextBlock.text $"%.1f{winRate * 100.0}%%"
+                    TextBlock.horizontalAlignment HorizontalAlignment.Center
+                    TextBlock.row 1
+                    TextBlock.column 1
+                ]
             ]
         ]
 
@@ -73,7 +86,7 @@ module View =
             StackPanel.verticalAlignment VerticalAlignment.Center
             StackPanel.spacing 20.0
             StackPanel.children [
-                if numGamesPlayed > 0 then
+                if numGamesPlayed >= 2 then
 
                     // Calculate the CIs for both teams to determine the zoom level
                     let ewLower, ewUpper = getConfidenceInterval ewGamesWon numGamesPlayed
