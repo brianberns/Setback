@@ -15,7 +15,7 @@ module BootstrapPlayer =
             StrategyProfile.Load(bootstrapPath)
 
         /// Makes a bid in the given deal.
-        let makeBid score deal =
+        let makeBid score (deal : AbstractOpenDeal) =
 
                 // get legal bids in this situation
             let auction = deal.ClosedDeal.Auction

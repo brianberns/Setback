@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Prelude.fs" />
     <Compile Include="Rank.fs" />
     <Compile Include="Bid.fs" />
     <Compile Include="Seat.fs" />
@@ -13,6 +14,8 @@
     <Compile Include="Trick.fs" />
     <Compile Include="Team.fs" />
     <Compile Include="Score.fs" />
+    <Compile Include="BitArray.fs" />
+    <Compile Include="MatchPoint.fs" />
     <Compile Include="ClosedDeal.fs" />
     <Compile Include="OpenDeal.fs" />
   </ItemGroup>

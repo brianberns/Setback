@@ -24,8 +24,7 @@ module Team =
 
     /// An array that assigns zero to each given team.
     let zeroArray (teams : Team[]) =
-        let array = Array.zeroCreate<'a> teams.Length
-        ImmutableArray.CreateRange(array)
+        ImmutableArray.ZeroCreate(teams.Length)
 
 [<AutoOpen>]
 module TeamExt =

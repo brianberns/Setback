@@ -68,11 +68,23 @@ type ClosedDeal =
                     let sTrick =
                         trick.Plays
                             |> List.rev
-                            |> List.map (fun (seat, card) -> sprintf "%c:%A" seat.ToChar card)
+                            |> List.map (fun (seat, card) -> sprintf "%c:%A" seat.Char card)
                             |> String.concat " "
                     writeline (sprintf "%s" sTrick))
 
         sb.ToString()
+
+module Card =
+
+    /// Converts a card into a distinct integer. (Useful for hashing or array lookup.)
+    let toIndex (card : Card) =
+        (int card.Suit * Rank.numRanks) + (int card.Rank - int Rank.Two)
+       
+    /// Convert a distinct integer into a card. 
+    let fromIndex value =
+        let rank = enum<Rank> ((value % Rank.numRanks) + int Rank.Two)
+        let suit = enum<Suit> (value / Rank.numRanks)
+        Card(rank, suit)
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module ClosedDeal =
@@ -98,7 +110,7 @@ module ClosedDeal =
             TrumpOpt = None
             Tricks = []
             CardsPlayed = BitArray.empty
-            Voids = Utility.zeroCreateImmutable(Seat.numSeats * Suit.numSuits)
+            Voids = ImmutableArray.ZeroCreate(Seat.numSeats * Suit.numSuits)
         }
 
     /// Whose turn is it to bid next?
@@ -172,8 +184,10 @@ module ClosedDeal =
 
                 // continue current trick
             | Some trick ->
-                let isTrump card = (card.Suit = deal.Trump)
-                let isFollowSuit card = (card.Suit = trick.SuitLed)
+                let isTrump (card : Card) =
+                    card.Suit = deal.Trump
+                let isFollowSuit (card : Card) =
+                    card.Suit = trick.SuitLed
                 if hand |> Seq.exists isFollowSuit then                                 // player can follow suit?
                     hand |> Seq.where (fun card -> isTrump card || isFollowSuit card)   // player can always trump in
                 else
@@ -200,7 +214,8 @@ module ClosedDeal =
     let addPlay (card : Card) deal =
 
             // mark this card as played
-        let cardsPlayed = deal.CardsPlayed.SetFlag card.ToInt true
+        let cardsPlayed =
+            deal.CardsPlayed.SetFlag (Card.toIndex card) true
 
             // compute trump suit
         let trump =
@@ -215,7 +230,7 @@ module ClosedDeal =
                     
                     // continue current trick
                 | Some trick ->
-                    let newTrick = trick.Add seat card
+                    let newTrick = trick.Add(seat, card)
                     newTrick, newTrick :: deal.Tricks.Tail
 
                     // start a new trick

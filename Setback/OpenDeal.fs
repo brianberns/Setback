@@ -57,7 +57,7 @@ type OpenDeal =
         let writeline (s : string) = sb.AppendFormat("{0}\r\n", s) |> ignore
 
         writeline ""
-        for seat in this.Dealer.Next.Cycle do
+        for seat in Seat.cycle this.Dealer.Next do
             let sHand = this.Hands.[int seat] |> Hand.toString
             writeline (sprintf "%-5s: %s" (seat.ToString()) sHand)
 
@@ -96,8 +96,8 @@ module OpenDeal =
                 hands |> Seq.collect id |> Seq.sumBy (fun card -> card.Rank.GamePoints)
             MatchPoints = Score.zeroCreate teams
             PointsAwarded =
-                let nPoints = Utility.allValues<MatchPoint> |> Seq.length
-                Utility.zeroCreateImmutable(nPoints)
+                let nPoints = Enum.getValues<MatchPoint> |> Seq.length
+                ImmutableArray.ZeroCreate(nPoints)
             IsSet = false
         }
 
@@ -136,7 +136,8 @@ module OpenDeal =
     /// Answers the unplayed cards in the given player's hand.
     let unplayedCards seat (deal : OpenDeal) =
         deal.Hands.[int seat]
-            |> Seq.where (fun card -> not (deal.CardsPlayed.GetFlag card.ToInt))
+            |> Seq.where (fun card ->
+                not (deal.CardsPlayed.GetFlag (Card.toIndex card)))
 
     /// Answers the number of cards played so far.
     let numCardsPlayed (deal : OpenDeal) =
@@ -153,8 +154,10 @@ module OpenDeal =
 
                 // continue current trick
             | Some trick ->
-                let isTrump card = (card.Suit = deal.Trump)
-                let isFollowSuit card = (card.Suit = trick.SuitLed)
+                let isTrump (card : Card) =
+                    card.Suit = deal.Trump
+                let isFollowSuit (card : Card) =
+                    card.Suit = trick.SuitLed
                 if cards |> Seq.exists isFollowSuit then                                     // player can follow suit?
                     if deal.Trump = trick.SuitLed then
                         cards |> Seq.where (fun card -> isTrump card)                        // unroll for max performance
