@@ -133,7 +133,7 @@ module OpenDeal =
     let unplayedCards seat (deal : OpenDeal) =
         deal.Hands.[int seat]
             |> Seq.where (fun card ->
-                not (deal.CardsPlayed.GetFlag(Card.toIndex card)))
+                not (deal.CardsPlayed[Card.toIndex card]))
 
     /// Answers the number of cards played so far.
     let numCardsPlayed (deal : OpenDeal) =

@@ -1,6 +1,8 @@
 ﻿namespace Setback
 
+open System.Collections
 open System.Collections.Immutable
+
 open PlayingCards
 
 /// A deal is a round of play within a game, consisting of the
@@ -36,7 +38,7 @@ type ClosedDeal =
         Tricks : List<Trick>
 
             // cards played in this trick
-        CardsPlayed : BitArray(*[Card.ToInt]*)   // tracks all 52 cards
+        CardsPlayed : ImmutableArray<bool>(*[Card.ToInt]*)   // tracks all 52 cards
 
             // each player's void suits
         Voids : ImmutableArray<bool>(*[Seat, Suit]*)
@@ -109,7 +111,7 @@ module ClosedDeal =
             HighBid = Bid.Pass
             TrumpOpt = None
             Tricks = []
-            CardsPlayed = BitArray.empty
+            CardsPlayed = ImmutableArray.Empty
             Voids = ImmutableArray.ZeroCreate(Seat.numSeats * Suit.numSuits)
         }
 
@@ -217,7 +219,7 @@ module ClosedDeal =
 
             // mark this card as played
         let cardsPlayed =
-            deal.CardsPlayed.SetFlag(Card.toIndex card, true)
+            deal.CardsPlayed.SetItem(Card.toIndex card, true)
 
             // compute trump suit
         let trump =
