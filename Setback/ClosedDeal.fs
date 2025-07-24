@@ -77,18 +77,6 @@ type ClosedDeal =
 
         sb.ToString()
 
-module Card =
-
-    /// Converts a card into a distinct integer. (Useful for hashing or array lookup.)
-    let toIndex (card : Card) =
-        (int card.Suit * Rank.numRanks) + (int card.Rank - int Rank.Two)
-       
-    /// Convert a distinct integer into a card. 
-    let fromIndex value =
-        let rank = enum<Rank> ((value % Rank.numRanks) + int Rank.Two)
-        let suit = enum<Suit> (value / Rank.numRanks)
-        Card(rank, suit)
-
 module ClosedDeal =
 
     /// Creates a new deal.

@@ -63,3 +63,17 @@ module Card =
                 for rank in Enum.getValues<Rank> do
                     yield create rank suit
         |]
+
+    /// Rank of lowest card in the deck.
+    let private minRank =
+        Seq.min Enum.getValues<Rank>
+
+    /// Converts the given card to an integer, 0..N-1,
+    /// where N is number of cards in the deck.
+    let toIndex (card : Card) =
+        let index =
+            (int card.Suit * Rank.numRanks)
+                + int card.Rank - int minRank
+        assert(index >= 0)
+        assert(index < numCards)
+        index
