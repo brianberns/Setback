@@ -29,13 +29,9 @@ type Card =
 
     /// Converts this card to a string.
     override this.ToString() =
-#if FABLE_COMPILER
         sprintf "%c%c"
             (Rank.toChar this.Rank)
             (Suit.toChar this.Suit)
-#else
-        sprintf "%A of %A" this.Rank this.Suit
-#endif
 
     /// String representation of this card.
     member this.String = this.ToString()

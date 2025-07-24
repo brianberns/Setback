@@ -68,7 +68,8 @@ type ClosedDeal =
                     let sTrick =
                         trick.Plays
                             |> List.rev
-                            |> List.map (fun (seat, card) -> sprintf "%c:%A" seat.Char card)
+                            |> List.map (fun (seat, card) ->
+                                sprintf "%c:%A" seat.Char card)
                             |> String.concat " "
                     writeline (sprintf "%s" sTrick))
 
@@ -216,7 +217,7 @@ module ClosedDeal =
 
             // mark this card as played
         let cardsPlayed =
-            deal.CardsPlayed.SetFlag (Card.toIndex card) true
+            deal.CardsPlayed.SetFlag(Card.toIndex card, true)
 
             // compute trump suit
         let trump =
@@ -346,10 +347,7 @@ module ClosedDealExt =
     type ClosedDeal with
         member deal.NextBidder = deal |> ClosedDeal.nextBidder
         member deal.LegalBids = deal |> ClosedDeal.legalBids
-        member deal.AddBid bid = deal |> ClosedDeal.addBid bid
+        member deal.AddBid(bid) = deal |> ClosedDeal.addBid bid
         member deal.NextPlayer = deal |> ClosedDeal.nextPlayer
-        member deal.LegalPlays hand = deal |> ClosedDeal.legalPlays hand
-        member deal.AddPlay card = deal |> ClosedDeal.addPlay card
-        member deal.IsVoid seat suit = deal |> ClosedDeal.isVoid seat suit
-        member deal.GetOutcome = deal |> ClosedDeal.getOutcome
-        member deal.GetOutcomePoints team = deal |> ClosedDeal.getOutcomePoints team
+        member deal.LegalPlays(hand) = deal |> ClosedDeal.legalPlays hand
+        member deal.AddPlay(card) = deal |> ClosedDeal.addPlay card

@@ -34,6 +34,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Setback.Web.Server", "Setba
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Setback.Cfrm.PlayKiller", "Setback.Cfrm.PlayKiller\Setback.Cfrm.PlayKiller.fsproj", "{5076DBC8-7D19-1820-C25E-3A33DF6B265C}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Setback.Learn", "Setback.Learn\Setback.Learn.fsproj", "{AF9472E4-1726-458A-A247-FC34E6FC5465}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -146,6 +148,14 @@ Global
 		{5076DBC8-7D19-1820-C25E-3A33DF6B265C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5076DBC8-7D19-1820-C25E-3A33DF6B265C}.Release|x64.ActiveCfg = Release|Any CPU
 		{5076DBC8-7D19-1820-C25E-3A33DF6B265C}.Release|x64.Build.0 = Release|Any CPU
+		{AF9472E4-1726-458A-A247-FC34E6FC5465}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF9472E4-1726-458A-A247-FC34E6FC5465}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF9472E4-1726-458A-A247-FC34E6FC5465}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{AF9472E4-1726-458A-A247-FC34E6FC5465}.Debug|x64.Build.0 = Debug|Any CPU
+		{AF9472E4-1726-458A-A247-FC34E6FC5465}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF9472E4-1726-458A-A247-FC34E6FC5465}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF9472E4-1726-458A-A247-FC34E6FC5465}.Release|x64.ActiveCfg = Release|Any CPU
+		{AF9472E4-1726-458A-A247-FC34E6FC5465}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

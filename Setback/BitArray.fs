@@ -33,5 +33,7 @@ module BitArray =
 [<AutoOpen>]
 module BitArrayExt =
     type BitArray with
-        member bitArray.GetFlag index = bitArray |> BitArray.getFlag index
-        member bitArray.SetFlag index value = bitArray |> BitArray.setFlag index value
+        member bitArray.GetFlag(index) =
+            bitArray |> BitArray.getFlag index
+        member bitArray.SetFlag(index, value) =
+            bitArray |> BitArray.setFlag index value

@@ -23,9 +23,3 @@ module Team =
     /// An array that assigns zero to each given team.
     let zeroArray (teams : Team[]) =
         ImmutableArray.ZeroCreate(teams.Length)
-
-[<AutoOpen>]
-module TeamExt =
-    type Team with
-        member team.Contains(seat) =
-            team |> Team.contains seat

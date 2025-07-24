@@ -35,9 +35,8 @@ type OpenDeal =
             // bidding team has been set?
         IsSet : bool
     }
-        // poor man's inheritance
+
     member this.Dealer = this.ClosedDeal.Dealer
-    member this.Auction = this.ClosedDeal.Auction
     member this.HighBidderOpt = this.ClosedDeal.HighBidderOpt
     member this.HighBid = this.ClosedDeal.HighBid
     member this.TrumpOpt = this.ClosedDeal.TrumpOpt
@@ -47,8 +46,6 @@ type OpenDeal =
     member this.Teams = this.ClosedDeal.Teams
     member this.NextPlayer = this.ClosedDeal.NextPlayer
     member this.TeamMap = this.ClosedDeal.TeamMap
-    member this.GetOutcome = this.ClosedDeal.GetOutcome
-    member this.GetOutcomePoints = this.ClosedDeal.GetOutcomePoints
 
     member this.String =
 
@@ -136,7 +133,7 @@ module OpenDeal =
     let unplayedCards seat (deal : OpenDeal) =
         deal.Hands.[int seat]
             |> Seq.where (fun card ->
-                not (deal.CardsPlayed.GetFlag (Card.toIndex card)))
+                not (deal.CardsPlayed.GetFlag(Card.toIndex card)))
 
     /// Answers the number of cards played so far.
     let numCardsPlayed (deal : OpenDeal) =
