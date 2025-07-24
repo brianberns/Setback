@@ -26,7 +26,10 @@ module AddPlay =
                     |> Seq.toArray
             let highTrump = trumpCards |> Seq.max
             let lowTrump = trumpCards |> Seq.min
-            let jackTrumpOpt = trumpCards |> Seq.tryFind (fun card -> card.Rank = Rank.Jack)
+            let jackTrumpOpt =
+                trumpCards
+                    |> Seq.tryFind (fun card ->
+                        card.Rank = Rank.Jack)
             {
                 deal with
                     ClosedDeal = closedDeal
@@ -43,13 +46,23 @@ module AddPlay =
             score
 
     /// Tests whether to increment the given count for the given point.
-    let private incrTest count (pointsAwarded : ImmutableArray<bool>) (point : MatchPoint) test =
+    let private incrTest
+        count
+        (pointsAwarded : ImmutableArray<bool>)
+        (point : MatchPoint)
+        test =
         if pointsAwarded.[int point] then
             (count, pointsAwarded, None)
         else
             match test() with
-                | Some team -> (count + 1, pointsAwarded.SetItem(int point, true), Some team)
-                | None -> (count, pointsAwarded, None)
+                | Some team ->
+                    count + 1,
+                    pointsAwarded.SetItem(int point, true),
+                    Some team
+                | None ->
+                    count,
+                    pointsAwarded,
+                    None
 
     /// Increments match points for the given team.
     let private incrMatchPoints winTeam bidTeam count (deal : OpenDeal) =
@@ -79,13 +92,17 @@ module AddPlay =
             | Some highTeam ->
                 {
                     deal with
-                        MatchPoints = deal |> incrMatchPoints highTeam bidTeam count
+                        MatchPoints =
+                            deal
+                                |> incrMatchPoints
+                                    highTeam bidTeam count
                         PointsAwarded = pointsAwarded
                 }
             | None -> deal
 
     /// Awards points for cards taken on a trick by the given team.
-    let private awardTrickPointsRaw cards trickTeam bidTeam (deal : OpenDeal) =
+    let private awardTrickPointsRaw
+        cards trickTeam bidTeam (deal : OpenDeal) =
 
             // was the given card taken on this trick?
         let taken card =
@@ -96,8 +113,9 @@ module AddPlay =
 
             // override incrementer for simplicity
         let incrTest count pointsAwarded point test =
-            let count, pointsAwarded, _ = incrTest count pointsAwarded point test
-            (count, pointsAwarded)
+            let count, pointsAwarded, _ =
+                incrTest count pointsAwarded point test
+            count, pointsAwarded
 
             // award high point?
         let incrHigh count pointsAwarded =
@@ -148,9 +166,9 @@ module AddPlay =
             let totPoints = deal.TotalMatchPoints
             let proPoints = deal.MatchPoints.[bidTeam]
             let conPoints = Seq.sum deal.MatchPoints.Points - proPoints
-            if totPoints - conPoints < bidPoints then true                                          // opponents have already ensured that bidders are set
-            elif proPoints < bidPoints && deal.Tricks.Length = OpenDeal.numCardsPerHand then true   // deal is over and bidders failed
-            else false
+            if totPoints - conPoints < bidPoints then true         // opponents have already ensured that bidders are set
+            else proPoints < bidPoints
+                && deal.Tricks.Length = OpenDeal.numCardsPerHand   // deal is over and bidders failed
 
             // if so, deduct bid from their score (erasing any points they may have won on this trick)
         let matchPoints =
@@ -176,7 +194,10 @@ module AddPlay =
             // tally game points won on this trick
         let deal =
             let gamePoints =
-                let points = cards |> List.sumBy (fun card -> card.Rank.GamePoints)
+                let points =
+                    cards
+                        |> List.sumBy (fun card ->
+                            card.Rank.GamePoints)
                 deal.GamePoints |> incrTeam trickTeam points
             { deal with GamePoints = gamePoints }
 
@@ -217,7 +238,8 @@ module AddPlay =
                                         team <> proTeam)
                                     |> Seq.collect (fun seat ->
                                         deal.UnplayedCards seat
-                                            |> Seq.where (fun card -> card.Suit = deal.Trump))
+                                            |> Seq.where (fun card ->
+                                                card.Suit = deal.Trump))
                             if test conTrump then
                                 Some proTeam
                             else
@@ -229,7 +251,10 @@ module AddPlay =
                 | Some winTeam ->
                     {
                         deal with
-                            MatchPoints = deal |> incrMatchPoints winTeam bidTeam count
+                            MatchPoints =
+                                deal
+                                    |> incrMatchPoints
+                                        winTeam bidTeam count
                             PointsAwarded = pointsAwarded
                     }
                 | None -> deal
@@ -243,7 +268,9 @@ module AddPlay =
         match deal.JackTrumpOpt with
             | Some jackTrump ->
                 award jackTrump MatchPoint.Jack deal (fun trumpCards ->
-                    trumpCards |> Seq.forall (fun card -> card.Rank < Rank.Jack))
+                    trumpCards
+                        |> Seq.forall (fun card ->
+                            card.Rank < Rank.Jack))
             | None -> deal
 
     /// Answers a new deal with the next player's given discard.
@@ -251,7 +278,8 @@ module AddPlay =
 
 #if DEBUG
         if deal.LegalPlays |> Seq.tryFind ((=) card) = None then
-            failwith (sprintf "%A: Not a legal play (expected %A)" card (deal.LegalPlays |> Seq.map _.ToString() |> String.concat ", "))
+            failwith (sprintf "%A: Not a legal play (expected %A)" card (
+                deal.LegalPlays |> Seq.map _.ToString() |> String.concat ", "))
 #endif
             // get auction results
         let getBidTeam () =

@@ -4,14 +4,12 @@ open System.Collections.Immutable
 
 /// Points scored by each team during one or more deals. This can
 /// be used to track both game and match points.
-type Score<'t> =
+type Score =
     {
-        Points : ImmutableArray<'t>
+        Points : ImmutableArray<int>
     }
     member this.Item
         with get(team : Team) = this.Points.[team.Number]
-
-type Score = Score<int>
 
 module Score =
 
@@ -32,7 +30,7 @@ module Score =
         { Points = score.Points.SetItem(team.Number, points) }
 
     /// Computes score delta from a team's point of view
-    let inline getDelta team score =
+    let getDelta team score =
         score.Points
             |> Seq.mapi (fun teamNum points -> (teamNum, points))
             |> Seq.sumBy (fun (teamNum, points) ->
@@ -41,6 +39,6 @@ module Score =
 
 [<AutoOpen>]
 module ScoreExt =
-    type Score<'t> with
+    type Score with
         member score.WithPoints(team, value) =
             score |> Score.withPoints team value

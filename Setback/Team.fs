@@ -1,10 +1,8 @@
 ﻿namespace Setback
 
-open System.Collections.Immutable
 open Seat
 
 /// Players in one or more seats play together as a team.
-[<StructuredFormatDisplay("{AsString}")>]
 type Team =
     {
         Number : int
@@ -14,7 +12,7 @@ type Team =
     override this.ToString() =
         this.Seats
             |> Seq.map _.Char.ToString()
-            |> String.concat("+")
+            |> String.concat "+"
 
 module Team =
 

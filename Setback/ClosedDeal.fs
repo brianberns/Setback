@@ -12,7 +12,7 @@ open PlayingCards
 ///
 /// A closed deal contains no information about unplayed cards,
 /// which are kept private by each player.
-[<StructuredFormatDisplay("{AsString}")>]
+[<StructuredFormatDisplay("{String}")>]
 type ClosedDeal =
     {
             // each player is on a team
@@ -48,7 +48,7 @@ type ClosedDeal =
             | Some trump -> trump
             | None -> failwith "No trump yet"
 
-    member this.AsString =
+    member this.String =
 
         let sb = new System.Text.StringBuilder()
         let write (s : string) = sb.Append(s) |> ignore
@@ -132,7 +132,8 @@ module ClosedDeal =
             if bid < Bid.Two then yield Bid.Two
             if bid < Bid.Three then yield Bid.Three
             if bid < Bid.Four then yield Bid.Four
-            elif deal.Auction.Length = Seat.numSeats - 1 then yield Bid.Four   // dealer can steal 4-bid
+            elif deal.Auction.Length = Seat.numSeats - 1 then
+                yield Bid.Four   // dealer can steal 4-bid
         }
 
     /// Answers a new deal with the next player's given bid.
@@ -187,8 +188,9 @@ module ClosedDeal =
                     card.Suit = deal.Trump
                 let isFollowSuit (card : Card) =
                     card.Suit = trick.SuitLed
-                if hand |> Seq.exists isFollowSuit then                                 // player can follow suit?
-                    hand |> Seq.where (fun card -> isTrump card || isFollowSuit card)   // player can always trump in
+                if hand |> Seq.exists isFollowSuit then      // player can follow suit?
+                    hand |> Seq.where (fun card ->
+                        isTrump card || isFollowSuit card)   // player can always trump in
                 else
                     hand
 
@@ -261,14 +263,20 @@ module ClosedDeal =
     let getOutcome (deal : ClosedDeal) =
 
             // find all played trump cards
-        let fullTricks = deal.Tricks |> Seq.where (fun trick -> trick.NumPlays = Seat.numSeats)
-        let winner (trick : Trick) = deal.TeamMap.[trick.Winner |> fst |> int]
+        let fullTricks =
+            deal.Tricks
+                |> Seq.where (fun trick ->
+                    trick.NumPlays = Seat.numSeats)
+        let winner (trick : Trick) =
+            deal.TeamMap.[trick.Winner |> fst |> int]
         let trumpPairs =
             fullTricks
                 |> Seq.collect (fun trick ->
                     trick.Plays
-                        |> Seq.map (fun (seat, card) -> (winner trick, card))
-                        |> Seq.where (fun (_, card) -> card.Suit = deal.Trump))
+                        |> Seq.map (fun (_, card) ->
+                            winner trick, card)
+                        |> Seq.where (fun (_, card) ->
+                            card.Suit = deal.Trump))
                 |> Seq.toArray
 
             // which team won high/low trump?
@@ -293,8 +301,11 @@ module ClosedDeal =
         let gameMap =
             fullTricks
                 |> Seq.collect (fun trick ->
-                    trick.Plays |> Seq.map (fun (_, card) -> (trick, card)))
-                |> Seq.map (fun (trick, card) -> (winner trick, card.Rank.GamePoints))
+                    trick.Plays
+                        |> Seq.map (fun (_, card) ->
+                            trick, card))
+                |> Seq.map (fun (trick, card) ->
+                    winner trick, card.Rank.GamePoints)
                 |> Seq.groupBy fst
                 |> Seq.map (fun (team, pairs) ->
                     let count = pairs |> Seq.sumBy snd
@@ -309,7 +320,8 @@ module ClosedDeal =
                 0
         let maxTeams =
             gameMap
-                |> Seq.where (fun (_, count) -> count = maxCount)
+                |> Seq.where (fun (_, count) ->
+                    count = maxCount)
                 |> Seq.map fst
                 |> Seq.toList
         let gameTeamOpt =

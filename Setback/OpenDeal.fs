@@ -6,7 +6,7 @@ open System.Collections.Immutable
 /// An open deal contains each player's hand. This is used for two purposes:
 /// * As the central authority when "hosting" a game of Setback
 /// * As a predictive mechanism when evaluating a closed deal
-[<StructuredFormatDisplay("{AsString}")>]
+[<StructuredFormatDisplay("{String}")>]
 type OpenDeal =
     {
             // base deal
@@ -29,7 +29,7 @@ type OpenDeal =
         GamePointsTotal : int
 
             // running tally of high, low, jack, and game
-        MatchPoints : Score<int>
+        MatchPoints : Score
         PointsAwarded : ImmutableArray<bool>
 
             // bidding team has been set?
@@ -50,7 +50,7 @@ type OpenDeal =
     member this.GetOutcome = this.ClosedDeal.GetOutcome
     member this.GetOutcomePoints = this.ClosedDeal.GetOutcomePoints
 
-    member this.AsString =
+    member this.String =
 
         let sb = new System.Text.StringBuilder()
         let write (s : string) = sb.Append(s) |> ignore
@@ -61,7 +61,7 @@ type OpenDeal =
             let sHand = this.Hands.[int seat] |> Hand.toString
             writeline (sprintf "%-5s: %s" (seat.ToString()) sHand)
 
-        write this.ClosedDeal.AsString
+        write this.ClosedDeal.String
 
         let dumpScore teams (score : Score) =
             for team in teams do
@@ -173,8 +173,8 @@ module OpenDealExt =
     type OpenDeal with
         member deal.NextBidder = deal.ClosedDeal.NextBidder
         member deal.LegalBids = deal.ClosedDeal.LegalBids
-        member deal.AddBid bid = deal |> OpenDeal.addBid bid
-        member deal.UnplayedCards seat = deal |> OpenDeal.unplayedCards seat
+        member deal.AddBid(bid) = deal |> OpenDeal.addBid bid
+        member deal.UnplayedCards(seat) = deal |> OpenDeal.unplayedCards seat
         member deal.NumCardsPlayed = deal |> OpenDeal.numCardsPlayed
         member deal.LegalPlays = deal |> OpenDeal.legalPlays
         member deal.TotalMatchPoints = deal |> OpenDeal.totalMatchPoints
