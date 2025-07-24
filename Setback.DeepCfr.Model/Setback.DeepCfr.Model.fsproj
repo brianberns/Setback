@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PlayingCards\PlayingCards.fsproj" />
+    <ProjectReference Include="..\Setback\Setback.fsproj" />
   </ItemGroup>
 
 </Project>

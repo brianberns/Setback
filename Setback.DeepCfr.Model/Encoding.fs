@@ -1,8 +1,9 @@
 ﻿namespace Setback.DeepCfr.Model
 
 open System.Collections
+
 open PlayingCards
-open Setback.DeepCfr
+open Setback
 
 module Card =
 

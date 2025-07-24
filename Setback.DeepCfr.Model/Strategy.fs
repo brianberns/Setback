@@ -5,7 +5,7 @@ open System
 open MathNet.Numerics.LinearAlgebra
 
 open PlayingCards
-open Setback.DeepCfr
+open Setback
 
 module Strategy =
 
