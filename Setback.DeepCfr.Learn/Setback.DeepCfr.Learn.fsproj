@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Reservoir.fs" />
+    <Compile Include="Settings.fs" />
+    <Compile Include="Model.fs" />
+    <Compile Include="OpenDeal.fs" />
+    <Compile Include="Traverse.fs" />
+    <Compile Include="Tournament.fs" />
+    <Compile Include="Inference.fs" />
+    <Compile Include="Trainer.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MathNet.Numerics.FSharp" Version="5.0.0" />
+    <PackageReference Include="TorchSharp-cuda-windows" Version="0.105.0" Condition="'$(OS)' == 'Windows_NT'" />
+    <PackageReference Include="TorchSharp-cuda-linux" Version="0.105.0" Condition="'$(OS)' != 'Windows_NT'" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PlayingCards\PlayingCards.fsproj" />
+    <ProjectReference Include="..\Setback\Setback.fsproj" />
+  </ItemGroup>
+
+</Project>
