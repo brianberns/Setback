@@ -1,25 +1,29 @@
 ﻿namespace Setback
 
-open Seat
-
 /// Players in one or more seats play together as a team.
 type Team =
-    {
-        Number : int
-        Seats : List<Seat>
-    }
-
-    override this.ToString() =
-        this.Seats
-            |> Seq.map _.Char.ToString()
-            |> String.concat "+"
+    | EastWest = 0
+    | NorthSouth = 1
 
 module Team =
 
-    /// Is the given seat a member of the given team?
-    let contains seat team =
-        team.Seats |> List.exists ((=) seat)
+    /// Display string.
+    let toString = function
+        | Team.EastWest -> "E+W"
+        | Team.NorthSouth -> "N+S"
+        | _ -> failwith "Unexpected team"
 
-    /// An array that assigns zero to each given team.
-    let zeroArray (teams : Team[]) =
-        ImmutableArray.ZeroCreate(teams.Length)
+    let private ewTeam = set [ Seat.East; Seat.West ]
+    let private nsTeam = set [ Seat.North; Seat.South ]
+
+    /// Seats that play in the given team.
+    let seats = function
+        | Team.EastWest -> ewTeam
+        | Team.NorthSouth -> nsTeam
+        | _ -> failwith "Unexpected team"
+
+    /// Team on which the given seat plays.
+    let ofSeat = function
+        | Seat.East | Seat.West -> Team.EastWest
+        | Seat.North | Seat.South -> Team.NorthSouth
+        | _ -> failwith "Unexpected seat"

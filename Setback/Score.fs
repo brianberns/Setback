@@ -1,44 +1,45 @@
 ﻿namespace Setback
 
-open System.Collections.Immutable
+open PlayingCards
 
-/// Points scored by each team during one or more deals. This can
-/// be used to track both game and match points.
+/// Points taken by each team.
 type Score =
     {
-        Points : ImmutableArray<int>
+        ScoreMap : Map<Team, int>
     }
-    member this.Item
-        with get(team : Team) = this.Points.[team.Number]
+
+    /// Number of points taken by the given team.
+    member score.Item
+        with get(team) = score.ScoreMap[team]
+
+    /// Adds two scores.
+    static member (+) (scoreA : Score, scoreB : Score) =
+        {
+            ScoreMap =
+                Enum.getValues<Team>
+                    |> Seq.map (fun team ->
+                        let sum = scoreA[team] + scoreB[team]
+                        team, sum)
+                    |> Map
+        }
 
 module Score =
 
-    /// Creates an all-zero score for the given teams.
-    let zeroCreate teams =
-        { Points = Team.zeroArray teams }
+    /// Initial score.
+    let private zeroMap =
+        Enum.getValues<Team>
+            |> Seq.map (fun team -> team, 0)
+            |> Map
 
-    /// Adds the given scores together.
-    let add scoreA scoreB =
-        let points =
-            Seq.zip scoreA.Points scoreB.Points
-                |> Seq.map (fun (pointA, pointB) -> pointA + pointB)
-                |> Seq.toArray
-        { Points = ImmutableArray.Create<int>(points) }
+    /// Initial score.
+    let zero = { ScoreMap = zeroMap }
 
-    /// Answers a new score with the given points for the given team
-    let withPoints team points score =
-        { Points = score.Points.SetItem(team.Number, points) }
+    /// Creates a score for the given team.
+    let create team points =
+        {
+            ScoreMap = Map.add team points zeroMap
+        }
 
-    /// Computes score delta from a team's point of view
-    let getDelta team score =
-        score.Points
-            |> Seq.mapi (fun teamNum points -> (teamNum, points))
-            |> Seq.sumBy (fun (teamNum, points) ->
-                if teamNum = team.Number then points
-                else -points)
-
-[<AutoOpen>]
-module ScoreExt =
-    type Score with
-        member score.WithPoints(team, value) =
-            score |> Score.withPoints team value
+    /// Sum of all points in the given score.
+    let sum score =
+        Seq.sum score.ScoreMap.Values

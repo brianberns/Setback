@@ -1,9 +1,20 @@
 ﻿namespace Setback
 
-open System.Collections
 open System.Collections.Immutable
 
 open PlayingCards
+
+/// Possible points(*) available in a Setback deal.
+///
+/// *The terminology here gets quite confusing. We use the term "match
+/// point" to distinguish these points from "game points". Whichever team
+/// gets the most game points in a deal wins the "Game" match point for
+/// that deal.
+type MatchPoint =
+    | High = 0   // highest dealt trump
+    | Low  = 1   // lowest dealt trump
+    | Jack = 2   // jack of trump (if dealt)
+    | Game = 3   // AKQJT of all suits
 
 /// A deal is a round of play within a game, consisting of the
 /// following phases:
@@ -17,10 +28,6 @@ open PlayingCards
 [<StructuredFormatDisplay("{String}")>]
 type ClosedDeal =
     {
-            // each player is on a team
-        Teams : Team[(*Team.Number*)]
-        TeamMap : Team[(*Seat*)]
-
             // player who dealt this hand
         Dealer : Seat
 
@@ -84,8 +91,10 @@ module ClosedDeal =
 
         let teamMap =
             teams
-                |> Seq.collect (fun (team : Team) ->
-                    team.Seats |> Seq.map (fun seat -> (seat, team)))
+                |> Seq.collect (fun team ->
+                    team.Seats
+                        |> Seq.map (fun seat ->
+                            seat, team))
                 |> Seq.sortBy fst
                 |> Seq.map snd
                 |> Seq.toArray
