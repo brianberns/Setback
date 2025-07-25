@@ -45,30 +45,13 @@ module Encoding =
                 cardIndexes.Contains(index)
         |]
 
-    /// Encodes the given exchange direction as a one-hot
-    /// vector in the number of exchange directions.
-    let private encodeExchangeDirection dir =
-        [|
-            for d in Enum.getValues<ExchangeDirection> do
-                d = dir
-        |]
-
-    /// Encodes the given pass as a multi-hot vector in
-    /// the deck size.
-    let private encodePass passOpt =
-        let cards : Pass =
-            passOpt
-                |> Option.defaultValue Set.empty
-        assert(cards.Count <= Pass.numCards)
-        encodeCards cards
-
     /// Encodes each card in the given current trick as
     /// a one-hot vector in the deck size and concatenates
     /// those vectors.
     let private encodeTrick trickOpt =
         let cards =
             trickOpt
-                |> Option.map (fun trick ->
+                |> Option.map (fun (trick : Trick) ->
                     trick.Cards
                         |> List.rev
                         |> List.toArray)

@@ -106,7 +106,7 @@ module AddPlay =
 
             // was the given card taken on this trick?
         let taken card =
-            if cards |> List.exists ((=) card) then
+            if cards |> Seq.exists ((=) card) then
                 Some trickTeam
             else
                 None
@@ -183,20 +183,24 @@ module AddPlay =
                 IsSet = isSet
         }
 
-    /// Awards points taken on the given trick.
+    /// Awards points taken on the latest trick.
     let private awardTrickPoints bid bidTeam (deal : OpenDeal) =
    
             // prepare to process latest trick
         let trick = deal.Tricks.Head
-        let cards = trick.Plays |> List.map snd
-        let trickTeam = deal.TeamMap.[int trick.WinnerSeat]
+        assert(Trick.isComplete trick)
+        let cards = Trick.plays trick |> Seq.map snd
+        let trickTeam =
+            match trick.HighPlayOpt with
+                | Some (seat, _) -> deal.TeamMap[int seat]
+                | None -> failwith "Invalid trick"
 
             // tally game points won on this trick
         let deal =
             let gamePoints =
                 let points =
                     cards
-                        |> List.sumBy (fun card ->
+                        |> Seq.sumBy (fun card ->
                             card.Rank.GamePoints)
                 deal.GamePoints |> incrTeam trickTeam points
             { deal with GamePoints = gamePoints }
@@ -216,7 +220,7 @@ module AddPlay =
     /// Awards points that can be logically projected.
     let awardProjectedPoints (deal : OpenDeal) =
 
-        assert (deal.Tricks.Head.NumPlays = Seat.numSeats)
+        assert (Trick.isComplete deal.Tricks.Head)
 
             // get auction results
         let bidTeam =
@@ -295,7 +299,7 @@ module AddPlay =
             awardHighPoint (getBidTeam()) deal
 
             // award points at end of trick
-        elif deal.Tricks.Head.NumPlays = Seat.numSeats then
+        elif Trick.isComplete deal.Tricks.Head  then
             awardTrickPoints deal.HighBid (getBidTeam()) deal
 
             // no change

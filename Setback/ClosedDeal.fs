@@ -68,9 +68,9 @@ type ClosedDeal =
                 |> List.iteri (fun iTrick trick ->
                     write (sprintf "%A: " (iTrick + 1))
                     let sTrick =
-                        trick.Plays
-                            |> List.rev
-                            |> List.map (fun (seat, card) ->
+                        trick
+                            |> Trick.plays
+                            |> Seq.map (fun (seat, card) ->
                                 sprintf "%c:%A" seat.Char card)
                             |> String.concat " "
                     writeline (sprintf "%s" sTrick))
@@ -148,23 +148,33 @@ module ClosedDeal =
                 HighBid = highBid
         }
 
-    /// Whose turn is it to play next, and on which trick?
-    let nextPlayer deal =
+    /// Current trick in the given deal.
+    let currentTrick deal =
+        match deal.CurrentTrickOpt with
+            | Some trick -> trick
+            | None -> failwith "No current trick"
 
-        match deal.Tricks with
-            | trick :: _ ->
+    /// Current player in the given deal, once the exchange
+    let currentPlayer deal =
+        deal
+            |> currentTrick
+            |> Trick.currentPlayer
+        deal.Tricks
+            |> List.tryHead
+            |> Option.map (fun trick ->
 
                     // winner of previous trick leads
-                if trick.NumPlays = Seat.numSeats then
-                    (None, trick.WinnerSeat)
+                if Trick.isComplete trick then
+                    None, trick.WinnerSeat
 
                     // current trick continues
                 else
                     let prevSeat, _ = trick.Plays.Head
-                    (Some trick, prevSeat.Next)
+                    Some trick, prevSeat.Next)
+            |> Option.defaultWith (fun () ->
 
-                // auction winner leads first trick
-            | [] -> (None, deal.HighBidderOpt.Value)
+                    // auction winner leads first trick
+                None, deal.HighBidderOpt.Value)
 
     /// What cards is the current player allowed to play? Note that the
     /// deal is not otherwise aware of the player's hand.

@@ -2,61 +2,69 @@
 
 open PlayingCards
 
-/// One card from each player in turn during a deal.
+/// One card played by each player in turn during a deal.
 type Trick =
     {
-            // trump suit in this trick
-        Trump : Suit
+        /// Player who starts this trick.
+        Leader : Seat
 
-            // suit of first card played in this trick
-        SuitLed : Suit
+        /// Cards played by seat in this trick, in reverse chronological order.
+        Cards : List<Card>
 
-            // cards played by seat in this trick, in reverse chronological order
-        Plays : List<Seat * Card>
-
-            // number of cards played so far in this trick
-        NumPlays : int
-
-            // winning play, so far
-        Winner : Seat * Card
+        /// Play that takes this trick, so far, if any.
+        HighPlayOpt : Option<Seat * Card>
     }
+        /// Suit of first card played in this trick, if any.
+    member trick.SuitLedOpt =
+        trick.HighPlayOpt
+            |> Option.map (snd >> Card.suit)
 
 module Trick =
 
-    /// Starts a new trick with the given play.
-    let create trump seat (card : Card) =
+    /// Creates a trick with the given leader to play first.
+    let create leader =
         {
-            Trump = trump
-            SuitLed = card.Suit
-            Plays = (seat, card) :: []
-            NumPlays = 1
-            Winner = seat, card
+            Leader = leader
+            Cards = List.empty
+            HighPlayOpt = None
         }
 
-    /// Adds the given play to the given trick.
-    let add seat card trick =
+    /// Current player on the given trick.
+    let currentPlayer trick =
+        trick.Leader
+            |> Seat.incr trick.Cards.Length
+
+    /// The high player on this trick, if any.
+    let highPlayerOpt trick =
+        trick.HighPlayOpt
+            |> Option.map fst
+
+    /// Plays the given card on the given trick.
+    let addPlay card trick =
+        assert(trick.Cards.Length < Seat.numSeats)
         {
             trick with
-                Plays = (seat, card) :: trick.Plays
-                NumPlays = trick.NumPlays + 1
-                Winner =
-                    let _, prevCard = trick.Winner
-                    let isWinner =
-                        if card.Suit = trick.Trump then
-                            prevCard.Suit <> trick.Trump
-                                || card.Rank > prevCard.Rank
-                        elif card.Suit = prevCard.Suit then
-                            card.Rank > prevCard.Rank
-                        else
-                            false
-                    if isWinner then (seat, card)
-                    else trick.Winner
+                Cards = card :: trick.Cards
+                HighPlayOpt =
+                    let isHigh =
+                        trick.HighPlayOpt
+                            |> Option.map (fun (_, prevCard) ->
+                                if card.Suit = prevCard.Suit then
+                                    card.Rank > prevCard.Rank
+                                else false)
+                            |> Option.defaultValue true
+                    if isHigh then
+                        Some (currentPlayer trick, card)
+                    else trick.HighPlayOpt
         }
 
-[<AutoOpen>]
-module TrickExt =
-    type Trick with
-        member trick.Add(seat, card) =
-            trick |> Trick.add seat card
-        member trick.WinnerSeat =
-            trick.Winner |> fst
+    /// Indicates whether the given trick has finished.
+    let isComplete trick =
+        assert(trick.Cards.Length <= Seat.numSeats)
+        trick.Cards.Length = Seat.numSeats
+
+    /// Each card in the given trick and its player, in chronological order.
+    let plays trick =
+        let seats = Seat.cycle trick.Leader
+        let cards = Seq.rev trick.Cards
+        Seq.zip seats cards

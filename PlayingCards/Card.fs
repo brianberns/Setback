@@ -29,9 +29,18 @@ type Card =
 
     /// Converts this card to a string.
     override this.ToString() =
+ #if FABLE_COMPILER
         sprintf "%c%c"
             (Rank.toChar this.Rank)
             (Suit.toChar this.Suit)
+#else
+        System.String.Create(
+            2,
+            this,
+            System.Buffers.SpanAction(fun span (card : Card) ->
+                span.Slice(0, 1).Fill(card.Rank.Char)
+                span.Slice(1, 1).Fill(card.Suit.Char)))
+#endif
 
     /// String representation of this card.
     member this.String = this.ToString()
@@ -48,6 +57,12 @@ module Card =
 
     /// Number of cards in a deck.
     let numCards = Suit.numSuits * Rank.numRanks
+
+    /// Rank of the given card.
+    let rank (card : Card) = card.Rank
+
+    /// Suit of the given card.
+    let suit (card : Card) = card.Suit
 
     /// Converts a two-character string into a card.
     let fromString (str : string) =
