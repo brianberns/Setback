@@ -14,7 +14,8 @@ type Trick =
         /// Play that takes this trick, so far, if any.
         HighPlayOpt : Option<Seat * Card>
     }
-        /// Suit of first card played in this trick, if any.
+
+    /// Suit of first card played in this trick, if any.
     member trick.SuitLedOpt =
         trick.HighPlayOpt
             |> Option.map (snd >> Card.suit)
@@ -40,7 +41,7 @@ module Trick =
             |> Option.map fst
 
     /// Plays the given card on the given trick.
-    let addPlay card trick =
+    let addPlay trump card trick =
         assert(trick.Cards.Length < Seat.numSeats)
         {
             trick with
@@ -49,7 +50,10 @@ module Trick =
                     let isHigh =
                         trick.HighPlayOpt
                             |> Option.map (fun (_, prevCard) ->
-                                if card.Suit = prevCard.Suit then
+                                if prevCard.Suit = trump then
+                                    prevCard.Suit <> trump
+                                        || card.Rank > prevCard.Rank
+                                elif card.Suit = prevCard.Suit then
                                     card.Rank > prevCard.Rank
                                 else false)
                             |> Option.defaultValue true
