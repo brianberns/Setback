@@ -65,38 +65,31 @@ type ClosedDeal =
 module ClosedDeal =
 
     /// Creates a new deal.
-    let create teams dealer : ClosedDeal =
-
-        let teamMap =
-            teams
-                |> Seq.collect (fun team ->
-                    team.Seats
-                        |> Seq.map (fun seat ->
-                            seat, team))
-                |> Seq.sortBy fst
-                |> Seq.map snd
-                |> Seq.toArray
-
+    let create dealer =
         {
-            Teams = teams
-            TeamMap = teamMap
             Dealer = dealer
-            Auction = []
+            Auction = List.empty
             HighBidderOpt = None
             HighBid = Bid.Pass
             TrumpOpt = None
-            Tricks = []
-            CardsPlayed = ImmutableArray.Empty
-            Voids = ImmutableArray.ZeroCreate(Seat.numSeats * Suit.numSuits)
+            CurrentTrickOpt = None
+            CompletedTricks = List.empty
+            UnplayedCards = Set.empty
+            Voids = Set.empty
         }
 
-    /// Whose turn is it to bid next?
-    let nextBidder deal =
+    /// Number of cards dealt to each player.
+    let numCardsPerHand =
+        assert(Card.numCards % Seat.numSeats = 0)
+        Card.numCards / Seat.numSeats
 
+    /// Current bidder in the given deal.
+    let nextBidder deal =
         let lastBidder =
             match deal.Auction with
                 | (seat, _) :: _ ->
-                    if (seat = deal.Dealer) then failwith "Auction is over"
+                    if (seat = deal.Dealer) then
+                        failwith "Auction is over"
                     seat
                 | [] -> deal.Dealer
         lastBidder.Next
@@ -134,6 +127,17 @@ module ClosedDeal =
                 HighBidderOpt = highBidderOpt
                 HighBid = highBid
         }
+
+    /// Number of cards played so far.
+    let numCardsPlayed deal =
+        let nCompleted =
+            deal.CompletedTricks.Length * Seat.numSeats
+        let nCurrent =
+            deal.CurrentTrickOpt
+                |> Option.map (fun trick ->
+                    trick.Cards.Length)
+                |> Option.defaultValue 0
+        nCompleted + nCurrent
 
     /// Current trick in the given deal.
     let currentTrick deal =
