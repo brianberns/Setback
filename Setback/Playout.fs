@@ -4,9 +4,9 @@ open PlayingCards
 
 /// Possible points(*) available in a Setback deal.
 ///
-/// *The terminology here gets quite confusing. We use the term "match
+/// *The terminology here gets quite confusing. We use the term "deal
 /// point" to distinguish these points from "game points". Whichever team
-/// gets the most game points in a deal wins the "Game" match point for
+/// gets the most game points in a deal wins the "Game" deal point for
 /// that deal.
 type DealPoint =
     | High = 0   // highest dealt trump
@@ -14,18 +14,11 @@ type DealPoint =
     | Jack = 2   // jack of trump (if dealt)
     | Game = 3   // AKQJT of all suits
 
-/// A deal is a round of play within a game, consisting of the
-/// following phases:
-///
-/// * Deal: Distribution of cards from the deck to the players
-/// * Auction: Bids by players on their hands
-/// * Playout: Discards by players from their hands, grouped into tricks
-///
-/// A closed deal contains no information about unplayed cards,
-/// which are kept private by each player.
-type ClosedDeal =
+/// Discards by players from their hands, grouped into tricks.
+type Playout =
     {
-        Auction : Auction
+        /// Seat of player who won the auction.
+        Bidder : Seat
 
         /// Trump suit, as determined by first card played.
         TrumpOpt : Option<Suit>
@@ -54,20 +47,15 @@ type ClosedDeal =
 module ClosedDeal =
 
     /// Creates a new deal.
-    let create dealer =
+    let create bidder =
         {
-            Auction = Auction.create dealer
+            Bidder = bidder
             TrumpOpt = None
             CurrentTrickOpt = None
             CompletedTricks = List.empty
             UnplayedCards = Set.empty
             Voids = Set.empty
         }
-
-    /// Number of cards dealt to each player.
-    let numCardsPerHand =
-        assert(Card.numCards % Seat.numSeats = 0)
-        Card.numCards / Seat.numSeats
 
     /// Number of cards played so far.
     let numCardsPlayed deal =
@@ -86,11 +74,12 @@ module ClosedDeal =
             | Some trick -> trick
             | None -> failwith "No current trick"
 
-    /// Current player in the given deal, once the exchange
+    /// Current player in the given deal.
     let currentPlayer deal =
         deal
             |> currentTrick
             |> Trick.currentPlayer
+        (*
         deal.Tricks
             |> List.tryHead
             |> Option.map (fun trick ->
@@ -107,88 +96,88 @@ module ClosedDeal =
 
                     // auction winner leads first trick
                 None, deal.HighBidderOpt.Value)
+        *)
 
-    /// What cards is the current player allowed to play? Note that the
-    /// deal is not otherwise aware of the player's hand.
-    let legalPlays hand (deal : ClosedDeal) =
+    /// What cards can be played from the given hand?
+    let legalPlays hand playout =
+        let trick = currentTrick playout
+        assert(trick.SuitLedOpt.IsNone = trick.Cards.IsEmpty)
+        match playout.TrumpOpt, trick.SuitLedOpt with
 
-        let trickOpt, _ = deal |> nextPlayer
-        match trickOpt with
+                // start trick with any card
+            | _, None -> hand
 
-                // continue current trick
-            | Some trick ->
-                let isTrump (card : Card) =
-                    card.Suit = deal.Trump
-                let isFollowSuit (card : Card) =
-                    card.Suit = trick.SuitLed
-                if hand |> Seq.exists isFollowSuit then      // player can follow suit?
+                // continue trick by following suit, if possible, or trumping in
+            | Some trump, Some suitLed ->
+                let followsSuit (card : Card) =
+                    card.Suit = suitLed
+                if hand |> Seq.exists followsSuit then
                     hand |> Seq.where (fun card ->
-                        isTrump card || isFollowSuit card)   // player can always trump in
+                        card.Suit = trump || followsSuit card)
                 else
                     hand
 
-                // start a new trick
-            | None -> hand
+            | _ -> failwith "Unexpected"
 
-    /// Computes linear index for is-void flag of the given suit for the given player.
-    let private voidIndex (seat : Seat) (suit : Suit) =
-        (int seat * Suit.numSuits) + (int suit)
-
-    /// Indicates whether the given player is void in the given suit.
-    let isVoid seat suit deal =
-        let index = voidIndex seat suit
-        deal.Voids[index]
-
-    /// Sets the given seat to be void in the given suit.
-    let setVoid seat suit (voids : ImmutableArray<bool>) =
-        let index = voidIndex seat suit
-        voids.SetItem(index, true)
+    /// Is the given player known to be void in the given suit?
+    let private isVoid seat suit playout =
+        playout.Voids.Contains (seat, suit)
 
     /// Answers a new deal with the next player's given discard.
     let addPlay (card : Card) deal =
 
-            // mark this card as played
-        let cardsPlayed =
-            deal.CardsPlayed.SetItem(Card.toIndex card, true)
-
-            // compute trump suit
+            // determine card
         let trump =
-            match deal.TrumpOpt with
-                | Some trump -> trump
-                | None -> card.Suit
+            deal.TrumpOpt
+                |> Option.defaultValue card.Suit
 
-            // compute resulting trick
-        let trickOpt, seat = deal |> nextPlayer
-        let trick, tricks =
-            match trickOpt with
-                    
-                    // continue current trick
-                | Some trick ->
-                    let newTrick = trick.Add(seat, card)
-                    newTrick, newTrick :: deal.Tricks.Tail
+            // play card on current trick
+        let updatedTrick, player =
+            let curTrick = deal |> currentTrick
+            let player = curTrick |> Trick.currentPlayer
+            assert(deal |> isVoid player card.Suit |> not)
+            let updatedTrick = curTrick |> Trick.addPlay trump card
+            updatedTrick, player
 
-                    // start a new trick
-                | None ->
-                    let newTrick = Trick.create trump seat card
-                    newTrick, newTrick :: deal.Tricks
+            // complete trick?
+        let curTrickOpt, completedTricks =
+            if updatedTrick |> Trick.isComplete then
+                let taker =
+                    match updatedTrick.HighPlayOpt with
+                        | Some (seat, _) -> seat
+                        | None -> failwith "Unexpected"
+                let tricks = updatedTrick :: deal.CompletedTricks
+                let curTrickOpt =
+                    if tricks.Length < Setback.numCardsPerHand then
+                        taker |> Trick.create |> Some
+                    else None
+                curTrickOpt, tricks
+            else
+                Some updatedTrick, deal.CompletedTricks
+
+            // remove from unplayed cards
+        let unplayedCards =
+            assert(deal.UnplayedCards.Contains(card))
+            deal.UnplayedCards.Remove(card)
 
             // player is void in suit led?
         let voids =
-            if card.Suit = trump then
-                deal.Voids
-            else
-                let index = voidIndex seat trick.SuitLed
-                if card.Suit = trick.SuitLed then
-                    assert(not deal.Voids[index])
-                    deal.Voids
-                else
-                    deal.Voids.SetItem(index, true)
+            match updatedTrick.SuitLedOpt with
+                | Some suitLed ->
+                    if card.Suit = suitLed || card.Suit = trump then
+                        assert(
+                            card.Suit = trump
+                                || deal |> isVoid player card.Suit |> not)
+                        deal.Voids
+                    else
+                        deal.Voids.Add(player, suitLed)
+                | None -> failwith "Unexpected"
 
         {
             deal with
-                TrumpOpt = Some trump
-                Tricks = tricks
-                CardsPlayed = cardsPlayed
+                CurrentTrickOpt = curTrickOpt
+                CompletedTricks = completedTricks
+                UnplayedCards = unplayedCards
                 Voids = voids
         }
 

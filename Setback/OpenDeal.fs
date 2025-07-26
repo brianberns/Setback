@@ -29,7 +29,7 @@ type OpenDeal =
         GamePointsTotal : int
 
             // running tally of high, low, jack, and game
-        MatchPoints : Score
+        DealPoints : Score
         PointsAwarded : ImmutableArray<bool>
 
             // bidding team has been set?
@@ -55,22 +55,22 @@ type OpenDeal =
 
         writeline ""
         for seat in Seat.cycle this.Dealer.Next do
-            let sHand = this.Hands.[int seat] |> Hand.toString
+            let sHand = this.Hands[int seat] |> Hand.toString
             writeline (sprintf "%-5s: %s" (seat.ToString()) sHand)
 
         write this.ClosedDeal.String
 
         let dumpScore teams (score : Score) =
             for team in teams do
-                sb.AppendFormat("   {0}: {1}\r\n", team, score.[team]) |> ignore
+                sb.AppendFormat("   {0}: {1}\r\n", team, score[team]) |> ignore
 
         if not this.Tricks.IsEmpty then
             writeline ""
             writeline "Game points:"
             dumpScore this.Teams this.GamePoints
             writeline ""
-            writeline "Match points:"
-            dumpScore this.Teams this.MatchPoints
+            writeline "Deal points:"
+            dumpScore this.Teams this.DealPoints
 
         sb.ToString()
 
@@ -90,9 +90,9 @@ module OpenDeal =
             GamePoints = Score.zeroCreate teams
             GamePointsTotal =
                 hands |> Seq.collect id |> Seq.sumBy (fun card -> card.Rank.GamePoints)
-            MatchPoints = Score.zeroCreate teams
+            DealPoints = Score.zeroCreate teams
             PointsAwarded =
-                let nPoints = Enum.getValues<MatchPoint> |> Seq.length
+                let nPoints = Enum.getValues<DealPoint> |> Seq.length
                 ImmutableArray.ZeroCreate(nPoints)
             IsSet = false
         }
@@ -121,8 +121,8 @@ module OpenDeal =
                 // create a deal from these hands
             |> fromHands teams dealer
 
-    /// Total number of match points available in the given deal (either 3 or 4).
-    let totalMatchPoints (deal : OpenDeal) =
+    /// Total number of deal points available in the given deal (either 3 or 4).
+    let totalDealPoints (deal : OpenDeal) =
         if deal.JackTrumpOpt.IsSome then 4 else 3
 
     /// Answers a new deal with the next player's given bid.
@@ -131,7 +131,7 @@ module OpenDeal =
 
     /// Answers the unplayed cards in the given player's hand.
     let unplayedCards seat (deal : OpenDeal) =
-        deal.Hands.[int seat]
+        deal.Hands[int seat]
             |> Seq.where (fun card ->
                 not (deal.CardsPlayed[Card.toIndex card]))
 
@@ -174,4 +174,4 @@ module OpenDealExt =
         member deal.UnplayedCards(seat) = deal |> OpenDeal.unplayedCards seat
         member deal.NumCardsPlayed = deal |> OpenDeal.numCardsPlayed
         member deal.LegalPlays = deal |> OpenDeal.legalPlays
-        member deal.TotalMatchPoints = deal |> OpenDeal.totalMatchPoints
+        member deal.TotalDealPoints = deal |> OpenDeal.totalDealPoints

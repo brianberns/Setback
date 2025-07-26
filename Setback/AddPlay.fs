@@ -41,7 +41,7 @@ module AddPlay =
     /// Increments the given team's score.
     let private incrTeam team n (score : Score) =
         if n <> 0 then
-            score.WithPoints(team, score.[team] + n)
+            score.WithPoints(team, score[team] + n)
         else
             score
 
@@ -49,9 +49,9 @@ module AddPlay =
     let private incrTest
         count
         (pointsAwarded : ImmutableArray<bool>)
-        (point : MatchPoint)
+        (point : DealPoint)
         test =
-        if pointsAwarded.[int point] then
+        if pointsAwarded[int point] then
             (count, pointsAwarded, None)
         else
             match test() with
@@ -64,27 +64,27 @@ module AddPlay =
                     pointsAwarded,
                     None
 
-    /// Increments match points for the given team.
-    let private incrMatchPoints winTeam bidTeam count (deal : OpenDeal) =
+    /// Increments deal points for the given team.
+    let private incrDealPoints winTeam bidTeam count (deal : OpenDeal) =
         if deal.IsSet && (winTeam = bidTeam) then
-            deal.MatchPoints   // don't award points to a team that's set
+            deal.DealPoints   // don't award points to a team that's set
         else
-            deal.MatchPoints |> incrTeam winTeam count
+            deal.DealPoints |> incrTeam winTeam count
 
     /// Answers the team that holds the given card, if any.
     let private getTeam card (deal : OpenDeal) =
         Enum.getValues<Seat>
             |> Seq.tryFind (fun seat ->
-                let cards = deal.Hands.[int seat]
+                let cards = deal.Hands[int seat]
                 cards |> Seq.exists ((=) card))
-            |> Option.map (fun seat -> deal.TeamMap.[int seat])
+            |> Option.map (fun seat -> deal.TeamMap[int seat])
 
     /// Awards high point to the team that holds it.
     let private awardHighPoint bidTeam (deal : OpenDeal) =
 
             // find team
         let count, pointsAwarded, highTeamOpt =
-            incrTest 0 deal.PointsAwarded MatchPoint.High (fun () ->
+            incrTest 0 deal.PointsAwarded DealPoint.High (fun () ->
                 getTeam deal.HighTrumpOpt.Value deal)
 
             // award point
@@ -92,9 +92,9 @@ module AddPlay =
             | Some highTeam ->
                 {
                     deal with
-                        MatchPoints =
+                        DealPoints =
                             deal
-                                |> incrMatchPoints
+                                |> incrDealPoints
                                     highTeam bidTeam count
                         PointsAwarded = pointsAwarded
                 }
@@ -119,24 +119,24 @@ module AddPlay =
 
             // award high point?
         let incrHigh count pointsAwarded =
-            incrTest count pointsAwarded MatchPoint.High (fun () ->
+            incrTest count pointsAwarded DealPoint.High (fun () ->
                 taken deal.HighTrumpOpt.Value)
 
             // award low point?
         let incrLow count pointsAwarded =
-            incrTest count pointsAwarded MatchPoint.Low (fun () ->
+            incrTest count pointsAwarded DealPoint.Low (fun () ->
                 taken deal.LowTrumpOpt.Value)
 
             // award jack point?
         let incrJack count pointsAwarded =
-            incrTest count pointsAwarded MatchPoint.Jack (fun () ->
+            incrTest count pointsAwarded DealPoint.Jack (fun () ->
                 deal.JackTrumpOpt
                     |> Option.map taken
                     |> Option.flatten)
 
             // award game point?
         let incrGame count pointsAwarded =
-            incrTest count pointsAwarded MatchPoint.Game (fun () ->
+            incrTest count pointsAwarded DealPoint.Game (fun () ->
                 let threshold = deal.GamePointsTotal / 2   // assume only two teams
                 if (deal.GamePoints.Points |> Seq.max) > threshold then
                     Some trickTeam
@@ -152,7 +152,7 @@ module AddPlay =
                 ||> incrGame
         {
             deal with
-                MatchPoints = deal |> incrMatchPoints trickTeam bidTeam count
+                DealPoints = deal |> incrDealPoints trickTeam bidTeam count
                 PointsAwarded = pointsAwarded
         }
 
@@ -163,23 +163,23 @@ module AddPlay =
 
             // bidding team was set?
         let isSet =
-            let totPoints = deal.TotalMatchPoints
-            let proPoints = deal.MatchPoints.[bidTeam]
-            let conPoints = Seq.sum deal.MatchPoints.Points - proPoints
+            let totPoints = deal.TotalDealPoints
+            let proPoints = deal.DealPoints[bidTeam]
+            let conPoints = Seq.sum deal.DealPoints.Points - proPoints
             if totPoints - conPoints < bidPoints then true         // opponents have already ensured that bidders are set
             else proPoints < bidPoints
                 && deal.Tricks.Length = OpenDeal.numCardsPerHand   // deal is over and bidders failed
 
             // if so, deduct bid from their score (erasing any points they may have won on this trick)
-        let matchPoints =
+        let dealPoints =
             if isSet then
-                deal.MatchPoints.WithPoints(bidTeam, -bidPoints)
+                deal.DealPoints.WithPoints(bidTeam, -bidPoints)
             else
-                deal.MatchPoints
+                deal.DealPoints
 
         {
             deal with
-                MatchPoints = matchPoints
+                DealPoints = dealPoints
                 IsSet = isSet
         }
 
@@ -205,7 +205,7 @@ module AddPlay =
                 deal.GamePoints |> incrTeam trickTeam points
             { deal with GamePoints = gamePoints }
 
-            // award match points won on this trick
+            // award deal points won on this trick
         let deal = awardTrickPointsRaw cards trickTeam bidTeam deal
 
             // has bidding team been set?
@@ -225,7 +225,7 @@ module AddPlay =
             // get auction results
         let bidTeam =
             let bidder = deal.HighBidderOpt.Value
-            deal.TeamMap.[int bidder]
+            deal.TeamMap[int bidder]
 
             // prepare to award a point
         let award card point deal test =
@@ -238,7 +238,7 @@ module AddPlay =
                             let conTrump =
                                 Enum.getValues<Seat>
                                     |> Seq.where (fun seat ->
-                                        let team = deal.TeamMap.[int seat]
+                                        let team = deal.TeamMap[int seat]
                                         team <> proTeam)
                                     |> Seq.collect (fun seat ->
                                         deal.UnplayedCards seat
@@ -255,9 +255,9 @@ module AddPlay =
                 | Some winTeam ->
                     {
                         deal with
-                            MatchPoints =
+                            DealPoints =
                                 deal
-                                    |> incrMatchPoints
+                                    |> incrDealPoints
                                         winTeam bidTeam count
                             PointsAwarded = pointsAwarded
                     }
@@ -265,13 +265,13 @@ module AddPlay =
 
             // award low point if opponents have no trump
         let deal =
-            award deal.LowTrumpOpt.Value MatchPoint.Low deal (fun trumpCards ->
+            award deal.LowTrumpOpt.Value DealPoint.Low deal (fun trumpCards ->
                 trumpCards |> Seq.isEmpty)
 
             // award jack point if opponents have no AKQ of trump (and jack exists)
         match deal.JackTrumpOpt with
             | Some jackTrump ->
-                award jackTrump MatchPoint.Jack deal (fun trumpCards ->
+                award jackTrump DealPoint.Jack deal (fun trumpCards ->
                     trumpCards
                         |> Seq.forall (fun card ->
                             card.Rank < Rank.Jack))
@@ -288,7 +288,7 @@ module AddPlay =
             // get auction results
         let getBidTeam () =
             let bidder = deal.HighBidderOpt.Value
-            deal.TeamMap.[int bidder]
+            deal.TeamMap[int bidder]
 
             // add the card to the deal
         let isFirst = deal.Tricks.IsEmpty
