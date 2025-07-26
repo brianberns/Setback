@@ -34,3 +34,15 @@ module ClosedDeal =
     let addBid bid deal =
         { deal with
             Auction = Auction.addBid bid deal.Auction }
+
+    /// Plays the given card on the given deal.
+    let addPlay card deal =
+        assert(Auction.isComplete deal.Auction)
+        let playout =
+            deal.PlayoutOpt
+                |> Option.defaultWith (fun () ->
+                    deal.Auction
+                        |> Auction.highBidder
+                        |> Playout.create)
+        { deal with
+            PlayoutOpt = Some (Playout.addPlay card playout) }

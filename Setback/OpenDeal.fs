@@ -52,51 +52,25 @@ module OpenDeal =
             |> Map
             |> fromHands dealer
 
-    /// Total number of deal points available in the given deal (either 3 or 4).
-    let totalDealPoints (deal : OpenDeal) =
-        if deal.JackTrumpOpt.IsSome then 4 else 3
-
-    /// Answers a new deal with the next player's given bid.
+    /// Adds the given bid to the given deal.
     let addBid bid deal =
         { deal with
             ClosedDeal = ClosedDeal.addBid bid deal.ClosedDeal }
 
-    /// Answers the unplayed cards in the given player's hand.
-    let unplayedCards seat deal =
-        deal.Hands[int seat]
-            |> Seq.where (fun card ->
-                not (deal.CardsPlayed[Card.toIndex card]))
-
-    /// Answers the number of cards played so far.
-    let numCardsPlayed (deal : OpenDeal) =
-        deal.Tricks |> Seq.sumBy (fun trick -> trick.NumPlays)
-
-    /// What cards is the current player allowed to play?
-    let legalPlays (deal : OpenDeal) =
-
-            // get unplayed cards in player's hand
-        let trickOpt, seat = deal.NextPlayer
-        let cards = deal |> unplayedCards seat
-
-        match trickOpt with
-
-                // continue current trick
-            | Some trick ->
-                let isTrump (card : Card) =
-                    card.Suit = deal.Trump
-                let isFollowSuit (card : Card) =
-                    card.Suit = trick.SuitLed
-                if cards |> Seq.exists isFollowSuit then                                     // player can follow suit?
-                    if deal.Trump = trick.SuitLed then
-                        cards |> Seq.where (fun card -> isTrump card)                        // unroll for max performance
-                    else
-                        cards |> Seq.where (fun card -> isTrump card || isFollowSuit card)   // player can always trump in
-                else
-                    cards
-
-                // start a new trick
-            | None -> cards
-
+    /// Plays the given card on the given deal.
+    let addPlay card deal =
+        {
+            deal with
+                ClosedDeal =
+                    deal.ClosedDeal
+                        |> ClosedDeal.addPlay card
+                UnplayedCardMap =
+                    let seat = deal.ClosedDeal |> ClosedDeal.currentPlayer
+                    let unplayedCards = deal.UnplayedCardMap[seat]
+                    assert(unplayedCards.Contains(card))
+                    let unplayedCards = unplayedCards.Remove(card)
+                    deal.UnplayedCardMap |> Map.add seat unplayedCards
+        }
 
     let toString deal =
 

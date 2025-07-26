@@ -32,7 +32,7 @@ type Playout =
             | Some trump -> trump
             | None -> failwith "No trump yet"
 
-module ClosedDeal =
+module Playout =
 
     /// Creates a new deal.
     let create bidder =

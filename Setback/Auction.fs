@@ -31,6 +31,11 @@ module Auction =
         assert(auction.Bids.Length <= Seat.numSeats)
         auction.Bids.Length = Seat.numSeats
 
+    let highBidder auction =
+        match auction.HighBidderOpt with
+            | Some bidder -> bidder
+            | None -> failwith "No high bidder"
+
     /// Current bidder in the given deal.
     let nextBidder auction =
         assert(isComplete auction |> not)
