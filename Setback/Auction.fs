@@ -67,3 +67,19 @@ module Auction =
                 HighBidderOpt = highBidderOpt
                 HighBid = highBid
         }
+
+    let toString auction =
+
+        let sb = new System.Text.StringBuilder()
+        let writeline (s : string) =
+            sb.AppendFormat("{0}\r\n", s) |> ignore
+
+        if not auction.Bids.IsEmpty then
+            writeline ""
+            Seq.zip
+                (Seat.cycle auction.Dealer.Next)
+                (List.rev auction.Bids)
+                |> Seq.iter (fun (seat, bid) ->
+                    writeline (sprintf "%-5s: %A" (seat.ToString()) bid))
+
+        sb.ToString()
