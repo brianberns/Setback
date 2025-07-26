@@ -33,12 +33,13 @@ module Auction =
 
     /// Current bidder in the given deal.
     let nextBidder auction =
-        assert(not (isComplete auction))
+        assert(isComplete auction |> not)
         auction.Dealer
             |> Seat.incr (auction.Bids.Length + 1)
 
     /// What are the allowed bids in the current situation?
     let legalBids auction =
+        assert(isComplete auction |> not)
         let bid = auction.HighBid
         seq {
             yield Bid.Pass
@@ -49,7 +50,7 @@ module Auction =
                 yield Bid.Four   // dealer can steal 4-bid
         }
 
-    /// Answers a new auction with the next player's given bid.
+    /// Adds the given bid to the given auction.
     let addBid bid auction =
         assert(auction |> legalBids |> Seq.contains bid)
 

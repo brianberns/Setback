@@ -1,7 +1,5 @@
 ﻿namespace Setback
 
-open PlayingCards
-
 /// Possible points available in a Setback deal.
 ///
 /// The terminology here gets quite confusing. We use the term "deal
@@ -31,3 +29,8 @@ module ClosedDeal =
             Auction = Auction.create dealer
             PlayoutOpt = None
         }
+
+    /// Adds the given bid to the given deal.
+    let addBid bid deal =
+        { deal with
+            Auction = Auction.addBid bid deal.Auction }

@@ -9,70 +9,12 @@ open System.Collections.Immutable
 [<StructuredFormatDisplay("{String}")>]
 type OpenDeal =
     {
-            // base deal
+        /// Base deal.
         ClosedDeal : ClosedDeal
 
-            // each player's cards, by seat
-        Hands : Card[][(*Seat*)]
-
-            // highest trump card dealt
-        HighTrumpOpt : Option<Card>
-
-            // lowest trump card dealt
-        LowTrumpOpt : Option<Card>
-
-            // jack of trump was dealt?
-        JackTrumpOpt: Option<Card>
-
-            // running tally of AKQJT taken
-        GamePoints : Score
-        GamePointsTotal : int
-
-            // running tally of high, low, jack, and game
-        DealPoints : Score
-        PointsAwarded : ImmutableArray<bool>
-
-            // bidding team has been set?
-        IsSet : bool
+        /// Each player's unplayed cards.
+        UnplayedCardMap : Map<Seat, Hand>
     }
-
-    member this.Dealer = this.ClosedDeal.Dealer
-    member this.HighBidderOpt = this.ClosedDeal.HighBidderOpt
-    member this.HighBid = this.ClosedDeal.HighBid
-    member this.TrumpOpt = this.ClosedDeal.TrumpOpt
-    member this.Trump = this.ClosedDeal.Trump
-    member this.CardsPlayed = this.ClosedDeal.CardsPlayed
-    member this.Tricks = this.ClosedDeal.Tricks
-    member this.Teams = this.ClosedDeal.Teams
-    member this.NextPlayer = this.ClosedDeal.NextPlayer
-    member this.TeamMap = this.ClosedDeal.TeamMap
-
-    member this.String =
-
-        let sb = new System.Text.StringBuilder()
-        let write (s : string) = sb.Append(s) |> ignore
-        let writeline (s : string) = sb.AppendFormat("{0}\r\n", s) |> ignore
-
-        writeline ""
-        for seat in Seat.cycle this.Dealer.Next do
-            let sHand = this.Hands[int seat] |> Hand.toString
-            writeline (sprintf "%-5s: %s" (seat.ToString()) sHand)
-
-        write this.ClosedDeal.String
-
-        let dumpScore teams (score : Score) =
-            for team in teams do
-                sb.AppendFormat("   {0}: {1}\r\n", team, score[team]) |> ignore
-
-        if not this.Tricks.IsEmpty then
-            writeline ""
-            writeline "Game points:"
-            dumpScore this.Teams this.GamePoints
-            writeline ""
-            writeline "Deal points:"
-            dumpScore this.Teams this.DealPoints
-
-        sb.ToString()
 
 module OpenDeal =
 
@@ -80,46 +22,35 @@ module OpenDeal =
     let numCardsPerHand = 6
 
     /// Creates a deal from the given hands.
-    let fromHands teams dealer hands =
+    let fromHands dealer handMap =
+        assert(
+            let nCards =
+                handMap
+                    |> Map.toSeq
+                    |> Seq.collect snd
+                    |> Seq.distinct
+                    |> Seq.length
+            nCards = Setback.numCardsPerDeal)
         {
-            ClosedDeal = ClosedDeal.create teams dealer
-            Hands = hands |> Seq.map (fun hand -> hand |> Seq.toArray) |> Seq.toArray   // allow flexible input
-            HighTrumpOpt = None
-            LowTrumpOpt = None
-            JackTrumpOpt = None
-            GamePoints = Score.zeroCreate teams
-            GamePointsTotal =
-                hands |> Seq.collect id |> Seq.sumBy (fun card -> card.Rank.GamePoints)
-            DealPoints = Score.zeroCreate teams
-            PointsAwarded =
-                let nPoints = Enum.getValues<DealPoint> |> Seq.length
-                ImmutableArray.ZeroCreate(nPoints)
-            IsSet = false
+            ClosedDeal = ClosedDeal.create dealer
+            UnplayedCardMap = handMap
         }
 
     /// Deals cards from the given deck to each player.
-    let fromDeck teams dealer deck =
-
-        let numCardsPerGroup = 3
-        assert (numCardsPerHand % numCardsPerGroup = 0)
-
+    let fromDeck dealer deck =
         deck.Cards
-
-                // number each card
-            |> Seq.mapi (fun iCard card -> (iCard, card))
-
-                // assign each card to a player
-            |> Seq.groupBy (fun (iCard, card) ->
-                ((int dealer) + (iCard / numCardsPerGroup) + 1) % Seat.numSeats)   // deal first group of cards to dealer's left
-
-                // gather each player's cards
-            |> Seq.map (fun (_, pairs) ->
-                pairs
-                    |> Seq.map snd
-                    |> Seq.take numCardsPerHand)
-
-                // create a deal from these hands
-            |> fromHands teams dealer
+            |> Seq.indexed
+            |> Seq.groupBy (fun (iCard, _) ->
+                let n = (iCard + 1) % Seat.numSeats
+                dealer |> Seat.incr n)
+            |> Seq.map (fun (seat, group) ->
+                let cards =
+                    group
+                        |> Seq.map snd
+                        |> set
+                seat, cards)
+            |> Map
+            |> fromHands dealer
 
     /// Total number of deal points available in the given deal (either 3 or 4).
     let totalDealPoints (deal : OpenDeal) =
@@ -127,10 +58,11 @@ module OpenDeal =
 
     /// Answers a new deal with the next player's given bid.
     let addBid bid deal =
-        { deal with ClosedDeal = deal.ClosedDeal.AddBid bid }
+        { deal with
+            ClosedDeal = ClosedDeal.addBid bid deal.ClosedDeal }
 
     /// Answers the unplayed cards in the given player's hand.
-    let unplayedCards seat (deal : OpenDeal) =
+    let unplayedCards seat deal =
         deal.Hands[int seat]
             |> Seq.where (fun card ->
                 not (deal.CardsPlayed[Card.toIndex card]))
@@ -165,13 +97,30 @@ module OpenDeal =
                 // start a new trick
             | None -> cards
 
-[<AutoOpen>]
-module OpenDealExt =
-    type OpenDeal with
-        member deal.NextBidder = deal.ClosedDeal.NextBidder
-        member deal.LegalBids = deal.ClosedDeal.LegalBids
-        member deal.AddBid(bid) = deal |> OpenDeal.addBid bid
-        member deal.UnplayedCards(seat) = deal |> OpenDeal.unplayedCards seat
-        member deal.NumCardsPlayed = deal |> OpenDeal.numCardsPlayed
-        member deal.LegalPlays = deal |> OpenDeal.legalPlays
-        member deal.TotalDealPoints = deal |> OpenDeal.totalDealPoints
+
+    let toString deal =
+
+        let sb = new System.Text.StringBuilder()
+        let write (s : string) = sb.Append(s) |> ignore
+        let writeline (s : string) = sb.AppendFormat("{0}\r\n", s) |> ignore
+
+        writeline ""
+        for seat in Seat.cycle deal.Dealer.Next do
+            let sHand = deal.Hands[int seat] |> Hand.toString
+            writeline (sprintf "%-5s: %s" (seat.ToString()) sHand)
+
+        write deal.ClosedDeal.String
+
+        let dumpScore teams (score : Score) =
+            for team in teams do
+                sb.AppendFormat("   {0}: {1}\r\n", team, score[team]) |> ignore
+
+        if not deal.Tricks.IsEmpty then
+            writeline ""
+            writeline "Game points:"
+            dumpScore deal.Teams deal.GamePoints
+            writeline ""
+            writeline "Deal points:"
+            dumpScore deal.Teams deal.DealPoints
+
+        sb.ToString()
