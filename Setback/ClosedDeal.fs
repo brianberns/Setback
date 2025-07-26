@@ -62,33 +62,6 @@ type ClosedDeal =
             | Some trump -> trump
             | None -> failwith "No trump yet"
 
-    member this.String =
-
-        let sb = new System.Text.StringBuilder()
-        let write (s : string) = sb.Append(s) |> ignore
-        let writeline (s : string) = sb.AppendFormat("{0}\r\n", s) |> ignore
-
-        if not this.Auction.IsEmpty then
-            writeline ""
-            for (seat, bid) in List.rev this.Auction do
-                writeline (sprintf "%-5s: %A" (seat.ToString()) bid)
-
-        if not this.Tricks.IsEmpty then
-            writeline ""
-            this.Tricks
-                |> List.rev
-                |> List.iteri (fun iTrick trick ->
-                    write (sprintf "%A: " (iTrick + 1))
-                    let sTrick =
-                        trick
-                            |> Trick.plays
-                            |> Seq.map (fun (seat, card) ->
-                                sprintf "%c:%A" seat.Char card)
-                            |> String.concat " "
-                    writeline (sprintf "%s" sTrick))
-
-        sb.ToString()
-
 module ClosedDeal =
 
     /// Creates a new deal.
@@ -356,12 +329,40 @@ module ClosedDeal =
             |> Seq.where (fun (KeyValue(_, teamOpt)) -> teamOpt = Some team)
             |> Seq.length
 
-[<AutoOpen>]
-module ClosedDealExt =
-    type ClosedDeal with
-        member deal.NextBidder = deal |> ClosedDeal.nextBidder
-        member deal.LegalBids = deal |> ClosedDeal.legalBids
-        member deal.AddBid(bid) = deal |> ClosedDeal.addBid bid
-        member deal.NextPlayer = deal |> ClosedDeal.nextPlayer
-        member deal.LegalPlays(hand) = deal |> ClosedDeal.legalPlays hand
-        member deal.AddPlay(card) = deal |> ClosedDeal.addPlay card
+    let toString deal =
+
+        let sb = new System.Text.StringBuilder()
+        let write (s : string) = sb.Append(s) |> ignore
+        let writeline (s : string) = sb.AppendFormat("{0}\r\n", s) |> ignore
+
+        if not this.Auction.IsEmpty then
+            writeline ""
+            for (seat, bid) in List.rev this.Auction do
+                writeline (sprintf "%-5s: %A" (seat.ToString()) bid)
+
+        if not this.Tricks.IsEmpty then
+            writeline ""
+            this.Tricks
+                |> List.rev
+                |> List.iteri (fun iTrick trick ->
+                    write (sprintf "%A: " (iTrick + 1))
+                    let sTrick =
+                        trick
+                            |> Trick.plays
+                            |> Seq.map (fun (seat, card) ->
+                                sprintf "%c:%A" seat.Char card)
+                            |> String.concat " "
+                    writeline (sprintf "%s" sTrick))
+
+        sb.ToString()
+
+    /// Tricks in the given deal, in chronological order, including the
+    /// current trick (if any).
+    let tricks deal =
+        seq {
+            yield! deal.CompletedTricks
+                |> List.rev
+            match deal.CurrentTrickOpt with
+                | Some trick -> yield trick
+                | None -> ()
+        }
