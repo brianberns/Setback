@@ -25,18 +25,7 @@ type MatchPoint =
 /// which are kept private by each player.
 type ClosedDeal =
     {
-        /// Player who dealt this hand.
-        Dealer : Seat
-
-        /// Each player's bid, in reverse chronological order.
-        /// Dealer bids last.
-        Auction : List<Seat * Bid>
-
-        /// Auction winner, if any.
-        HighBidderOpt : Option<Seat>
-
-        /// Auction-winning bid (or Pass, if none).
-        HighBid : Bid
+        Auction : Auction
 
         /// Trump suit, as determined by first card played.
         TrumpOpt : Option<Suit>
@@ -67,10 +56,7 @@ module ClosedDeal =
     /// Creates a new deal.
     let create dealer =
         {
-            Dealer = dealer
-            Auction = List.empty
-            HighBidderOpt = None
-            HighBid = Bid.Pass
+            Auction = Auction.create dealer
             TrumpOpt = None
             CurrentTrickOpt = None
             CompletedTricks = List.empty
@@ -82,51 +68,6 @@ module ClosedDeal =
     let numCardsPerHand =
         assert(Card.numCards % Seat.numSeats = 0)
         Card.numCards / Seat.numSeats
-
-    /// Current bidder in the given deal.
-    let nextBidder deal =
-        let lastBidder =
-            match deal.Auction with
-                | (seat, _) :: _ ->
-                    if (seat = deal.Dealer) then
-                        failwith "Auction is over"
-                    seat
-                | [] -> deal.Dealer
-        lastBidder.Next
-
-    /// What are the allowed bids in the current situation?
-    let legalBids deal =
-
-        let bid = deal.HighBid
-        seq {
-            yield Bid.Pass
-            if bid < Bid.Two then yield Bid.Two
-            if bid < Bid.Three then yield Bid.Three
-            if bid < Bid.Four then yield Bid.Four
-            elif deal.Auction.Length = Seat.numSeats - 1 then
-                yield Bid.Four   // dealer can steal 4-bid
-        }
-
-    /// Answers a new deal with the next player's given bid.
-    let addBid bid deal =
-
-        if deal |> legalBids |> Seq.tryFind ((=) bid) = None then
-            failwith "Not a legal bid"
-
-            // is this bid currently winning the auction?
-        let bidder = nextBidder deal
-        let highBidderOpt, highBid =
-            if bid = Bid.Pass then
-                deal.HighBidderOpt, deal.HighBid
-            else
-                Some bidder, bid
-
-        {
-            deal with
-                Auction = (bidder, bid) :: deal.Auction
-                HighBidderOpt = highBidderOpt
-                HighBid = highBid
-        }
 
     /// Number of cards played so far.
     let numCardsPlayed deal =
