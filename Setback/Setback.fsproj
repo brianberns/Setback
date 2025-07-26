@@ -18,7 +18,6 @@
     <Compile Include="Playout.fs" />
     <Compile Include="ClosedDeal.fs" />
     <Compile Include="OpenDeal.fs" />
-    <Compile Include="AddPlay.fs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -56,6 +56,9 @@ module Playout =
                 |> Option.defaultValue 0
         nCompleted + nCurrent
 
+    let isComplete deal =
+        numCardsPlayed deal = Setback.numCardsPerDeal
+
     /// Current trick in the given deal.
     let currentTrick deal =
         match deal.CurrentTrickOpt with

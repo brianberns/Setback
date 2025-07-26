@@ -46,7 +46,7 @@ module Log =
             logn "Game start"
 
         /// A deal has started.
-        let onDealStart (dealer, deal) =
+        let onDealStart (dealer, (deal : AbstractOpenDeal)) =
             logn ""
             for iSeat = 1 to Seat.numSeats do
                 let seat = dealer |> Seat.incr iSeat

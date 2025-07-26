@@ -13,7 +13,7 @@ type OpenDeal =
         ClosedDeal : ClosedDeal
 
         /// Each player's unplayed cards.
-        UnplayedCardMap : Map<Seat, Hand>
+        UnplayedCardMap : Map<Seat, Set<Card>>   // to-do: Define Hand = Set<Card> instead of Seq<Card>
     }
 
 module OpenDeal =
@@ -72,29 +72,21 @@ module OpenDeal =
                     deal.UnplayedCardMap |> Map.add seat unplayedCards
         }
 
-    let toString deal =
+    let toString (deal : OpenDeal) =
 
         let sb = new System.Text.StringBuilder()
         let write (s : string) = sb.Append(s) |> ignore
         let writeline (s : string) = sb.AppendFormat("{0}\r\n", s) |> ignore
 
         writeline ""
-        for seat in Seat.cycle deal.Dealer.Next do
-            let sHand = deal.Hands[int seat] |> Hand.toString
+        for seat in Seat.cycle deal.ClosedDeal.Dealer.Next do
+            let sHand = deal.UnplayedCardMap[seat] |> Hand.toString
             writeline (sprintf "%-5s: %s" (seat.ToString()) sHand)
 
-        write deal.ClosedDeal.String
+        write (ClosedDeal.toString deal.ClosedDeal)
 
         let dumpScore teams (score : Score) =
             for team in teams do
                 sb.AppendFormat("   {0}: {1}\r\n", team, score[team]) |> ignore
-
-        if not deal.Tricks.IsEmpty then
-            writeline ""
-            writeline "Game points:"
-            dumpScore deal.Teams deal.GamePoints
-            writeline ""
-            writeline "Deal points:"
-            dumpScore deal.Teams deal.DealPoints
 
         sb.ToString()

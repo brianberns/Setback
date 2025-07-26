@@ -63,7 +63,7 @@ module AbstractOpenDeal =
         }
 
     /// Deals cards from the given deck to each player.
-    let fromDeck dealer deck =
+    let fromDeck dealer (deck : Deck) =
 
         let numCardsPerGroup = 3
         assert (Setback.numCardsPerHand % numCardsPerGroup = 0)

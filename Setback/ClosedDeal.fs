@@ -21,6 +21,8 @@ type ClosedDeal =
         PlayoutOpt : Option<Playout>
     }
 
+    member this.Dealer = this.Auction.Dealer
+
 module ClosedDeal =
 
     /// Creates a new deal.
@@ -29,6 +31,22 @@ module ClosedDeal =
             Auction = Auction.create dealer
             PlayoutOpt = None
         }
+
+    let isComplete deal =
+        match deal.PlayoutOpt with
+            | Some playout -> Playout.isComplete playout
+            | None ->
+                deal.Auction.Bids.Length = Seat.numSeats   // all players passed?
+                    && deal.Auction.HighBid = Bid.Pass
+
+    let currentPlayer deal =
+        match deal.PlayoutOpt with
+            | Some playout->
+                assert(Auction.isComplete deal.Auction)
+                Playout.currentPlayer playout
+            | None ->
+                assert(Auction.isComplete deal.Auction |> not)
+                Auction.currentBidder deal.Auction
 
     /// Adds the given bid to the given deal.
     let addBid bid deal =
@@ -46,3 +64,15 @@ module ClosedDeal =
                         |> Playout.create)
         { deal with
             PlayoutOpt = Some (Playout.addPlay card playout) }
+
+    let tricks deal =
+        deal.PlayoutOpt
+            |> Option.map Playout.tricks
+            |> Option.defaultValue Seq.empty
+
+    let toString deal =
+        let auctionStr = Auction.toString deal.Auction
+        deal.PlayoutOpt
+            |> Option.map (fun playout ->
+                auctionStr + "\r\n" + Playout.toString playout)
+            |> Option.defaultValue auctionStr

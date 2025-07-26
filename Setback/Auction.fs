@@ -37,7 +37,7 @@ module Auction =
             | None -> failwith "No high bidder"
 
     /// Current bidder in the given deal.
-    let nextBidder auction =
+    let currentBidder auction =
         assert(isComplete auction |> not)
         auction.Dealer
             |> Seat.incr (auction.Bids.Length + 1)
@@ -60,7 +60,7 @@ module Auction =
         assert(auction |> legalBids |> Seq.contains bid)
 
             // is this bid currently winning the auction?
-        let bidder = nextBidder auction
+        let bidder = currentBidder auction
         let highBidderOpt, highBid =
             if bid = Bid.Pass then
                 auction.HighBidderOpt, auction.HighBid
