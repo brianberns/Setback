@@ -1,7 +1,5 @@
 ﻿namespace Setback
 
-open System.Collections.Immutable
-
 open PlayingCards
 
 /// Possible points(*) available in a Setback deal.
@@ -25,33 +23,40 @@ type MatchPoint =
 ///
 /// A closed deal contains no information about unplayed cards,
 /// which are kept private by each player.
-[<StructuredFormatDisplay("{String}")>]
 type ClosedDeal =
     {
-            // player who dealt this hand
+        /// Player who dealt this hand.
         Dealer : Seat
 
-            // each player's bid, in reverse chronological order (dealer bids last)
+        /// Each player's bid, in reverse chronological order.
+        /// Dealer bids last.
         Auction : List<Seat * Bid>
 
-            // auction winner
+        /// Auction winner, if any.
         HighBidderOpt : Option<Seat>
+
+        /// Auction-winning bid (or Pass, if none).
         HighBid : Bid
 
-            // trump is determined by first card played
+        /// Trump suit, as determined by first card played.
         TrumpOpt : Option<Suit>
 
-            // each player's played cards, in reverse chronological order
-        Tricks : List<Trick>
+        /// Current active trick, if play is in progress. No
+        /// trick is active during the auction, nor after the
+        /// last card of the deal is played.
+        CurrentTrickOpt : Option<Trick>
 
-            // cards played in this trick
-        CardsPlayed : ImmutableArray<bool>(*[Card.ToInt]*)   // tracks all 52 cards
+        /// Completed tricks, in reverse chronological order.
+        CompletedTricks : List<Trick>
 
-            // each player's void suits
-        Voids : ImmutableArray<bool>(*[Seat, Suit]*)
+        /// Cards not yet played.
+        UnplayedCards : Set<Card>
+
+        /// Suits that players are known to be void in.
+        Voids : Set<Seat * Suit>
     }
 
-    // Trump is determined by first card played
+    /// Trump suit, as determined by first card played.
     member deal.Trump =
         match deal.TrumpOpt with
             | Some trump -> trump
