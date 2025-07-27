@@ -39,6 +39,7 @@ module Program =
             (deal, cards)
                 ||> Seq.fold (fun acc card ->
                     OpenDeal.addPlay card acc)
-        printfn "%A" deal
+        printfn "%s" (OpenDeal.toString deal)
 
+    System.Console.OutputEncoding <- System.Text.Encoding.Unicode
     test ()

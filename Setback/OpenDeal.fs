@@ -6,7 +6,6 @@ open System.Collections.Immutable
 /// An open deal contains each player's hand. This is used for two purposes:
 /// * As the central authority when "hosting" a game of Setback
 /// * As a predictive mechanism when evaluating a closed deal
-[<StructuredFormatDisplay("{String}")>]
 type OpenDeal =
     {
         /// Base deal.

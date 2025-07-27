@@ -36,17 +36,17 @@ module ClosedDeal =
         match deal.PlayoutOpt with
             | Some playout -> Playout.isComplete playout
             | None ->
-                deal.Auction.Bids.Length = Seat.numSeats   // all players passed?
-                    && deal.Auction.HighBid = Bid.Pass
+                Auction.isComplete deal.Auction
+                    && deal.Auction.HighBid = Bid.Pass   // all players passed?
 
     let currentPlayer deal =
         match deal.PlayoutOpt with
-            | Some playout->
+            | Some playout ->
                 assert(Auction.isComplete deal.Auction)
                 Playout.currentPlayer playout
-            | None ->
-                assert(Auction.isComplete deal.Auction |> not)
-                Auction.currentBidder deal.Auction
+            | None when not (isComplete deal) ->
+                Auction.highBidder deal.Auction
+            | _ -> failwith "No current player"   // all players passed
 
     /// Adds the given bid to the given deal.
     let addBid bid deal =

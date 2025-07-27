@@ -39,9 +39,9 @@ module Playout =
         {
             Bidder = bidder
             TrumpOpt = None
-            CurrentTrickOpt = None
+            CurrentTrickOpt = Some (Trick.create bidder)
             CompletedTricks = List.empty
-            UnplayedCards = Set.empty
+            UnplayedCards = set Card.allCards
             Voids = Set.empty
         }
 
