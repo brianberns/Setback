@@ -45,6 +45,36 @@ module Encoding =
                 cardIndexes.Contains(index)
         |]
 
+    /// Encodes the given bid as a one-hot vector.
+    let private encodeBid (bidOpt : Option<Bid>) =
+        let bidIndex =
+            bidOpt
+                |> Option.map int
+                |> Option.defaultValue -1
+        [|
+            for index = 0 to Bid.numBids - 1 do
+                index = bidIndex
+        |]
+
+    /// Encodes the given bids as concatenated one-hot
+    /// vectors. If the current player is South, since the
+    /// bids are in reverse order (e.g. ENW), this gets
+    /// encoded like:
+    ///    4rd bidder: ENW -> WNE
+    ///    3nd bidder: EN  -> -NE
+    ///    2st bidder: E   -> --E
+    ///    1st bidder:     -> ---
+    let private encodeBids bids =
+        let bidArray = Seq.toArray bids
+        [|
+            for iBid = Seat.numSeats - 2 downto 0 do
+                yield!
+                    if iBid < bidArray.Length then
+                        Some bidArray[iBid]
+                    else None
+                    |> encodeBid
+        |]        
+
     /// Encodes each card in the given current trick as
     /// a one-hot vector in the deck size and concatenates
     /// those vectors.
@@ -53,12 +83,11 @@ module Encoding =
             trickOpt
                 |> Option.map (fun (trick : Trick) ->
                     trick.Cards
-                        |> List.rev
                         |> List.toArray)
                 |> Option.defaultValue Array.empty
         assert(cards.Length < Seat.numSeats)
         [|
-            for iCard = 0 to Seat.numSeats - 2 do
+            for iCard = Seat.numSeats - 2 downto 0 do
                 yield!
                     if iCard < cards.Length then
                         Some cards[iCard]
@@ -78,15 +107,6 @@ module Encoding =
                     Set.contains (seat, suit) voids
         |]
 
-    /// Encodes the given score as a multi-hot vector in the
-    /// number of seats.
-    let private encodeScore player score =
-        assert(score.ScoreMap.Count = Seat.numSeats)
-        [|
-            for seat in Seat.cycle player do
-                score.ScoreMap[seat] > 0
-        |]
-
     module Auction =
 
         /// Total encoded length of an info set.
@@ -99,7 +119,7 @@ module Encoding =
             let encoded =
                 BitArray [|
                     yield! encodeCards infoSet.Hand
-                    yield! encodeBids infoSet.Deal
+                    yield! encodeBids infoSet.Deal.Auction.Bids
                 |]
             assert(encoded.Length = encodedLength)
             encoded
