@@ -87,35 +87,43 @@ module Encoding =
                 score.ScoreMap[seat] > 0
         |]
 
-    /// Total encoded length of an info set.
-    let encodedLength =
-        Card.numCards                                 // current player's hand
-            + Card.numCards                           // unplayed cards not in current player's hand
-            + ExchangeDirection.numDirections         // exchange direction
-            + Card.numCards                           // outgoing pass
-            + Card.numCards                           // incoming pass
-            + ((Seat.numSeats - 1) * Card.numCards)   // current trick
-            + ((Seat.numSeats - 1) * Suit.numSuits)   // voids
-            + Seat.numSeats                           // score
+    module Auction =
 
-    /// Encodes the given info set as a vector.
-    let encode infoSet : Encoding =
-        let unseen =
-            infoSet.Deal.UnplayedCards - infoSet.Hand
-        let trickOpt = infoSet.Deal.CurrentTrickOpt
-        let encoded =
-            BitArray [|
-                yield! encodeCards infoSet.Hand             // current player's hand
-                yield! encodeCards unseen                   // unplayed cards not in current player's hand
-                yield! encodeExchangeDirection              // exchange direction
-                    infoSet.Deal.ExchangeDirection
-                yield! encodePass infoSet.OutgoingPassOpt   // outgoing pass
-                yield! encodePass infoSet.IncomingPassOpt   // incoming pass
-                yield! encodeTrick trickOpt                 // current trick
-                yield! encodeVoids                          // voids
-                    infoSet.Player infoSet.Deal.Voids
-                yield! encodeScore                          // score
-                    infoSet.Player infoSet.Deal.Score
-            |]
-        assert(encoded.Length = encodedLength)
-        encoded
+        /// Total encoded length of an info set.
+        let encodedLength =
+            Card.numCards                               // current player's hand
+                + (Bid.numBids * (Seat.numSeats - 1))   // other players' bids
+
+        /// Encodes the given info set as a vector.
+        let encode infoSet : Encoding =
+            let encoded =
+                BitArray [|
+                    yield! encodeCards infoSet.Hand
+                    yield! encodeBids infoSet.Deal
+                |]
+            assert(encoded.Length = encodedLength)
+            encoded
+
+    module Playout =
+
+        /// Encodes the given info set as a vector.
+        let encode infoSet : Encoding =
+            let unseen =
+                infoSet.Deal.UnplayedCards - infoSet.Hand
+            let trickOpt = infoSet.Deal.CurrentTrickOpt
+            let encoded =
+                BitArray [|
+                    yield! encodeCards infoSet.Hand             // current player's hand
+                    yield! encodeCards unseen                   // unplayed cards not in current player's hand
+                    yield! encodeExchangeDirection              // exchange direction
+                        infoSet.Deal.ExchangeDirection
+                    yield! encodePass infoSet.OutgoingPassOpt   // outgoing pass
+                    yield! encodePass infoSet.IncomingPassOpt   // incoming pass
+                    yield! encodeTrick trickOpt                 // current trick
+                    yield! encodeVoids                          // voids
+                        infoSet.Player infoSet.Deal.Voids
+                    yield! encodeScore                          // score
+                        infoSet.Player infoSet.Deal.Score
+                |]
+            assert(encoded.Length = encodedLength)
+            encoded
