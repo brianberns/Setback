@@ -1,6 +1,7 @@
 ﻿namespace Setback
 
 open PlayingCards
+open Setback
 
 /// An action is either a bid (during the auction) or
 /// a play (during playout).
@@ -60,3 +61,13 @@ type Player =
         /// Chooses a play in the given information set.
         MakePlay : InformationSet -> Card
     }
+
+module OpenDeal =
+
+    /// Answers the current player's information set.
+    let currentInfoSet deal =
+        let player =
+            ClosedDeal.currentPlayer deal.ClosedDeal
+        let hand = deal.UnplayedCardMap[player]
+        InformationSet.create
+            player hand deal.ClosedDeal
