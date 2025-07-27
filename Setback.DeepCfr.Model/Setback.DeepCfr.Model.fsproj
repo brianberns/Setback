@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <Compile Include="Prelude.fs" />
+    <Compile Include="InformationSet.fs" />
     <Compile Include="Encoding.fs" />
     <Compile Include="Model.fs" />
     <Compile Include="Strategy.fs" />
