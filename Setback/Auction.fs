@@ -18,7 +18,7 @@ type Auction =
 
 module Auction =
 
-    /// Creates a new deal.
+    /// Creates a new auction.
     let create dealer =
         {
             Dealer = dealer
@@ -36,7 +36,7 @@ module Auction =
             | Some bidder -> bidder
             | None -> failwith "No high bidder"
 
-    /// Current bidder in the given deal.
+    /// Current bidder in the given auction.
     let currentBidder auction =
         assert(isComplete auction |> not)
         auction.Dealer
