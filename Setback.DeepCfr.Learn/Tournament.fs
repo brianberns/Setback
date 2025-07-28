@@ -11,10 +11,9 @@ module Tournament =
         let rec loop deal score =
             let deal =
                 let infoSet = OpenDeal.currentInfoSet deal
-                let action =
-                    playerMap[infoSet.Player].Act infoSet
-                OpenDeal.addAction
-                    infoSet.LegalActionType action deal
+                let card =
+                    playerMap[infoSet.Player].MakePlay infoSet
+                OpenDeal.addPlay card deal
             match Game.tryUpdateScore deal score with
                 | Some score -> score
                 | None -> loop deal score

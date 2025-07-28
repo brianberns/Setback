@@ -122,10 +122,9 @@ module Traverse =
         /// Recurses for non-terminal game state.
         and loopNonTerminal deal depth =
             let infoSet = OpenDeal.currentInfoSet deal
-            let legalActions = infoSet.LegalActions
-            if legalActions.Length = 1 then
-                addLoop deal depth
-                    infoSet.LegalActionType legalActions[0]   // forced action
+            let legalPlays = infoSet.LegalPlays
+            if legalPlays.Length = 1 then
+                addLoop deal depth legalPlays[0]   // forced action
             else
                     // get utility of current player's strategy
                 let rnd = lock rng (fun () -> rng.NextDouble())
@@ -140,17 +139,17 @@ module Traverse =
                 Node.getStrategy infoSet cont
 
         /// Adds the given action to the given deal and loops.
-        and addLoop deal depth actionType action =
-            let deal = OpenDeal.addAction actionType action deal
+        and addLoop deal depth card =
+            let deal = OpenDeal.addPlay card deal
             loop deal depth
 
         /// Gets the full utility of the given info set.
         and getFullUtility infoSet deal depth strategy =
-            let legalActions = infoSet.LegalActions
+            let legalPlays = infoSet.LegalPlays
             let results =
-                legalActions
+                legalPlays
                     |> Array.map (
-                        addLoop deal (depth+1) infoSet.LegalActionType)
+                        addLoop deal (depth+1))
 
             let cont children =
 
@@ -159,7 +158,7 @@ module Traverse =
                     children
                         |> Array.map _.Utilities
                         |> DenseMatrix.ofColumnArrays
-                assert(actionUtilities.ColumnCount = legalActions.Length)
+                assert(actionUtilities.ColumnCount = legalPlays.Length)
                 assert(actionUtilities.RowCount = Seat.numSeats)
 
                     // utility of this info set is action utilities weighted by action probabilities
@@ -169,7 +168,7 @@ module Traverse =
                     let wideRegrets =
                         let idx = int infoSet.Player
                         (actionUtilities.Row(idx) - utility[idx])
-                            |> Strategy.toWide legalActions
+                            |> Strategy.toWide legalPlays
                     AdvantageSample.create infoSet wideRegrets iter
                 Node.complete
                     (utility.ToArray())
@@ -184,8 +183,8 @@ module Traverse =
             let result =
                 lock rng (fun () ->
                     Vector.sample rng strategy)
-                    |> Array.get infoSet.LegalActions
-                    |> addLoop deal (depth+1) infoSet.LegalActionType
+                    |> Array.get infoSet.LegalPlays
+                    |> addLoop deal (depth+1)
             Node.getUtility
                 infoSet
                 [|result|]
