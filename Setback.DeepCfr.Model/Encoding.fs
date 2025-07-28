@@ -57,17 +57,19 @@ module Encoding =
         |]
 
     /// Encodes the given bids as concatenated one-hot
-    /// vectors. If the current player is South, since the
-    /// bids are in reverse order (e.g. ENW), this gets
-    /// encoded like:
-    ///    4rd bidder: ENW -> WNE
-    ///    3nd bidder: EN  -> -NE
-    ///    2st bidder: E   -> --E
-    ///    1st bidder:     -> ---
-    let private encodeBids bids =
+    /// vectors. Since the bids are in reverse order (e.g.
+    /// ENW for South about to bid), this gets encoded like:
+    ///    After 3 bids: ENW  -> WNE
+    ///    After 2 bids: EN   -> -NE
+    ///    After 1 bids: E    -> --E
+    ///    After 0 bids:      -> ---
+    let private encodeBids isCurrent bids =
         let bidArray = Seq.toArray bids
+        assert(not isCurrent
+            = (bidArray.Length = Seat.numSeats))
+        let decr = if isCurrent then 2 else 1
         [|
-            for iBid = Seat.numSeats - 2 downto 0 do
+            for iBid = Seat.numSeats - decr downto 0 do
                 yield!
                     if iBid < bidArray.Length then
                         Some bidArray[iBid]
@@ -75,19 +77,15 @@ module Encoding =
                     |> encodeBid
         |]        
 
-    /// Encodes each card in the given current trick as
-    /// a one-hot vector in the deck size and concatenates
-    /// those vectors.
-    let private encodeTrick trickOpt =
-        let cards =
-            trickOpt
-                |> Option.map (fun (trick : Trick) ->
-                    trick.Cards
-                        |> List.toArray)
-                |> Option.defaultValue Array.empty
+    /// Encodes each card in the given trick as a one-
+    /// hot vector in the deck size and concatenates those
+    /// vectors.
+    let private encodeTrick isCurrent trick =
+        let cards = List.toArray trick.Cards
         assert(cards.Length < Seat.numSeats)
+        let decr = if isCurrent then 2 else 1
         [|
-            for iCard = Seat.numSeats - 2 downto 0 do
+            for iCard = Seat.numSeats - decr downto 0 do
                 yield!
                     if iCard < cards.Length then
                         Some cards[iCard]
@@ -119,31 +117,33 @@ module Encoding =
             let encoded =
                 BitArray [|
                     yield! encodeCards infoSet.Hand
-                    yield! encodeBids infoSet.Deal.Auction.Bids
+                    yield! encodeBids
+                        true infoSet.Deal.Auction.Bids
                 |]
             assert(encoded.Length = encodedLength)
             encoded
 
     module Playout =
 
+        /// Total encoded length of an info set.
+        let encodedLength =
+            Card.numCards                                           // current player's hand
+                + (Bid.numBids * Seat.numSeats)                     // each player's bids
+                + ((Setback.numCardsPerDeal - 1) * Card.numCards)   // tricks so far
+
+        let private encodeTricks tricks =
+            [|
+            |]
+
         /// Encodes the given info set as a vector.
         let encode infoSet : Encoding =
-            let unseen =
-                infoSet.Deal.UnplayedCards - infoSet.Hand
-            let trickOpt = infoSet.Deal.CurrentTrickOpt
+            let bids = infoSet.Deal.Auction.Bids
+            let tricks = ClosedDeal.tricks infoSet.Deal
             let encoded =
                 BitArray [|
-                    yield! encodeCards infoSet.Hand             // current player's hand
-                    yield! encodeCards unseen                   // unplayed cards not in current player's hand
-                    yield! encodeExchangeDirection              // exchange direction
-                        infoSet.Deal.ExchangeDirection
-                    yield! encodePass infoSet.OutgoingPassOpt   // outgoing pass
-                    yield! encodePass infoSet.IncomingPassOpt   // incoming pass
-                    yield! encodeTrick trickOpt                 // current trick
-                    yield! encodeVoids                          // voids
-                        infoSet.Player infoSet.Deal.Voids
-                    yield! encodeScore                          // score
-                        infoSet.Player infoSet.Deal.Score
+                    yield! encodeCards infoSet.Hand   // current player's hand
+                    yield! encodeBids false bids      // each player's bids
+                    yield! encodeTricks tricks        // tricks so far
                 |]
             assert(encoded.Length = encodedLength)
             encoded

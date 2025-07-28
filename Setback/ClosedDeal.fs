@@ -35,35 +35,37 @@ module ClosedDeal =
     let isComplete deal =
         match deal.PlayoutOpt with
             | Some playout -> Playout.isComplete playout
-            | None ->
-                Auction.isComplete deal.Auction
-                    && deal.Auction.HighBid = Bid.Pass   // all players passed?
+            | None -> Auction.isComplete deal.Auction   // all players passed?
 
     let currentPlayer deal =
         match deal.PlayoutOpt with
             | Some playout ->
                 assert(Auction.isComplete deal.Auction)
                 Playout.currentPlayer playout
-            | None when not (isComplete deal) ->
+            | None ->
+                assert(Auction.isComplete deal.Auction |> not)
                 Auction.highBidder deal.Auction
-            | _ -> failwith "No current player"   // all players passed
 
     /// Adds the given bid to the given deal.
     let addBid bid deal =
+        let auction = Auction.addBid bid deal.Auction
+        let playoutOpt =
+            if Auction.isComplete auction then
+                auction.HighBidderOpt
+                    |> Option.map Playout.create
+            else None
         { deal with
-            Auction = Auction.addBid bid deal.Auction }
+            Auction = auction
+            PlayoutOpt = playoutOpt }
 
     /// Plays the given card on the given deal.
     let addPlay card deal =
         assert(Auction.isComplete deal.Auction)
         let playout =
-            deal.PlayoutOpt
-                |> Option.defaultWith (fun () ->
-                    deal.Auction
-                        |> Auction.highBidder
-                        |> Playout.create)
-        { deal with
-            PlayoutOpt = Some (Playout.addPlay card playout) }
+            match deal.PlayoutOpt with
+                | Some playout -> Playout.addPlay card playout
+                | None -> failwith "No playout"
+        { deal with PlayoutOpt = Some playout }
 
     let tricks deal =
         deal.PlayoutOpt
