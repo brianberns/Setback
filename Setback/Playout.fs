@@ -99,7 +99,7 @@ module Playout =
     /// Answers a new deal with the next player's given discard.
     let addPlay (card : Card) deal =
 
-            // determine card
+            // determine trump
         let trump =
             deal.TrumpOpt
                 |> Option.defaultValue card.Suit
