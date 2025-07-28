@@ -15,7 +15,7 @@ module Program =
                 seat, getHand names)
             |> Map
 
-    let onePlay () =
+    let test1 () =
 
         let hands =
             [
@@ -41,6 +41,31 @@ module Program =
                     OpenDeal.addPlay card acc)
         printfn "%s" (OpenDeal.toString deal)
 
+    let test2() =
+
+        let hands =
+            [
+                Seat.West,  ["JS"; "3H"; "KC"; "8C"; "3C"; "9D"]
+                Seat.North, ["9S"; "4S"; "TC"; "9C"; "8D"; "6D"]
+                Seat.East,  ["TS"; "8S"; "KH"; "6H"; "2H"; "QC"]
+                Seat.South, ["KS"; "5S"; "9H"; "8H"; "3D"; "2D"]
+            ] |> getHands
+        let deal = OpenDeal.fromHands Seat.North hands
+
+        let deal = OpenDeal.addBid Bid.Three deal
+        let deal = OpenDeal.addBid Bid.Pass deal
+        let deal = OpenDeal.addBid Bid.Pass deal
+        let deal = OpenDeal.addBid Bid.Pass deal
+
+        let deal =
+            (deal, [
+                "KH"; "9H"; "3H"; "6D";
+                "8S"; "KS"; "JS"; "4S";
+                "8H"; "3C"; "8D";
+            ]) ||> Seq.fold (fun deal name ->
+                OpenDeal.addPlay (Card.fromString name) deal)
+        printfn "%s" (OpenDeal.toString deal)
+
     let allPass () =
 
         let hands =
@@ -60,6 +85,6 @@ module Program =
         printfn "%s" (OpenDeal.toString deal)
 
     System.Console.OutputEncoding <- System.Text.Encoding.Unicode
-    onePlay ()
+    test1 ()
+    test2 ()
     allPass ()
-

@@ -148,6 +148,7 @@ module Playout =
 
         {
             playout with
+                TrumpOpt = Some trump
                 CurrentTrickOpt = curTrickOpt
                 CompletedTricks = completedTricks
                 UnplayedCards = unplayedCards
