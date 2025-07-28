@@ -79,7 +79,12 @@ module Encoding =
 
     /// Encodes each card in the given trick as a one-
     /// hot vector in the deck size and concatenates those
-    /// vectors.
+    /// vectors. Since the cards are in reverse order (e.g.
+    /// ENW for South about to play), this gets encoded like:
+    ///    After 3 plays: ENW  -> WNE
+    ///    After 2 plays: EN   -> -NE
+    ///    After 1 plays: E    -> --E
+    ///    After 0 plays:      -> ---
     let private encodeTrick isCurrent trick =
         let cards = List.toArray trick.Cards
         assert(cards.Length < Seat.numSeats)
@@ -131,19 +136,32 @@ module Encoding =
                 + (Bid.numBids * Seat.numSeats)                     // each player's bids
                 + ((Setback.numCardsPerDeal - 1) * Card.numCards)   // tricks so far
 
-        let private encodeTricks tricks =
+        let private encodeTricks playout =
+            let pairs =
+                [|
+                    match playout.CurrentTrickOpt with
+                        | Some trick -> trick, true
+                        | None -> failwith "No current trick"
+                    for trick in playout.CompletedTricks do
+                        trick, false
+                |]
             [|
+                for (trick, isCurrent) in pairs do
+                    yield! encodeTrick isCurrent trick
             |]
 
         /// Encodes the given info set as a vector.
         let encode infoSet : Encoding =
             let bids = infoSet.Deal.Auction.Bids
-            let tricks = ClosedDeal.tricks infoSet.Deal
+            let playout =
+                match infoSet.Deal.PlayoutOpt with
+                    | Some playout -> playout
+                    | None -> failwith "No playout"
             let encoded =
                 BitArray [|
                     yield! encodeCards infoSet.Hand   // current player's hand
                     yield! encodeBids false bids      // each player's bids
-                    yield! encodeTricks tricks        // tricks so far
+                    yield! encodeTricks playout       // tricks so far
                 |]
             assert(encoded.Length = encodedLength)
             encoded

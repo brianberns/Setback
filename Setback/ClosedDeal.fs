@@ -67,11 +67,6 @@ module ClosedDeal =
                 | None -> failwith "No playout"
         { deal with PlayoutOpt = Some playout }
 
-    let tricks deal =
-        deal.PlayoutOpt
-            |> Option.map Playout.tricks
-            |> Option.defaultValue Seq.empty
-
     let toString deal =
         let auctionStr = Auction.toString deal.Auction
         deal.PlayoutOpt
