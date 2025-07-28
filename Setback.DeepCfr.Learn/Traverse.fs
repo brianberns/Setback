@@ -4,7 +4,7 @@ open System
 
 open MathNet.Numerics.LinearAlgebra
 
-open Setback.DeepCfr
+open Setback
 open Setback.DeepCfr.Model
 
 /// Initial node state, awaiting strategy.

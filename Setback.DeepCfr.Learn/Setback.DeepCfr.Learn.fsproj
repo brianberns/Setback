@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PlayingCards\PlayingCards.fsproj" />
+    <ProjectReference Include="..\Setback.DeepCfr.Model\Setback.DeepCfr.Model.fsproj" />
     <ProjectReference Include="..\Setback\Setback.fsproj" />
   </ItemGroup>
 

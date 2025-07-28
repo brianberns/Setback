@@ -1,7 +1,7 @@
 ﻿namespace Setback.DeepCfr.Learn
 
 open PlayingCards
-open Setback.DeepCfr
+open Setback
 
 module Tournament =
 

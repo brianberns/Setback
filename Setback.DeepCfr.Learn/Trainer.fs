@@ -4,7 +4,7 @@ open System
 open System.Diagnostics
 open System.IO
 
-open Setback.DeepCfr
+open Setback
 open Setback.DeepCfr.Model
 
 /// Advantage state.

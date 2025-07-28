@@ -3,7 +3,7 @@
 open System
 
 open PlayingCards
-open Setback.DeepCfr
+open Setback
 
 module OpenDeal =
 
