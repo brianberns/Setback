@@ -75,7 +75,7 @@ module Strategy =
 
         else Array.empty
 
-    /// Creates a Setback.DeepCfr player using the given model.
+    /// Creates a Setback player using the given model.
     let createPlayer model =
 
         let rng = Random()   // each player has its own RNG

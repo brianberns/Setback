@@ -80,7 +80,7 @@ module Node =
             Children = children
         }
 
-/// Model Setback.DeepCfr as a zero-sum game.
+/// Model Setback as a zero-sum game.
 module private ZeroSum =
 
     /// Gets the payoff for the given deal score from each
