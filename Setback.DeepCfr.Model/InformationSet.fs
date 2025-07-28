@@ -3,12 +3,6 @@
 open PlayingCards
 open Setback
 
-/// An action is either a bid (during the auction) or
-/// a play (during playout).
-type Action =
-    | BidAction of Bid
-    | PlayAction of Card
-
 /// All information known to a player about a deal,
 /// including information known only to that player.
 type InformationSet =
@@ -20,44 +14,29 @@ type InformationSet =
         Hand : Hand
 
         /// Public information.
-        Deal : ClosedDeal
+        Playout : Playout
 
-        /// What actions can be taken in this information set?
-        LegalActions : Action[]
+        /// What cards can be played in this information set?
+        LegalPlays : Card[]
     }
 
 module InformationSet =
 
-    /// What actions can be taken?
-    let private legalActions (hand : Hand) deal =
-        match deal.PlayoutOpt with
-            | Some playout ->
-                Playout.legalPlays hand playout
-                    |> Seq.map PlayAction
-            | None ->
-                if Auction.isComplete deal.Auction then
-                    Seq.map PlayAction hand   // lead any card in hand
-                else
-                    Auction.legalBids deal.Auction
-                        |> Seq.map BidAction
-            |> Seq.toArray
-
     /// Creates an information set.
-    let create player hand deal =
-        assert(ClosedDeal.isComplete deal |> not)
+    let create player hand playout =
+        assert(Playout.isComplete playout |> not)
         {
             Player = player
             Hand = hand
-            Deal = deal
-            LegalActions = legalActions hand deal
+            Playout = playout
+            LegalPlays =
+                Playout.legalPlays hand playout
+                    |> Seq.toArray
         }
 
 /// Interface for a Setback player.
 type Player =
     {
-        /// Chooses a bid in the given information set.
-        MakeBid : InformationSet -> Bid
-
         /// Chooses a play in the given information set.
         MakePlay : InformationSet -> Card
     }
@@ -69,5 +48,8 @@ module OpenDeal =
         let player =
             ClosedDeal.currentPlayer deal.ClosedDeal
         let hand = deal.UnplayedCardMap[player]
-        InformationSet.create
-            player hand deal.ClosedDeal
+        let playout =
+            match deal.ClosedDeal.PlayoutOpt with
+                | Some playout -> playout
+                | None -> failwith "No playout"
+        InformationSet.create player hand playout

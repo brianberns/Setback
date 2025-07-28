@@ -69,7 +69,7 @@ module Strategy =
                     let iStart = iRow * nCols
                     data[iStart .. iStart + nCols - 1]
                         |> DenseVector.ofSeq
-                        |> toNarrow infoSet.LegalActions
+                        |> toNarrow infoSet.LegalPlays
                         |> matchRegrets
             |]
 
@@ -80,11 +80,11 @@ module Strategy =
 
         let rng = Random()   // each player has its own RNG
 
-        let act infoSet =
+        let makePlay infoSet =
             let strategy =
                 getFromAdvantage model [|infoSet|]
                     |> Array.exactlyOne
             Vector.sample rng strategy
-                |> Array.get infoSet.LegalActions
+                |> Array.get infoSet.LegalPlays
 
-        { Act = act }
+        { MakePlay = makePlay }
