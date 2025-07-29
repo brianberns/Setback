@@ -33,7 +33,7 @@ and GetUtility =
 /// Final node state.
 and Complete =
     {
-        /// Per-action utility of this node.
+        /// Per-team utility of this node.
         Utilities : float32[]
 
         /// Sample representing this node.
@@ -113,7 +113,7 @@ module Traverse =
             match ZeroSum.tryGetPayoff deal with
                 | Some payoff ->
                     Node.complete   // deal is over
-                        payoff
+                        (Seq.toArray payoff.Values)
                         None
                         Array.empty
                 | None ->
