@@ -162,15 +162,15 @@ module Playout =
                         playout.Voids
                     else
                         playout.Voids.Add(player, suitLed)
-                | None -> failwith "Unexpected"
+                | None -> failwith "No suit led"
         { playout with Voids = voids }
 
     /// Plays the given card on the given playout.
     let addPlay (card : Card) playout =
-        let playout =
-            updateTrump card.Suit playout
         let trick, player, playout =
-            updateCurrentTrick card playout
+            playout
+                |> updateTrump card.Suit
+                |> updateCurrentTrick card
         playout
             |> updateUnplayedCards card
             |> updateVoids player card.Suit trick
