@@ -40,7 +40,11 @@ module Killer =
         while wtr = null do
             try wtr <- new StreamWriter(Path.Combine(folder, "KSetback.msg.slave"))
             with _ -> Threading.Thread.Sleep(0)
-        let message = sprintf "%d %d" key value
+        let message =
+            if key = 101 && false then   // new version of KSetback
+                sprintf "%d %d\r\nBernsrite Setback" key value
+            else
+                sprintf "%d %d" key value
         wtr.Write message
 
     /// Converts the given KS card into a native card.
