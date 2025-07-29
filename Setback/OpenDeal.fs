@@ -12,21 +12,6 @@ type OpenDeal =
 
         /// Each player's unplayed cards.
         UnplayedCardMap : Map<Seat, Set<Card>>   // to-do: Define Hand = Set<Card> instead of Seq<Card>
-
-        /// Highest trump card dealt, if any.
-        HighTrumpOpt : Option<Card>
-
-        /// Lowest trump card dealt, if any.
-        LowTrumpOpt : Option<Card>
-
-        /// Jack of trump, if any.
-        JackTrumpOpt: Option<Card>
-
-        /// Total number of game points (AKQJT) dealt.
-        GamePointsTotal : int
-
-        /// Number of Game points taken by each team so far.
-        GameScore : Score
     }
 
 module OpenDeal =
@@ -47,14 +32,6 @@ module OpenDeal =
         {
             ClosedDeal = ClosedDeal.create dealer
             UnplayedCardMap = handMap
-            HighTrumpOpt = None
-            LowTrumpOpt = None
-            JackTrumpOpt = None
-            GamePointsTotal =
-                handMap.Values
-                    |> Seq.concat
-                    |> Seq.sumBy _.Rank.GamePoints
-            GameScore = Score.zero
         }
 
     /// Deals cards from the given deck to each player.
@@ -94,39 +71,10 @@ module OpenDeal =
             let unplayedCards = unplayedCards.Remove(card)
             deal.UnplayedCardMap |> Map.add seat unplayedCards
 
-            // determine high, low, and Jack of trump?
-        let highTrumpOpt, lowTrumpOpt, jackTrumpOpt =
-            assert(deal.HighTrumpOpt.IsSome = deal.LowTrumpOpt.IsSome)
-            assert(deal.JackTrumpOpt.IsNone || deal.HighTrumpOpt.IsSome)
-            if deal.HighTrumpOpt.IsNone then
-                let trumpCards =
-                    let trump = card.Suit
-                    deal.UnplayedCardMap.Values
-                        |> Seq.concat
-                        |> Seq.where (fun card ->
-                            card.Suit = trump)
-                        |> Seq.toArray
-                let highTrump = Array.max trumpCards
-                let lowTrump = Array.min trumpCards
-                let jackTrumpOpt =
-                    trumpCards
-                        |> Seq.tryFind (fun card ->
-                            card.Rank = Rank.Jack)
-                Some highTrump,
-                Some lowTrump,
-                jackTrumpOpt
-            else
-                deal.HighTrumpOpt,
-                deal.LowTrumpOpt,
-                deal.JackTrumpOpt
-
         {
             deal with
                 ClosedDeal = closedDeal
                 UnplayedCardMap = unplayedCardMap
-                HighTrumpOpt = highTrumpOpt
-                LowTrumpOpt = lowTrumpOpt
-                JackTrumpOpt = jackTrumpOpt
         }
 
     let toString (deal : OpenDeal) =
