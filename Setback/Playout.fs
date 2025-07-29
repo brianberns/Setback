@@ -120,20 +120,16 @@ module Playout =
         let playout =
             if Trick.isComplete trick then
 
-                    // get trick winner
-                let taker =
-                    match trick.HighPlayOpt with
-                        | Some (seat, _) -> seat
-                        | None -> failwith "Unexpected"
-
                     // add to completed tricks
                 let completedTricks = trick :: playout.CompletedTricks
 
                     // start new trick?
                 let newTrickOpt =
                     if completedTricks.Length < Setback.numCardsPerHand then
-                        Some (Trick.create taker)
-                    else None
+                        assert(Trick.highPlayerOpt trick |> Option.isSome)
+                        Trick.highPlayerOpt trick
+                            |> Option.map Trick.create
+                    else None   // playout is over
 
                 { playout with
                     CompletedTricks = completedTricks
