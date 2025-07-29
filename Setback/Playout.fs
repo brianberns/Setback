@@ -271,8 +271,8 @@ module Playout =
             |> updateUnplayedCards card
             |> updateVoids player card.Suit trick
 
-    /// Tricks in the given playout, in chronological order, including
-    /// the current trick (if any).
+    /// Tricks in the given playout, in chronological order,
+    /// including the current trick (if any).
     let tricks playout =
         seq {
             yield! playout.CompletedTricks
@@ -282,6 +282,58 @@ module Playout =
                 | None -> ()
         }
 
+    /// Gets the number of Game points taken by each team in the
+    /// given playout.
+    let getDealScore playout =
+
+        let teams =
+            seq {
+                    // High
+                match playout.HighTrumpTeamOpt with
+                    | Some (_, team) -> team
+                    | None -> ()
+
+                    // Low
+                match playout.LowTrumpTeamOpt with
+                    | Some (_, team) -> team
+                    | None -> ()
+
+                    // Jack
+                match playout.JackTrumpTeamOpt with
+                    | Some team -> team
+                    | None -> ()
+
+                    // Game
+                let teamOpt =
+                    let teamPoints =
+                        Map.toArray playout.GameScore.ScoreMap
+                    let maxPoints =
+                        teamPoints
+                            |> Seq.map snd
+                            |> Seq.max
+                    teamPoints
+                        |> Seq.where (fun (_, points) ->
+                            points = maxPoints)
+                        |> Seq.map fst
+                        |> Seq.tryExactlyOne
+                match teamOpt with
+                    | Some team -> team
+                    | None -> ()
+            }
+
+        let scoreMap =
+            Seq.groupBy id teams
+                |> Seq.map (fun (team, group) ->
+                    team, Seq.length group)
+                |> Map
+        let createScore team =
+            Score.create team (
+                scoreMap
+                    |> Map.tryFind team
+                    |> Option.defaultValue 0)
+        createScore Team.EastWest + createScore Team.NorthSouth
+
+    /// Display string.
     let toString playout =
 
         let sb = new System.Text.StringBuilder()
@@ -301,5 +353,8 @@ module Playout =
                                 sprintf "%c:%A" seat.Char card)
                             |> String.concat " "
                     writeline (sprintf "%s" sTrick))
+
+            writeline ""
+            write (Score.toString (getDealScore playout))
 
         sb.ToString()

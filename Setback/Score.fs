@@ -40,6 +40,13 @@ module Score =
             ScoreMap = Map.add team points zeroMap
         }
 
-    /// Sum of all points in the given score.
-    let sum score =
-        Seq.sum score.ScoreMap.Values
+    /// Display string.
+    let toString score =
+
+        let sb = new System.Text.StringBuilder()
+        let writeline (s : string) = sb.AppendFormat("{0}\r\n", s) |> ignore
+
+        for team in Enum.getValues<Team> do
+            writeline (sprintf "%A: %d" team score.ScoreMap[team])
+
+        sb.ToString()
