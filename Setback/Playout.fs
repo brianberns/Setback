@@ -25,9 +25,20 @@ type Playout =
         /// Suits that players are known to be void in.
         Voids : Set<Seat * Suit>
 
+        /// Rank of highest trump taken so far, and team that
+        /// took it, if any.
         HighTrumpTeamOpt : Option<Rank * Team>
+
+        /// Rank of lowest trump taken so far, and team that
+        /// took it, if any.
         LowTrumpTeamOpt : Option<Rank * Team>
+
+        /// Team that took Jack of trump, if any.
         JackTrumpTeamOpt : Option<Team>
+
+        /// Number of Game points (AKQJT) taken by each team
+        /// so far.
+        GameScore : Score
     }
 
     /// Trump suit, as determined by first card played.
@@ -50,6 +61,7 @@ module Playout =
             HighTrumpTeamOpt = None
             LowTrumpTeamOpt = None
             JackTrumpTeamOpt = None
+            GameScore = Score.zero
         }
 
     /// Number of cards played so far.
@@ -130,7 +142,7 @@ module Playout =
                 |> Seq.toArray
 
         /// Updates a (Rank, Team) pair.
-        let updateTrumpTeam tryFind trumpTeamOpt op =
+        let updateTrumpTeam trumpTeamOpt tryFind op =
             let newRankOpt = tryFind trumpRanks
             match trumpTeamOpt, newRankOpt with
                 | None, Some newRank ->
@@ -144,12 +156,12 @@ module Playout =
             // update High point
         let highTrumpTeamOpt =
             updateTrumpTeam
-                Array.tryMax playout.HighTrumpTeamOpt (>)
+                playout.HighTrumpTeamOpt Array.tryMax (>)
 
             // update Low point
         let lowTrumpTeamOpt =
             updateTrumpTeam
-                Array.tryMin playout.LowTrumpTeamOpt (<)
+                playout.LowTrumpTeamOpt Array.tryMin (<)
 
             // update Jack point
         let jackTrumpTeamOpt =
@@ -160,10 +172,20 @@ module Playout =
                 Some takerTeam
             else playout.JackTrumpTeamOpt
 
+            // update Game score
+        let gameScore =
+            let points =
+                trick.Cards
+                    |> Seq.sumBy (
+                        Card.rank >> Rank.gamePoints)
+            playout.GameScore
+                + Score.create takerTeam points
+
         { playout with
             HighTrumpTeamOpt = highTrumpTeamOpt
             LowTrumpTeamOpt = lowTrumpTeamOpt
-            JackTrumpTeamOpt = jackTrumpTeamOpt }
+            JackTrumpTeamOpt = jackTrumpTeamOpt
+            GameScore = gameScore }
 
     /// Completes the given trick in the given playout.
     let private completeTrick trick playout =
