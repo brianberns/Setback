@@ -24,6 +24,10 @@ type Playout =
 
         /// Suits that players are known to be void in.
         Voids : Set<Seat * Suit>
+
+        HighTrumpTeamOpt : Option<Rank * Team>
+        LowTrumpTeamOpt : Option<Rank * Team>
+        JackTrumpTeamOpt : Option<Team>
     }
 
     /// Trump suit, as determined by first card played.
@@ -43,6 +47,9 @@ module Playout =
             CompletedTricks = List.empty
             UnplayedCards = set Card.allCards
             Voids = Set.empty
+            HighTrumpTeamOpt = None
+            LowTrumpTeamOpt = None
+            JackTrumpTeamOpt = None
         }
 
     /// Number of cards played so far.
@@ -103,6 +110,86 @@ module Playout =
                 |> Option.defaultValue suit
         { playout with TrumpOpt = Some trump }
 
+    /// Updates deal points in the given trick.
+    let private updateDealPoints
+        trick takerTeam (playout : Playout) =
+        assert(Trick.isComplete trick)
+        assert(
+            trick.HighPlayOpt
+                |> Option.map (fst >> Team.ofSeat)
+                = Some takerTeam)
+
+        let trumpRanks =
+            let trump = playout.Trump
+            Trick.plays trick
+                |> Seq.choose (fun (_, card) ->
+                    if card.Suit = trump then
+                        Some card.Rank
+                    else None)
+                |> Seq.toArray
+
+        let highTrumpTeamOpt =
+            let newRankOpt = Array.tryMax trumpRanks
+            match playout.HighTrumpTeamOpt, newRankOpt with
+                | None, Some newRank ->
+                    Some (newRank, takerTeam)
+                | Some (oldRank, _), Some newRank
+                    when newRank >= oldRank ->
+                    assert(newRank > oldRank)
+                    Some (newRank, takerTeam)
+                | trumpTeamOpt, _ -> trumpTeamOpt
+
+        let lowTrumpTeamOpt =
+            let newRankOpt = Array.tryMin trumpRanks
+            match playout.LowTrumpTeamOpt, newRankOpt with
+                | None, Some newRank ->
+                    Some (newRank, takerTeam)
+                | Some (oldRank, _), Some newRank
+                    when newRank <= oldRank ->
+                    assert(newRank < oldRank)
+                    Some (newRank, takerTeam)
+                | trumpTeamOpt, _ -> trumpTeamOpt
+
+        let jackTrumpTeamOpt =
+            let jackFlag =
+                Array.contains Rank.Jack trumpRanks
+            if jackFlag then
+                assert(playout.JackTrumpTeamOpt.IsNone)
+                Some takerTeam
+            else playout.JackTrumpTeamOpt
+
+        { playout with
+            HighTrumpTeamOpt = highTrumpTeamOpt
+            LowTrumpTeamOpt = lowTrumpTeamOpt
+            JackTrumpTeamOpt = jackTrumpTeamOpt }
+
+    /// Completes the given trick in the given playout.
+    let private completeTrick trick playout =
+
+            // add to completed tricks
+        let completedTricks = trick :: playout.CompletedTricks
+
+            // determine trick taker
+        let taker =
+            match trick.HighPlayOpt with
+                | Some (seat, _) -> seat
+                | None -> failwith "No trick taker"
+
+            // update deal points
+        let playout =
+            let takerTeam = Team.ofSeat taker
+            updateDealPoints trick takerTeam playout
+
+            // start new trick?
+        let newTrickOpt =
+            if completedTricks.Length < Setback.numCardsPerHand then
+                Some (Trick.create taker)
+            else None   // playout is over
+
+        { playout with
+            CompletedTricks = completedTricks
+            CurrentTrickOpt = newTrickOpt }
+
     /// Plays the given card on the current trick.
     let private updateCurrentTrick
         (card : Card) (playout : Playout) =
@@ -119,22 +206,7 @@ module Playout =
             // trick is complete?
         let playout =
             if Trick.isComplete trick then
-
-                    // add to completed tricks
-                let completedTricks = trick :: playout.CompletedTricks
-
-                    // start new trick?
-                let newTrickOpt =
-                    if completedTricks.Length < Setback.numCardsPerHand then
-                        assert(Trick.highPlayerOpt trick |> Option.isSome)
-                        Trick.highPlayerOpt trick
-                            |> Option.map Trick.create
-                    else None   // playout is over
-
-                { playout with
-                    CompletedTricks = completedTricks
-                    CurrentTrickOpt = newTrickOpt }
-
+                completeTrick trick playout
             else
                 { playout with
                     CurrentTrickOpt = Some trick }

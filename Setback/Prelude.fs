@@ -1,11 +1,21 @@
 ﻿namespace Setback
 
-open System.Collections.Immutable
+module Array =
 
-[<AutoOpen>]
-module ImmutableArrayExt =
+    let tryMinBy projection array =
+        if Array.length array > 0 then
+            array
+                |> Array.minBy projection
+                |> Some
+        else None
 
-    type ImmutableArray =
-        static member ZeroCreate(length) =
-            let array = Array.zeroCreate<'a> length
-            ImmutableArray.CreateRange(array)
+    let tryMaxBy projection array =
+        if Array.length array > 0 then
+            array
+                |> Array.maxBy projection
+                |> Some
+        else None
+
+    let tryMin array = tryMinBy id array
+
+    let tryMax array = tryMaxBy id array
