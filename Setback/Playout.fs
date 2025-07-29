@@ -119,6 +119,7 @@ module Playout =
                 |> Option.map (fst >> Team.ofSeat)
                 = Some takerTeam)
 
+            // get ranks of trump cards in this trick
         let trumpRanks =
             let trump = playout.Trump
             Trick.plays trick
@@ -128,28 +129,29 @@ module Playout =
                     else None)
                 |> Seq.toArray
 
+        /// Updates a (Rank, Team) pair.
+        let updateTrumpTeam tryFind trumpTeamOpt op =
+            let newRankOpt = tryFind trumpRanks
+            match trumpTeamOpt, newRankOpt with
+                | None, Some newRank ->
+                    Some (newRank, takerTeam)
+                | Some (oldRank : Rank, _ : Team), Some newRank
+                    when op newRank oldRank ->
+                    assert(newRank <> oldRank)
+                    Some (newRank, takerTeam)
+                | trumpTeamOpt, _ -> trumpTeamOpt
+
+            // update High point
         let highTrumpTeamOpt =
-            let newRankOpt = Array.tryMax trumpRanks
-            match playout.HighTrumpTeamOpt, newRankOpt with
-                | None, Some newRank ->
-                    Some (newRank, takerTeam)
-                | Some (oldRank, _), Some newRank
-                    when newRank >= oldRank ->
-                    assert(newRank > oldRank)
-                    Some (newRank, takerTeam)
-                | trumpTeamOpt, _ -> trumpTeamOpt
+            updateTrumpTeam
+                Array.tryMax playout.HighTrumpTeamOpt (>)
 
+            // update Low point
         let lowTrumpTeamOpt =
-            let newRankOpt = Array.tryMin trumpRanks
-            match playout.LowTrumpTeamOpt, newRankOpt with
-                | None, Some newRank ->
-                    Some (newRank, takerTeam)
-                | Some (oldRank, _), Some newRank
-                    when newRank <= oldRank ->
-                    assert(newRank < oldRank)
-                    Some (newRank, takerTeam)
-                | trumpTeamOpt, _ -> trumpTeamOpt
+            updateTrumpTeam
+                Array.tryMin playout.LowTrumpTeamOpt (<)
 
+            // update Jack point
         let jackTrumpTeamOpt =
             let jackFlag =
                 Array.contains Rank.Jack trumpRanks
