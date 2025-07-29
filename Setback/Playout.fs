@@ -96,64 +96,88 @@ module Playout =
     let private isVoid seat suit playout =
         playout.Voids.Contains (seat, suit)
 
-    /// Answers a new playout with the next player's given discard.
-    let addPlay (card : Card) playout =
-
-            // determine trump
+    /// Establishes trump in the given suit, if necessary.
+    let private updateTrump suit playout =
         let trump =
             playout.TrumpOpt
-                |> Option.defaultValue card.Suit
+                |> Option.defaultValue suit
+        { playout with TrumpOpt = Some trump }
 
-            // play card on current trick
-        let updatedTrick, player =
-            let curTrick = playout |> currentTrick
-            let player = curTrick |> Trick.currentPlayer
+    /// Plays the given card on the current trick.
+    let private updateCurrentTrick
+        (card : Card) (playout : Playout) =
+
+            // play card on the current trick
+        let trick, player =
+            let trump = playout.Trump
+            let trick = currentTrick playout
+            let player = Trick.currentPlayer trick
             assert(playout |> isVoid player card.Suit |> not)
-            let updatedTrick = curTrick |> Trick.addPlay trump card
-            updatedTrick, player
+            let trick = trick |> Trick.addPlay trump card
+            trick, player
 
-            // complete trick?
-        let curTrickOpt, completedTricks =
-            if updatedTrick |> Trick.isComplete then
+            // trick is complete?
+        let playout =
+            if Trick.isComplete trick then
+
+                    // get trick winner
                 let taker =
-                    match updatedTrick.HighPlayOpt with
+                    match trick.HighPlayOpt with
                         | Some (seat, _) -> seat
                         | None -> failwith "Unexpected"
-                let tricks = updatedTrick :: playout.CompletedTricks
-                let curTrickOpt =
-                    if tricks.Length < Setback.numCardsPerHand then
-                        taker |> Trick.create |> Some
+
+                    // add to completed tricks
+                let completedTricks = trick :: playout.CompletedTricks
+
+                    // start new trick?
+                let newTrickOpt =
+                    if completedTricks.Length < Setback.numCardsPerHand then
+                        Some (Trick.create taker)
                     else None
-                curTrickOpt, tricks
+
+                { playout with
+                    CompletedTricks = completedTricks
+                    CurrentTrickOpt = newTrickOpt }
+
             else
-                Some updatedTrick, playout.CompletedTricks
+                { playout with
+                    CurrentTrickOpt = Some trick }
 
-            // remove from unplayed cards
+        trick, player, playout
+
+    /// Removes the given card from play.
+    let private updateUnplayedCards card playout =
+        assert(playout.UnplayedCards.Contains(card))
         let unplayedCards =
-            assert(playout.UnplayedCards.Contains(card))
             playout.UnplayedCards.Remove(card)
+        { playout with UnplayedCards = unplayedCards }
 
-            // player is void in suit led?
+    /// Updates void suits in the given playout.
+    let private updateVoids
+        player suit (trick : Trick) (playout : Playout) =
         let voids =
-            match updatedTrick.SuitLedOpt with
+            match trick.SuitLedOpt with
                 | Some suitLed ->
-                    if card.Suit = suitLed || card.Suit = trump then
+                    let trump = playout.Trump
+                    if suit = suitLed || suit = trump then
                         assert(
-                            card.Suit = trump
-                                || playout |> isVoid player card.Suit |> not)
+                            suit = trump
+                                || playout |> isVoid player suit |> not)
                         playout.Voids
                     else
                         playout.Voids.Add(player, suitLed)
                 | None -> failwith "Unexpected"
+        { playout with Voids = voids }
 
-        {
-            playout with
-                TrumpOpt = Some trump
-                CurrentTrickOpt = curTrickOpt
-                CompletedTricks = completedTricks
-                UnplayedCards = unplayedCards
-                Voids = voids
-        }
+    /// Plays the given card on the given playout.
+    let addPlay (card : Card) playout =
+        let playout =
+            updateTrump card.Suit playout
+        let trick, player, playout =
+            updateCurrentTrick card playout
+        playout
+            |> updateUnplayedCards card
+            |> updateVoids player card.Suit trick
 
     /// Tricks in the given playout, in chronological order, including
     /// the current trick (if any).

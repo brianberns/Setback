@@ -86,5 +86,7 @@ module Program =
 
     System.Console.OutputEncoding <- System.Text.Encoding.Unicode
     test1 ()
+    printfn "------------------------------------------------"
     test2 ()
+    printfn "------------------------------------------------"
     allPass ()
