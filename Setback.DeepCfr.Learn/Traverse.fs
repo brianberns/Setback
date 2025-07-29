@@ -84,23 +84,23 @@ module Node =
 module private ZeroSum =
 
     /// Gets the payoff for the given deal score from each
-    /// player's point of view.
+    /// team's point of view.
     let getPayoff score =
-        let points = score.ScoreMap.Values
-        assert(points.Count = Seat.numSeats)
-        let sum = Seq.sum points
-        [|
-            for pt in points do
+        let sum =
+            let points = score.ScoreMap.Values
+            assert(points.Count = Team.numTeams)
+            Seq.sum points
+        score.ScoreMap
+            |> Map.map (fun _ pt ->
                 let otherAvg =
                     float32 (sum - pt)
-                        / float32 (Seat.numSeats - 1)
-                otherAvg - float32 pt
-        |]
+                        / float32 (Team.numTeams - 1)
+                otherAvg - float32 pt)
 
     /// Computes the payoff for the given deal, if it is
     /// complete.
     let tryGetPayoff deal =
-        Game.tryUpdateScore deal Score.zero
+        OpenDeal.tryGetDealScore deal
             |> Option.map getPayoff
 
 module Traverse =

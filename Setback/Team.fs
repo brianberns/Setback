@@ -1,11 +1,17 @@
 ﻿namespace Setback
 
+open PlayingCards
+
 /// Players in one or more seats play together as a team.
 type Team =
     | EastWest = 0
     | NorthSouth = 1
 
 module Team =
+
+    /// Total number of teams.
+    let numTeams =
+        Enum.getValues<Team>.Length
 
     /// Display string.
     let toString = function

@@ -8,17 +8,17 @@ module Tournament =
     /// Creates and plays one deal.
     let playDeal (playerMap : Map<_, _>) deal =
 
-        let rec loop deal score =
+        let rec loop deal =
             let deal =
                 let infoSet = OpenDeal.currentInfoSet deal
-                let card =
-                    playerMap[infoSet.Player].MakePlay infoSet
-                OpenDeal.addPlay card deal
-            match Game.tryUpdateScore deal score with
+                let action =
+                    playerMap[infoSet.Player].Act infoSet
+                OpenDeal.addAction action deal
+            match OpenDeal.tryGetDealScore deal with
                 | Some score -> score
-                | None -> loop deal score
+                | None -> loop deal
 
-        loop deal Score.zero
+        loop deal
 
     /// Plays the given number of deals.
     let playDeals rng numDeals playerMap =
@@ -28,12 +28,14 @@ module Tournament =
 
     /// Runs a tournament between two players.
     let run rng champion challenger =
-        let challengerSeat = Seat.South
+        let challengerTeam = Team.EastWest
+        let challengerSeats = Team.seats challengerTeam
         let playerMap =
             Enum.getValues<Seat>
                 |> Seq.map (fun seat ->
                     let player =
-                        if seat = challengerSeat then challenger
+                        if challengerSeats.Contains(seat) then
+                            challenger
                         else champion
                     seat, player)
                 |> Map
@@ -42,7 +44,7 @@ module Tournament =
                 settings.NumEvaluationDeals
                 playerMap
         let payoff =
-            (ZeroSum.getPayoff score)[int challengerSeat]
+            (ZeroSum.getPayoff score)[challengerTeam]
                 / float32 settings.NumEvaluationDeals
 
         if settings.Verbose then
