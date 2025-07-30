@@ -45,6 +45,7 @@ module OpenDeal =
                 let cards =
                     group
                         |> Seq.map snd
+                        |> Seq.take Setback.numCardsPerHand
                         |> set
                 seat, cards)
             |> Map
