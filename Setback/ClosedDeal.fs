@@ -32,7 +32,7 @@ module ClosedDeal =
                 Playout.currentPlayer playout
             | None ->
                 assert(Auction.isComplete deal.Auction |> not)
-                Auction.highBidder deal.Auction
+                Auction.currentBidder deal.Auction
 
     /// Adds the given bid to the given deal.
     let addBid bid deal =
