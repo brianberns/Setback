@@ -123,16 +123,13 @@ module Trainer =
     /// Evaluates the given model by playing it against a
     /// standard.
     let private evaluate iter (model : AdvantageModel) =
-        (*
         let avgPayoff =
             Tournament.run
                 (Random(0))       // use repeatable test set, not seen during training
-                Trickster.player
-                (Strategy.createPlayer model)
+                Tournament.champion
+                (Tournament.createPlayer model)
         settings.Writer.add_scalar(
             $"advantage tournament", avgPayoff, iter)
-        *)
-        ()
 
     /// Trains a single iteration.
     let private trainIteration iter state =

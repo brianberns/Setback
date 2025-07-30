@@ -3,10 +3,28 @@
 open PlayingCards
 open Setback
 
+/// Interface for a Setback player.
+type Player =
+    {
+        /// Chooses an action in the given information set.
+        MakePlay : (InformationSet * Cfrm.AbstractOpenDeal) -> Card
+    }
+
 module Tournament =
 
-    let private dbPlayer =
-        Cfrm.DatabasePlayer.player "Setback.db"
+    /// Creates a Setback player using the given model.
+    let createPlayer model =
+
+        let rng = System.Random()   // each player has its own RNG
+
+        let makePlay infoSet =
+            let strategy =
+                DeepCfr.Model.Strategy.getFromAdvantage model [|infoSet|]
+                    |> Array.exactlyOne
+            Setback.DeepCfr.Model.Vector.sample rng strategy
+                |> Array.get infoSet.LegalPlays
+
+        { MakePlay = fst >> makePlay }
 
     /// No score.
     /// Hack: Had to recreate this because module name is blocked.
@@ -14,12 +32,20 @@ module Tournament =
         Array.replicate Setback.numTeams 0
             |> Cfrm.AbstractScore
 
-    /// Plays one deal.
-    let playDeal (playerMap : Map<_, Player>) deal =
+    let private dbPlayer =
+        Cfrm.DatabasePlayer.player "Setback.db"
 
-        let rec auctionLoop
-            (deal : OpenDeal)
-            (cfrmDeal : Cfrm.AbstractOpenDeal) =
+    let champion =
+        let makePlay cfrmDeal =
+            dbPlayer.MakePlay cfrmZero cfrmDeal
+        {
+            MakePlay = (snd >> makePlay)
+        }
+
+    /// Plays one deal.
+    let playDeal (playerMap : Map<_, _>) deal =
+
+        let rec auctionLoop deal cfrmDeal =
             if Auction.isComplete deal.ClosedDeal.Auction then
                 deal, cfrmDeal
             else
@@ -29,15 +55,16 @@ module Tournament =
                     (OpenDeal.addBid bid deal)
                     (Cfrm.AbstractOpenDeal.addBid bid cfrmDeal)
 
-        let rec playoutLoop deal =
-            let deal =
+        let rec playoutLoop deal cfrmDeal =
+            let deal, cfrmDeal =
                 let infoSet = OpenDeal.currentInfoSet deal
                 let card =
-                    playerMap[infoSet.Player].MakePlay infoSet
-                OpenDeal.addPlay card deal
+                    playerMap[infoSet.Player].MakePlay (infoSet, cfrmDeal)
+                OpenDeal.addPlay card deal,
+                Cfrm.AbstractOpenDeal.addPlay card cfrmDeal
             match OpenDeal.tryGetDealScore deal with
                 | Some score -> score
-                | None -> playoutLoop deal
+                | None -> playoutLoop deal cfrmDeal
 
         let cfrmDeal =
             deal.UnplayedCardMap
@@ -52,7 +79,7 @@ module Tournament =
         if ClosedDeal.isComplete deal.ClosedDeal then
             Score.zero   // all pass
         else
-            playoutLoop deal
+            playoutLoop deal cfrmDeal
 
     /// Plays the given number of deals.
     let playDeals rng numDeals playerMap =

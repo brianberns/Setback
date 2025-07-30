@@ -34,13 +34,6 @@ module InformationSet =
                     |> Seq.toArray
         }
 
-/// Interface for a Setback player.
-type Player =
-    {
-        /// Chooses an action in the given information set.
-        MakePlay : InformationSet -> Card
-    }
-
 module OpenDeal =
 
     /// Answers the current player's information set.

@@ -1,7 +1,5 @@
 ﻿namespace Setback.DeepCfr.Model
 
-open System
-
 open MathNet.Numerics.LinearAlgebra
 
 open PlayingCards
@@ -74,17 +72,3 @@ module Strategy =
             |]
 
         else Array.empty
-
-    /// Creates a Setback player using the given model.
-    let createPlayer model =
-
-        let rng = Random()   // each player has its own RNG
-
-        let makePlay infoSet =
-            let strategy =
-                getFromAdvantage model [|infoSet|]
-                    |> Array.exactlyOne
-            Vector.sample rng strategy
-                |> Array.get infoSet.LegalPlays
-
-        { MakePlay = makePlay }
