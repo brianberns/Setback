@@ -34,6 +34,19 @@ module InformationSet =
                     |> Seq.toArray
         }
 
+/// An action is either a bid (during the auction) or
+/// a play (during playout).
+type Action =
+    | Bid of Bid
+    | Play of Card
+
+/// Interface for a Setback player.
+type Player =
+    {
+        /// Chooses an action in the given information set.
+        Act : InformationSet -> Action
+    }
+
 module OpenDeal =
 
     /// Answers the current player's information set.
