@@ -35,15 +35,22 @@ module Strategy =
     let private toNarrow (legalActions : _[]) (wide : Vector<_>) =
         assert(wide.Count = Card.numCards)
         legalActions
-            |> Seq.map (
-                Card.toIndex >> Vector.get wide)
+            |> Seq.map (function
+                | Play card ->
+                    Card.toIndex card |> Vector.get wide
+                | Bid _ -> failwith "Bidding not supported")
             |> DenseVector.ofSeq
 
     /// Converts a narrow vector (indexed by legal actions) to
     /// a wide vector (indexed by entire deck).
     let toWide (legalActions : _[]) (narrow : Vector<float32>) =
         assert(narrow.Count = legalActions.Length)
-        Seq.zip legalActions narrow
+        let legalPlays =
+            legalActions
+                |> Seq.map (function
+                    | Play card -> card
+                    | Bid _ -> failwith "Bidding not supported")
+        Seq.zip legalPlays narrow
             |> Encoding.encodeCardValues
             |> DenseVector.ofArray
 
@@ -69,22 +76,25 @@ module Strategy =
                     let iStart = iRow * nCols
                     data[iStart .. iStart + nCols - 1]
                         |> DenseVector.ofSeq
-                        |> toNarrow infoSet.LegalPlays
+                        |> toNarrow infoSet.LegalActions
                         |> matchRegrets
             |]
 
         else Array.empty
 
     /// Creates a Setback player using the given model.
-    let createPlayer model =
+    let createPlayer bidder model =
 
         let rng = Random()   // each player has its own RNG
 
-        let makePlay infoSet =
-            let strategy =
-                getFromAdvantage model [|infoSet|]
-                    |> Array.exactlyOne
-            Vector.sample rng strategy
-                |> Array.get infoSet.LegalPlays
+        let act infoSet =
+            if infoSet.Deal.PlayoutOpt.IsSome then
+                let strategy =
+                    getFromAdvantage model [|infoSet|]
+                        |> Array.exactlyOne
+                Vector.sample rng strategy
+                    |> Array.get infoSet.LegalActions
+            else
+                bidder.Act infoSet
 
-        { MakePlay = makePlay }
+        { Act = act }

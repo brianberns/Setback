@@ -29,7 +29,7 @@ module Inference =
             | None ->
                 infoSets
                     |> Array.map (fun infoSet ->
-                        Strategy.random infoSet.LegalPlays.Length)
+                        Strategy.random infoSet.LegalActions.Length)
 
     /// Replaces items in the given arrays.
     let private replace chooser fromItems (toItems : _[]) =
