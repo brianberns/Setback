@@ -5,20 +5,54 @@ open Setback
 
 module Tournament =
 
-    /// Creates and plays one deal.
-    let playDeal (playerMap : Map<_, _>) deal =
+    let private dbPlayer =
+        Cfrm.DatabasePlayer.player "Setback.db"
 
-        let rec loop deal =
+    /// No score.
+    /// Hack: Had to recreate this because module name is blocked.
+    let cfrmZero =
+        Array.replicate Setback.numTeams 0
+            |> Cfrm.AbstractScore
+
+    /// Plays one deal.
+    let playDeal (playerMap : Map<_, Player>) deal =
+
+        let rec auctionLoop
+            (deal : OpenDeal)
+            (cfrmDeal : Cfrm.AbstractOpenDeal) =
+            if Auction.isComplete deal.ClosedDeal.Auction then
+                deal, cfrmDeal
+            else
+                let bid =
+                    dbPlayer.MakeBid cfrmZero cfrmDeal
+                auctionLoop
+                    (OpenDeal.addBid bid deal)
+                    (Cfrm.AbstractOpenDeal.addBid bid cfrmDeal)
+
+        let rec playoutLoop deal =
             let deal =
                 let infoSet = OpenDeal.currentInfoSet deal
-                let action =
-                    playerMap[infoSet.Player].Act infoSet
-                OpenDeal.addAction action deal
+                let card =
+                    playerMap[infoSet.Player].MakePlay infoSet
+                OpenDeal.addPlay card deal
             match OpenDeal.tryGetDealScore deal with
                 | Some score -> score
-                | None -> loop deal
+                | None -> playoutLoop deal
 
-        loop deal
+        let cfrmDeal =
+            deal.UnplayedCardMap
+                |> Map.map (fun _ cards ->
+                    Set.toSeq cards)
+                |> Cfrm.AbstractOpenDeal.fromHands
+                    deal.ClosedDeal.Dealer
+
+        let deal, cfrmDeal = auctionLoop deal cfrmDeal
+        assert (ClosedDeal.isComplete deal.ClosedDeal
+            = Cfrm.AbstractOpenDeal.isComplete cfrmDeal)
+        if ClosedDeal.isComplete deal.ClosedDeal then
+            Score.zero   // all pass
+        else
+            playoutLoop deal
 
     /// Plays the given number of deals.
     let playDeals rng numDeals playerMap =
