@@ -13,6 +13,7 @@
     <Compile Include="Traverse.fs" />
     <Compile Include="Tournament.fs" />
     <Compile Include="Inference.fs" />
+    <Compile Include="Trickster.fs" />
     <Compile Include="Trainer.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
@@ -24,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\TricksterHeartsBot\TricksterHeartsBot\TricksterHeartsBot.csproj" />
     <ProjectReference Include="..\PlayingCards\PlayingCards.fsproj" />
     <ProjectReference Include="..\Setback.DeepCfr.Model\Setback.DeepCfr.Model.fsproj" />
     <ProjectReference Include="..\Setback\Setback.fsproj" />

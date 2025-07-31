@@ -42,6 +42,12 @@ module Auction =
         auction.Dealer
             |> Seat.incr (auction.Bids.Length + 1)
 
+    /// All players' bids in chronological order.
+    let playerBids auction =
+        Seq.zip
+            (Seat.cycle auction.Dealer.Next)
+            (List.rev auction.Bids)
+
     /// What are the allowed bids in the current situation?
     let legalBids auction =
         assert(isComplete auction |> not)
@@ -82,10 +88,7 @@ module Auction =
 
         if not auction.Bids.IsEmpty then
             writeline ""
-            Seq.zip
-                (Seat.cycle auction.Dealer.Next)
-                (List.rev auction.Bids)
-                |> Seq.iter (fun (seat, bid) ->
-                    writeline (sprintf "%-5s: %A" (seat.ToString()) bid))
+            for (seat, bid) in playerBids auction do
+                writeline (sprintf "%-5s: %A" (seat.ToString()) bid)
 
         sb.ToString()
