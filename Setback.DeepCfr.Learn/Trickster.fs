@@ -19,6 +19,11 @@ module Trickster =
         | Bid.Pass -> int cloud.BidBase.Pass
         | bid -> int PitchBid.Base + int bid
 
+    let private ofCloudBid cloudBid =
+        let bid = enum<Bid> (cloudBid - int PitchBid.Base)
+        assert(Enum.getValues<Bid> |> Array.contains bid)
+        bid
+
     /// Trickster Setback bot.
     let player =
 
@@ -75,7 +80,7 @@ module Trickster =
                     legalBids = legalBids,
                     player = players[auction.Bids.Length - 1],
                     players = players)
-            bot.SuggestBid(bidState)
+            bot.SuggestBid(bidState).value |> ofCloudBid
 
         let makePlay player hand playout =
             assert(Playout.isComplete playout)
@@ -97,9 +102,11 @@ module Trickster =
                     | Some playout ->
                         makePlay
                             infoSet.Player infoSet.Hand playout
+                            |> Play
                     | None ->
                         makeBid
                             infoSet.Player infoSet.Hand infoSet.Deal.Auction
+                            |> Bid
 (*
                 let hand = infoSet.Hand
                 let deal = infoSet.Deal
