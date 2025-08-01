@@ -102,11 +102,11 @@ module Trickster =
                     | Some playout ->
                         makePlay
                             infoSet.Player infoSet.Hand playout
-                            |> Play
+                            |> MakePlay
                     | None ->
                         makeBid
                             infoSet.Player infoSet.Hand infoSet.Deal.Auction
-                            |> Bid
+                            |> MakeBid
 (*
                 let hand = infoSet.Hand
                 let deal = infoSet.Deal

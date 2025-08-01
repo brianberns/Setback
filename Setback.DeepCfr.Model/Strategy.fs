@@ -36,9 +36,9 @@ module Strategy =
         assert(wide.Count = Card.numCards)
         legalActions
             |> Seq.map (function
-                | Play card ->
+                | MakePlay card ->
                     Card.toIndex card |> Vector.get wide
-                | Bid _ -> failwith "Bidding not supported")
+                | MakeBid _ -> failwith "Bidding not supported")
             |> DenseVector.ofSeq
 
     /// Converts a narrow vector (indexed by legal actions) to
@@ -48,8 +48,8 @@ module Strategy =
         let legalPlays =
             legalActions
                 |> Seq.map (function
-                    | Play card -> card
-                    | Bid _ -> failwith "Bidding not supported")
+                    | MakePlay card -> card
+                    | MakeBid _ -> failwith "Bidding not supported")
         Seq.zip legalPlays narrow
             |> Encoding.encodeCardValues
             |> DenseVector.ofArray

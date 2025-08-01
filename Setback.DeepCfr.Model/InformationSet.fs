@@ -6,8 +6,8 @@ open Setback
 /// An action is either a bid (during the auction) or
 /// a play (during playout).
 type Action =
-    | Bid of Bid
-    | Play of Card
+    | MakeBid of Bid
+    | MakePlay of Card
 
 /// All information known to a player about a deal,
 /// including information known only to that player.
@@ -34,12 +34,12 @@ module InformationSet =
             | Some playout ->
                 playout
                     |> Playout.legalPlays hand
-                    |> Seq.map Play
+                    |> Seq.map MakePlay
                     |> Seq.toArray
             | None ->
                 deal.Auction
                     |> Auction.legalBids
-                    |> Seq.map Bid
+                    |> Seq.map MakeBid
                     |> Seq.toArray
 
     /// Creates an information set.
@@ -71,5 +71,5 @@ module OpenDeal =
     /// Adds the given action to the given deal.
     let addAction action deal =
         match action with
-            | Bid bid -> OpenDeal.addBid bid deal
-            | Play card -> OpenDeal.addPlay card deal
+            | MakeBid bid -> OpenDeal.addBid bid deal
+            | MakePlay card -> OpenDeal.addPlay card deal
