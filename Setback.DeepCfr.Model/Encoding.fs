@@ -59,7 +59,12 @@ module Encoding =
                 |> Option.map (fun trick ->
                     List.toArray trick.Cards)
                 |> Option.defaultValue Array.empty
-        assert(cards.Length < Seat.numSeats)
+        assert(
+            match isCurrent, trickOpt.IsSome with
+                | true, true -> cards.Length < Seat.numSeats
+                | true, false -> false
+                | false, true -> cards.Length = Seat.numSeats
+                | false, false -> cards.Length = 0)
         let decr = if isCurrent then 2 else 1
         [|
             for iCard = Seat.numSeats - decr downto 0 do
