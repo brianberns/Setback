@@ -166,7 +166,7 @@ module Traverse =
                 assert(utility.Count = Team.numTeams)
                 let sample =
                     let wideRegrets =
-                        let idx = int infoSet.Player
+                        let idx = int (Team.ofSeat infoSet.Player)
                         (actionUtilities.Row(idx) - utility[idx])
                             |> Strategy.toWide legalActions
                     AdvantageSample.create infoSet wideRegrets iter
