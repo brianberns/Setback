@@ -37,6 +37,21 @@ module AdvantageState =
 
 module Trainer =
 
+    /// Traverses one deal.
+    let private traverse iter deal =
+        let rng = Random()   // each thread has its own RNG
+        let deal =
+            (deal, [1..Seat.numSeats])
+                ||> Seq.fold (fun deal _ ->
+                    let infoSet = OpenDeal.currentInfoSet deal
+                    let bid =
+                        Trickster.makeBid
+                            infoSet.Player
+                            infoSet.Hand
+                            infoSet.Deal.Auction
+                    OpenDeal.addBid bid deal)
+        Traverse.traverse iter deal rng
+
     /// Generates training data using the given model.
     let private generateSamples iter modelOpt =
 
@@ -45,6 +60,7 @@ module Trainer =
             0f, 0)
 
         let chunkSize = settings.TraversalBatchSize
+        let rng = Random ()
         Array.zeroCreate<int> settings.NumTraversals
             |> Array.chunkBySize chunkSize
             |> Array.indexed
@@ -52,11 +68,7 @@ module Trainer =
 
                 let samples =
                     OpenDeal.generate
-                        (Random())
-                        chunk.Length
-                        (fun deal ->
-                            let rng = Random()   // each thread has its own RNG
-                            Traverse.traverse iter deal rng)
+                        rng chunk.Length (traverse iter)
                         |> Inference.complete modelOpt
                 GC.Collect()   // clean up continuations
 
