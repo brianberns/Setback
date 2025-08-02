@@ -41,10 +41,13 @@ module Trickster =
         | Bid.Pass -> int cloud.BidBase.Pass
         | bid -> int PitchBid.Base + int bid
 
-    let private ofCloudBid cloudBid =
-        let bid = enum<Bid> (cloudBid - int PitchBid.Base)
-        assert(Enum.getValues<Bid> |> Array.contains bid)
-        bid
+    let private ofCloudBid = function
+        | cloud.BidBase.Pass -> Bid.Pass
+        | cloudBid ->
+            let bid = enum<Bid> (cloudBid - int PitchBid.Base)
+            assert(bid <> Bid.Pass)
+            assert(Enum.getValues<Bid> |> Array.contains bid)
+            bid
 
     let private bot =
         let options =
