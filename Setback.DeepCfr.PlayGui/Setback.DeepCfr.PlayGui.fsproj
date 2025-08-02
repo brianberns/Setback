@@ -1,0 +1,83 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<OutputType>WinExe</OutputType>
+	<TargetFramework>net9.0-windows</TargetFramework>
+	<UseWindowsForms>true</UseWindowsForms>
+	<Platforms>AnyCPU;x64</Platforms>
+	<AssemblyName>BernsriteSetback</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Images\Trump.png" />
+    <EmbeddedResource Include="Images\Back.png" />
+    <EmbeddedResource Include="Images\2C.png" />
+    <EmbeddedResource Include="Images\2D.png" />
+    <EmbeddedResource Include="Images\2H.png" />
+    <EmbeddedResource Include="Images\2S.png" />
+    <EmbeddedResource Include="Images\3C.png" />
+    <EmbeddedResource Include="Images\3D.png" />
+    <EmbeddedResource Include="Images\3H.png" />
+    <EmbeddedResource Include="Images\3S.png" />
+    <EmbeddedResource Include="Images\4C.png" />
+    <EmbeddedResource Include="Images\4D.png" />
+    <EmbeddedResource Include="Images\4H.png" />
+    <EmbeddedResource Include="Images\4S.png" />
+    <EmbeddedResource Include="Images\5C.png" />
+    <EmbeddedResource Include="Images\5D.png" />
+    <EmbeddedResource Include="Images\5H.png" />
+    <EmbeddedResource Include="Images\5S.png" />
+    <EmbeddedResource Include="Images\6C.png" />
+    <EmbeddedResource Include="Images\6D.png" />
+    <EmbeddedResource Include="Images\6H.png" />
+    <EmbeddedResource Include="Images\6S.png" />
+    <EmbeddedResource Include="Images\7C.png" />
+    <EmbeddedResource Include="Images\7D.png" />
+    <EmbeddedResource Include="Images\7H.png" />
+    <EmbeddedResource Include="Images\7S.png" />
+    <EmbeddedResource Include="Images\8C.png" />
+    <EmbeddedResource Include="Images\8D.png" />
+    <EmbeddedResource Include="Images\8H.png" />
+    <EmbeddedResource Include="Images\8S.png" />
+    <EmbeddedResource Include="Images\9C.png" />
+    <EmbeddedResource Include="Images\9D.png" />
+    <EmbeddedResource Include="Images\9H.png" />
+    <EmbeddedResource Include="Images\9S.png" />
+    <EmbeddedResource Include="Images\AC.png" />
+    <EmbeddedResource Include="Images\AD.png" />
+    <EmbeddedResource Include="Images\AH.png" />
+    <EmbeddedResource Include="Images\AS.png" />
+    <EmbeddedResource Include="Images\JC.png" />
+    <EmbeddedResource Include="Images\JD.png" />
+    <EmbeddedResource Include="Images\JH.png" />
+    <EmbeddedResource Include="Images\JS.png" />
+    <EmbeddedResource Include="Images\KC.png" />
+    <EmbeddedResource Include="Images\KD.png" />
+    <EmbeddedResource Include="Images\KH.png" />
+    <EmbeddedResource Include="Images\KS.png" />
+    <EmbeddedResource Include="Images\QC.png" />
+    <EmbeddedResource Include="Images\QD.png" />
+    <EmbeddedResource Include="Images\QH.png" />
+    <EmbeddedResource Include="Images\QS.png" />
+    <EmbeddedResource Include="Images\TC.png" />
+    <EmbeddedResource Include="Images\TD.png" />
+    <EmbeddedResource Include="Images\TH.png" />
+    <EmbeddedResource Include="Images\TS.png" />
+    <Compile Include="CardControl.fs" />
+    <Compile Include="HandControl.fs" />
+    <Compile Include="BidControl.fs" />
+    <Compile Include="TrickControl.fs" />
+    <Compile Include="ActionQueue.fs" />
+    <Compile Include="ScoreControl.fs" />
+    <Compile Include="User.fs" />
+    <Compile Include="MainForm.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PlayingCards\PlayingCards.fsproj" />
+    <ProjectReference Include="..\Setback.DeepCfr.Model\Setback.DeepCfr.Model.fsproj" />
+    <ProjectReference Include="..\Setback\Setback.fsproj" />
+  </ItemGroup>
+
+</Project>

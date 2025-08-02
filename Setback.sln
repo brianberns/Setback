@@ -40,6 +40,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Setback.DeepCfr.Model", "Se
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TricksterHeartsBot", "..\TricksterHeartsBot\TricksterHeartsBot\TricksterHeartsBot.csproj", "{3D2D2CAD-FC76-CD7C-E399-1F0E5DC21B13}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Setback.DeepCfr.PlayGui", "Setback.DeepCfr.PlayGui\Setback.DeepCfr.PlayGui.fsproj", "{B649DF72-89D3-E5CD-A2B8-73C5940FA58D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -176,6 +178,14 @@ Global
 		{3D2D2CAD-FC76-CD7C-E399-1F0E5DC21B13}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3D2D2CAD-FC76-CD7C-E399-1F0E5DC21B13}.Release|x64.ActiveCfg = Release|Any CPU
 		{3D2D2CAD-FC76-CD7C-E399-1F0E5DC21B13}.Release|x64.Build.0 = Release|Any CPU
+		{B649DF72-89D3-E5CD-A2B8-73C5940FA58D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B649DF72-89D3-E5CD-A2B8-73C5940FA58D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B649DF72-89D3-E5CD-A2B8-73C5940FA58D}.Debug|x64.ActiveCfg = Debug|x64
+		{B649DF72-89D3-E5CD-A2B8-73C5940FA58D}.Debug|x64.Build.0 = Debug|x64
+		{B649DF72-89D3-E5CD-A2B8-73C5940FA58D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B649DF72-89D3-E5CD-A2B8-73C5940FA58D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B649DF72-89D3-E5CD-A2B8-73C5940FA58D}.Release|x64.ActiveCfg = Release|x64
+		{B649DF72-89D3-E5CD-A2B8-73C5940FA58D}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
