@@ -353,3 +353,6 @@ fable_modules
 # Webpack output
 /Setback.Web/Client/public/*.svg
 /Setback.Web/Client/public/*.LICENSE.txt
+
+# Python virtual environment
+venv/
