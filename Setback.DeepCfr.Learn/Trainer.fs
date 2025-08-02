@@ -127,7 +127,7 @@ module Trainer =
             Tournament.run
                 (Random(0))       // use repeatable test set, not seen during training
                 Trickster.player
-                (Strategy.createPlayer model)
+                (Strategy.createPlayer Trickster.player model)
         settings.Writer.add_scalar(
             $"advantage tournament", avgPayoff, iter)
 

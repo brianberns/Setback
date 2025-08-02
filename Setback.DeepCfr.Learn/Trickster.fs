@@ -64,6 +64,15 @@ module Trickster =
                 options,
                 cloud.Suit.Unknown)
 
+        let chooseTrump hand =
+            let cloudHand =
+                cloud.Hand(toCloudCards hand)
+            Enum.getValues<Suit>
+                |> Seq.map toCloudSuit
+                |> Seq.maxBy (fun cloudSuit ->
+                    bot.EstimatedPoints(cloudHand, cloudSuit))
+                |> ofCloudSuit
+
         let makeBid bidder hand auction =
             assert(Auction.isComplete auction |> not)
             let players =
@@ -105,13 +114,14 @@ module Trickster =
             bot.SuggestBid(bidState).value |> ofCloudBid
 
         let makePlay player hand auction playout =
-            assert(Playout.isComplete playout)
+            assert(Playout.isComplete playout |> not)
+            let cloudTrump =
+                playout.TrumpOpt
+                    |> Option.defaultWith (fun () ->
+                        chooseTrump hand)
+                    |> toCloudSuit
             let players =
                 [|
-                    let bidsMap =
-                        auction
-                            |> Auction.playerBids
-                            |> Map
                     let cardsTakenMap =
                         playout
                             |> Playout.tricks
@@ -130,7 +140,7 @@ module Trickster =
                                 assert(auction.HighBid <> Bid.Pass)
                                 int PitchBid.Pitching
                                     + (10 * int (toCloudBid auction.HighBid))
-                                    + (int (toCloudSuit trump))
+                                    + (int cloudTrump)
                             else
                                 int PitchBid.NotPitching
                         let cardsTaken =
@@ -166,7 +176,7 @@ module Trickster =
                     players,
                     trick,
                     notLegal,
-                    trumpSuit = trump,
+                    trumpSuit = cloudTrump,
                     trumpAnytime = true)
             bot.SuggestNextCard(cardState)
                 |> ofCloudCard
