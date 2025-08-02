@@ -95,7 +95,7 @@ module private ZeroSum =
                 let otherAvg =
                     float32 (sum - pt)
                         / float32 (Team.numTeams - 1)
-                otherAvg - float32 pt)
+                float32 pt - otherAvg)
 
     /// Computes the payoff for the given deal, if it is
     /// complete.
