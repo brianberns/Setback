@@ -15,14 +15,23 @@ module Card =
 
 module Property =
 
-    let decodeCardOpt (encoded : bool[]) =
-        let cardIdxs =
-            [0 .. encoded.Length - 1]
-                |> Seq.where (fun iCard -> encoded[iCard])
-                |> Seq.toArray
-        match cardIdxs  with
+    [<Property>]
+    let ``Card index`` card =
+        card
+            |> Card.toIndex
+            |> Card.ofIndex
+            = card
+
+    let decodeCards (encoded : _[]) =
+        [0 .. encoded.Length - 1]
+            |> Seq.where (fun iCard -> encoded[iCard])
+            |> Seq.map Card.ofIndex
+            |> Seq.toArray
+
+    let decodeCardOpt encoded =
+        match decodeCards encoded with
             | [||] -> None
-            | [| iCard |] -> Some (Card.ofIndex iCard)
+            | [| card |] -> Some card
             | _ -> failwith "Too many cards"
 
     [<Property>]
@@ -46,13 +55,6 @@ module Property =
             |> decodeTrick
             = trickOpt
 *)
-
-    [<Property>]
-    let ``Card index`` card =
-        card
-            |> Card.toIndex
-            |> Card.ofIndex
-            = card
 
     [<assembly: Properties(
         Arbitrary = [| |])>]
