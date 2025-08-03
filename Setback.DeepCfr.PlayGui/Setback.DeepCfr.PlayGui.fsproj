@@ -70,6 +70,7 @@
     <Compile Include="ActionQueue.fs" />
     <Compile Include="ScoreControl.fs" />
     <Compile Include="User.fs" />
+    <Compile Include="Random.fs" />
     <Compile Include="Session.fs" />
     <Compile Include="MainForm.fs" />
     <Compile Include="Program.fs" />

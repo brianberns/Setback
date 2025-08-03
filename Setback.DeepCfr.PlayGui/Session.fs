@@ -121,26 +121,22 @@ type Session
         let rec loop dealer gameScore =
 
                 // play one deal
-            let game =
+            let gameScore =
                 let deal =
                     Deck.shuffle rng
                         |> OpenDeal.fromDeck dealer
-                game |> playDeal dealer deal
+                gameScore |> playDeal dealer deal
 
                 // all done if game is over
             if gameScore |> Score.winningTeamOpt |> Option.isSome then
-                dealer, game.Score
+                dealer, gameScore
 
                 // continue this game with next dealer
             else
-                    // obtain score relative to next dealer's team
-                let game =
-                    let score = game.Score |> AbstractScore.shift 1
-                    { Score = score }
-                game |> loop dealer.Next
+                gameScore |> loop dealer.Next
 
         trigger gameStartEvent ()
-        let dealer, score = Game.zero |> loop dealer
+        let dealer, score = Score.zero |> loop dealer
         trigger gameFinishEvent (dealer, score)
         dealer
 
