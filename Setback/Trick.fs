@@ -50,7 +50,7 @@ module Trick =
                     let isHigh =
                         trick.HighPlayOpt
                             |> Option.map (fun (_, prevCard) ->
-                                if prevCard.Suit = trump then
+                                if card.Suit = trump then
                                     prevCard.Suit <> trump
                                         || card.Rank > prevCard.Rank
                                 elif card.Suit = prevCard.Suit then
