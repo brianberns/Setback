@@ -35,7 +35,7 @@ module Encoding =
 
     /// Encodes the given cards as a multi-hot vector
     /// in the deck size.
-    let private encodeCards cards =
+    let encodeCards cards =
         let cardIndexes =
             cards
                 |> Seq.map Card.toIndex
@@ -53,7 +53,7 @@ module Encoding =
     ///    After 2 plays: EN   -> -NE
     ///    After 1 plays: E    -> --E
     ///    After 0 plays:      -> ---
-    let private encodeTrick isCurrent trickOpt =
+    let encodeTrick isCurrent trickOpt =
         let cards =
             trickOpt
                 |> Option.map (fun trick ->
