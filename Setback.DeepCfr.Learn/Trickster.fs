@@ -49,20 +49,18 @@ module Trickster =
             assert(Enum.getValues<Bid> |> Array.contains bid)
             bid
 
-    let private bot =
-        let options =
-            cloud.PitchOptions(
-                dealerMaySteal = true,
-                isPartnership = true,
-                lowGoesToTaker = true,
-                minBid = 2,
-                players = 4,
-                setOpponentsAndWin = true,
-                stickTheDealer = false,
-                variation = cloud.PitchVariation.FourPoint)
-        PitchBot(
-            options,
-            cloud.Suit.Unknown)
+    let private options =
+        cloud.PitchOptions(
+            dealerMaySteal = true,
+            isPartnership = true,
+            lowGoesToTaker = true,
+            minBid = 2,
+            players = 4,
+            setOpponentsAndWin = true,
+            stickTheDealer = false,
+            variation = cloud.PitchVariation.FourPoint)
+
+    let private bidBot = PitchBot(options, cloud.Suit.Unknown)
 
     let private chooseTrump hand =
         let cloudHand =
@@ -70,7 +68,7 @@ module Trickster =
         Enum.getValues<Suit>
             |> Seq.map toCloudSuit
             |> Seq.maxBy (fun cloudSuit ->
-                bot.EstimatedPoints(cloudHand, cloudSuit))
+                bidBot.EstimatedPoints(cloudHand, cloudSuit))
             |> ofCloudSuit
 
     let makeBid bidder hand auction =
@@ -111,7 +109,7 @@ module Trickster =
                 legalBids = legalBids,
                 player = players[auction.Bids.Length],
                 players = players)
-        bot.SuggestBid(bidState).value |> ofCloudBid
+        bidBot.SuggestBid(bidState).value |> ofCloudBid
 
     let makePlay player hand auction playout =
         assert(Playout.isComplete playout |> not)
@@ -170,6 +168,7 @@ module Trickster =
                     hand.Remove(card))
                 |> toCloudCards
 
+        let bot = PitchBot(options, cloudTrump)
         let cardState =
             TestCardState(
                 bot,
