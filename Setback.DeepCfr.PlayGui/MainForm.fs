@@ -217,26 +217,22 @@ type MainForm() as this =
         actionQueue.Enqueue(fun () -> onTrickFinish args)
 
     /// A deal has finished.
-    let onDealFinish (dealer, _, gameScore) =
-        scoreControl.Score <- Game.absoluteScore dealer gameScore
+    let onDealFinish (_, _, gameScore) =
+        scoreControl.Score <- gameScore
 
     /// A deal has finished.
     let delayDealFinish args =
         actionQueue.Enqueue(fun () -> onDealFinish args)
 
     /// A game has finished.
-    let onGameFinish (dealer, gameScore) =
-        Game.winningTeamIdxOpt dealer gameScore
+    let onGameFinish (_, gameScore) =
+        Score.winningTeamOpt gameScore
             |> Option.iter (scoreControl.IncrementGamesWon)
 
     /// A game has finished.
     let delayGameFinish args =
         delayDisableQueue ()   // pause for Go button
         actionQueue.Enqueue(fun () -> onGameFinish args)
-
-    /// Computer plays from database.
-    let dbPlayer =
-        DatabasePlayer.player "Setback.db"
 
     /// User player
     let userPlayer =
@@ -247,9 +243,9 @@ type MainForm() as this =
     let session =
         let playerMap =
             Map [
-                Seat.West, dbPlayer
-                Seat.North, dbPlayer
-                Seat.East, dbPlayer
+                Seat.West, DeepCfr.Learn.Trickster.player
+                Seat.North, DeepCfr.Learn.Trickster.player
+                Seat.East, DeepCfr.Learn.Trickster.player
                 Seat.South, userPlayer
             ]
         let rng = Random()

@@ -70,12 +70,14 @@
     <Compile Include="ActionQueue.fs" />
     <Compile Include="ScoreControl.fs" />
     <Compile Include="User.fs" />
+    <Compile Include="Session.fs" />
     <Compile Include="MainForm.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\PlayingCards\PlayingCards.fsproj" />
+    <ProjectReference Include="..\Setback.DeepCfr.Learn\Setback.DeepCfr.Learn.fsproj" />
     <ProjectReference Include="..\Setback.DeepCfr.Model\Setback.DeepCfr.Model.fsproj" />
     <ProjectReference Include="..\Setback\Setback.fsproj" />
   </ItemGroup>
