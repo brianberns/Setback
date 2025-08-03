@@ -113,11 +113,11 @@ module Trickster =
 
     let makePlay player hand auction playout =
         assert(Playout.isComplete playout |> not)
-        let cloudTrump =
+        let trump =
             playout.TrumpOpt
                 |> Option.defaultWith (fun () ->
                     chooseTrump hand)
-                |> toCloudSuit
+        let cloudTrump = toCloudSuit trump
         let players =
             [|
                 let cardsTakenMap =
@@ -162,7 +162,14 @@ module Trickster =
                 |> Option.defaultValue ""
 
         let notLegal =
-            (set hand, Playout.legalPlays hand playout)
+            let legal =
+                if playout.TrumpOpt.IsSome then
+                    Playout.legalPlays hand playout
+                else
+                    hand
+                        |> Seq.where (fun card ->
+                            card.Suit = trump)   // force bot to lead trump on the first play of the deal
+            (set hand, legal)
                 ||> Seq.fold (fun hand card ->
                     assert(hand.Contains(card))
                     hand.Remove(card))
