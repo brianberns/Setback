@@ -8,6 +8,9 @@ type Trick =
         /// Player who starts this trick.
         Leader : Seat
 
+        /// Suit of first card played in this trick, if any.
+        SuitLedOpt : Option<Suit>
+
         /// Cards played by seat in this trick, in reverse chronological order.
         Cards : List<Card>
 
@@ -15,17 +18,13 @@ type Trick =
         HighPlayOpt : Option<Seat * Card>
     }
 
-    /// Suit of first card played in this trick, if any.
-    member trick.SuitLedOpt =
-        trick.HighPlayOpt
-            |> Option.map (snd >> Card.suit)
-
 module Trick =
 
     /// Creates a trick with the given leader to play first.
     let create leader =
         {
             Leader = leader
+            SuitLedOpt = None
             Cards = List.empty
             HighPlayOpt = None
         }
@@ -41,10 +40,13 @@ module Trick =
             |> Option.map fst
 
     /// Plays the given card on the given trick.
-    let addPlay trump card trick =
+    let addPlay trump (card : Card) trick =
         assert(trick.Cards.Length < Seat.numSeats)
         {
             trick with
+                SuitLedOpt =
+                    trick.SuitLedOpt
+                        |> Option.orElse (Some card.Suit)
                 Cards = card :: trick.Cards
                 HighPlayOpt =
                     let isHigh =
