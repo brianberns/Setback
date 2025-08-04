@@ -38,24 +38,6 @@ module Card =
     let ofIndex iCard =
         Card.allCards[iCard]
 
-module Trick =
-
-    let gen =
-        gen {
-            let! leader = Enum.gen<Seat>
-            let trick = Trick.create leader
-            let! size = Gen.choose (0, Seat.numSeats - 1)
-            let! cards =
-                Gen.setOfSize Gen.one<Card> size
-                    >>= Gen.shuffle
-            let! trump = Enum.gen<Suit>
-            let trick =
-                (trick, cards)
-                    ||> Seq.fold (fun trick card ->
-                        Trick.addPlay trump card trick)
-            return trick, trump
-        }
-
 module Playout =
 
     let private toHandMap bidder cards =
@@ -93,15 +75,14 @@ module Playout =
     let gen =
         gen {
             let! bidder = Enum.gen<Seat>
-            let playout = Playout.create bidder
-            let! nCards = Gen.choose (0, Setback.numCardsPerDeal - 1)
-            let! cards = Gen.setOfSize Gen.one<Card> nCards
+            let! cards = Gen.setOfSize Gen.one<Card> Setback.numCardsPerDeal
             let handMap = toHandMap bidder cards
+            let playout = Playout.create bidder
+            let! nCards = Gen.choose (0, Setback.numCardsPerDeal)
             return! genPlay nCards handMap playout
         }
 
 type Arbs =
-    static member Trick() = Arb.fromGen Trick.gen
     static member Playout() = Arb.fromGen Playout.gen
 
 module Property =
@@ -133,30 +114,17 @@ module Property =
             |> decodeCardOpt
             = cardOpt
 
-    let decodeTrick trump leader (encoded : _[]) =
+    let decodePlayout bidder (encoded : _[]) =
         let cards =
-            [ 0 .. Seat.numSeats - 1 ]
+            [ 0 .. Setback.numCardsPerDeal - 1 ]
                 |> Seq.choose (fun iCard ->
                     let iFrom = iCard * Encoding.encodedCardLength
                     let iTo = (iCard + 1) * Encoding.encodedCardLength - 1
                     decodeCardOpt encoded[iFrom .. iTo])
-        let trick = Trick.create leader
-        (trick, cards)
-            ||> Seq.fold (fun trick card ->
-                Trick.addPlay trump card trick)
-
-    [<Property>]
-    let ``Decode trick`` (trick, trump) =
-        let isCurrent = not (Trick.isComplete trick)
-        let actual =
-            Some trick
-                |> Encoding.encodeTrick isCurrent
-                |> decodeTrick trump trick.Leader
-        actual = trick
-
-    let decodePlayout bidder (encoded : _[]) =
         let playout = Playout.create bidder
-        playout
+        (playout, cards)
+            ||> Seq.fold (fun playout card ->
+                Playout.addPlay card playout)
 
     [<Property>]
     let ``Decode playout`` playout =
@@ -169,5 +137,6 @@ module Property =
             actual = playout
 
     [<assembly: Properties(
-        Arbitrary = [| typeof<Arbs> |])>]
+        Arbitrary = [| typeof<Arbs> |],
+        MaxTest = 10000)>]
     do ()
