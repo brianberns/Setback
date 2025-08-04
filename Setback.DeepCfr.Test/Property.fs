@@ -94,7 +94,6 @@ module Property =
                     let iFrom = iCard * Encoding.encodedCardLength
                     let iTo = (iCard + 1) * Encoding.encodedCardLength - 1
                     decodeCardOpt encoded[iFrom .. iTo])
-                |> Seq.rev
         let trick = Trick.create leader
         (trick, cards)
             ||> Seq.fold (fun trick card ->
