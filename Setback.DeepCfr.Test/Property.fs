@@ -1,6 +1,5 @@
 ﻿namespace Setback.DeepCfr.Test
 
-open FsCheck
 open FsCheck.FSharp
 open FsCheck.Xunit
 
@@ -50,9 +49,11 @@ module Trick =
                 Gen.setOfSize Gen.one<Card> size
                     >>= Gen.shuffle
             let! trump = Enum.gen<Suit>
-            return (trick, cards)
-                ||> Seq.fold (fun trick card ->
-                    Trick.addPlay trump card trick)
+            let trick =
+                (trick, cards)
+                    ||> Seq.fold (fun trick card ->
+                        Trick.addPlay trump card trick)
+            return trick, trump
         }
 
 type Arbs =
@@ -100,7 +101,7 @@ module Property =
                 Trick.addPlay trump card trick)
 
     [<Property>]
-    let ``Decode trick`` trump trick =
+    let ``Decode trick`` (trick, trump) =
         let isCurrent = not (Trick.isComplete trick)
         let actual =
             Some trick
