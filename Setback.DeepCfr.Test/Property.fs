@@ -56,8 +56,53 @@ module Trick =
             return trick, trump
         }
 
+module Playout =
+
+    let private toHandMap bidder cards =
+        cards
+            |> Seq.indexed
+            |> Seq.groupBy (fun (iCard, _) ->
+                let n = iCard % Seat.numSeats
+                bidder |> Seat.incr n)
+            |> Seq.map (fun (seat, group) ->
+                let cards =
+                    group
+                        |> Seq.map snd<_, Card>
+                        |> set
+                seat, cards)
+            |> Map
+
+    let rec private genPlay nCards (handMap : Map<_, _>) playout =
+        gen {
+            if nCards > 0 then
+                let player = Playout.currentPlayer playout
+                let hand = handMap[player]
+                let legalPlays =
+                    Playout.legalPlays hand playout
+                        |> Seq.toArray
+                let! iCard = Gen.choose (0, legalPlays.Length - 1)
+                let card = legalPlays[iCard]
+                let playout = Playout.addPlay card playout
+                let hand = Set.remove card hand
+                let handMap = Map.add player hand handMap
+                return! genPlay (nCards - 1) handMap playout
+            else
+                return playout
+        }
+
+    let gen =
+        gen {
+            let! bidder = Enum.gen<Seat>
+            let playout = Playout.create bidder
+            let! nCards = Gen.choose (0, Setback.numCardsPerDeal - 1)
+            let! cards = Gen.setOfSize Gen.one<Card> nCards
+            let handMap = toHandMap bidder cards
+            return! genPlay nCards handMap playout
+        }
+
 type Arbs =
     static member Trick() = Arb.fromGen Trick.gen
+    static member Playout() = Arb.fromGen Playout.gen
 
 module Property =
 
@@ -108,6 +153,20 @@ module Property =
                 |> Encoding.encodeTrick isCurrent
                 |> decodeTrick trump trick.Leader
         actual = trick
+
+    let decodePlayout bidder (encoded : _[]) =
+        let playout = Playout.create bidder
+        playout
+
+    [<Property>]
+    let ``Decode playout`` playout =
+        if Playout.isComplete playout then true   // can't encode a complete playout
+        else
+            let actual =
+                playout
+                    |> Encoding.encodePlayout
+                    |> decodePlayout playout.Bidder
+            actual = playout
 
     [<assembly: Properties(
         Arbitrary = [| typeof<Arbs> |])>]

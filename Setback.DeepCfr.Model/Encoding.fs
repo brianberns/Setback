@@ -97,11 +97,21 @@ module Encoding =
 
     let encodedCardLength = Card.numCards
 
+    let encodedCompleteTrickLength =
+        Seat.numSeats * encodedCardLength
+
+    let encodedIncompleteTrickLength =
+        (Seat.numSeats - 1) * encodedCardLength
+
+    let encodedPlayoutLength =
+        (encodedCompleteTrickLength
+            * (Setback.numCardsPerDeal - 1))
+            + encodedIncompleteTrickLength
+
     /// Total encoded length of an info set.
     let encodedLength =
-        Card.numCards                          // current player's hand
-            + ((Setback.numCardsPerDeal - 1)   // tricks so far
-                * encodedCardLength)
+        Card.numCards                // current player's hand
+            + encodedPlayoutLength   // playout
 
     /// Encodes the given info set as a vector.
     let encode infoSet : Encoding =
@@ -112,7 +122,7 @@ module Encoding =
         let encoded =
             BitArray [|
                 yield! encodeCards infoSet.Hand   // current player's hand
-                yield! encodePlayout playout      // tricks so far
+                yield! encodePlayout playout      // playout
             |]
         assert(encoded.Length = encodedLength)
         encoded
