@@ -1,6 +1,5 @@
 ﻿namespace Setback.DeepCfr.Learn
 
-open PlayingCards
 open Setback
 
 module Tournament =
@@ -49,8 +48,8 @@ module Tournament =
 
         if settings.Verbose then
             printfn "\nTournament:"
-            for (KeyValue(seat, points)) in score.ScoreMap do
-                printfn $"   %-6s{string seat}: {points}"
+            for (KeyValue(team, points)) in score.ScoreMap do
+                printfn $"   %-6s{Team.toString team}: {points}"
             printfn $"   Payoff: %0.5f{payoff}"
 
         payoff
