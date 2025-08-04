@@ -65,8 +65,10 @@ module Playout =
         gen {
             let! bidder = Enum.gen<Seat>
             let! deck = Gen.shuffle Card.allCards
-            let cards = Seq.take Setback.numCardsPerDeal deck
-            let handMap = toHandMap bidder cards
+            let handMap =
+                deck
+                    |> Seq.take Setback.numCardsPerDeal
+                    |> toHandMap bidder
             let playout = Playout.create bidder
             let! nCards = Gen.choose (0, Setback.numCardsPerDeal)
             return! genPlay nCards handMap playout
@@ -128,6 +130,6 @@ module Property =
 
     [<assembly: Properties(
         Arbitrary = [| typeof<Arbs> |],
-        Verbose = true,
+        Verbose = false,
         MaxTest = 1000)>]
     do ()
