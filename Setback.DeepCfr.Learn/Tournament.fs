@@ -31,7 +31,7 @@ module Tournament =
         let challengerTeam = Team.EastWest
         let challengerSeats = Team.seats challengerTeam
         let playerMap =
-            Enum.getValues<Seat>
+            Seat.allSeats
                 |> Seq.map (fun seat ->
                     let player =
                         if challengerSeats.Contains(seat) then

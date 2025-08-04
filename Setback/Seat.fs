@@ -11,9 +11,12 @@ type Seat =
 
 module Seat =
 
+    /// All seats.
+    let allSeats =
+        Enum.getValues<Seat>
+
     /// Total number of seats.
-    let numSeats =
-        Enum.getValues<Seat>.Length
+    let numSeats = allSeats.Length
 
     /// Converts the given seat to a character.
     let toChar seat =

@@ -13,7 +13,7 @@ type TrickControl() as this =
 
     /// One card per seat.
     let cardControlMap =
-        Enum.getValues<Seat>
+        Seat.allSeats
             |> Seq.map (fun seat ->
                 let ctrl =
                     new CardControl()
@@ -26,7 +26,7 @@ type TrickControl() as this =
 
     /// One label per seat.
     let labelMap =
-        Enum.getValues<Seat>
+        Seat.allSeats
             |> Seq.map (fun seat ->
                 let ctrl =
                     new Label(

@@ -20,7 +20,7 @@ type MainForm() as this =
 
     /// Unplayed cards for each seat.
     let handControlMap =
-        Enum.getValues<Seat>
+        Seat.allSeats
             |> Seq.map (fun seat ->
                 let ctrl =
                     new HandControl(

@@ -106,16 +106,38 @@ module Property =
             |> decodeCardOpt
             = cardOpt
 
+    let decodeSeatOpt (encoded : _[]) =
+        [ 0 .. encoded.Length - 1 ]
+            |> Seq.where (fun iSeat -> encoded[iSeat])
+            |> Seq.tryExactlyOne
+            |> Option.map enum<Seat>
+
+    let decodePlayOpt (encoded : _[]) =
+
+        let iFrom = 0
+        let iTo = Encoding.encodedSeatLength - 1
+        let seatOpt = decodeSeatOpt encoded[iFrom .. iTo]
+
+        let iFrom = Encoding.encodedSeatLength
+        let iTo = iFrom + (Encoding.encodedCardLength - 1)
+        let cardOpt = decodeCardOpt encoded[iFrom .. iTo]
+
+        match seatOpt, cardOpt with
+            | Some seat, Some card -> Some (seat, card)
+            | None, None -> None
+            | _ -> failwith "Invalid play"
+
     let decodePlayout bidder (encoded : _[]) =
-        let cards =
+        let plays =
             [ 0 .. Setback.numCardsPerDeal - 1 ]
-                |> Seq.choose (fun iCard ->
-                    let iFrom = iCard * Encoding.encodedCardLength
-                    let iTo = (iCard + 1) * Encoding.encodedCardLength - 1
-                    decodeCardOpt encoded[iFrom .. iTo])
+                |> Seq.choose (fun iPlay ->
+                    let iFrom = iPlay * Encoding.encodedPlayLength
+                    let iTo = (iPlay + 1) * Encoding.encodedPlayLength - 1
+                    decodePlayOpt encoded[iFrom .. iTo])
         let playout = Playout.create bidder
-        (playout, cards)
-            ||> Seq.fold (fun playout card ->
+        (playout, plays)
+            ||> Seq.fold (fun playout (seat, card) ->
+                assert(Playout.currentPlayer playout = seat)
                 Playout.addPlay card playout)
 
     [<Property>]

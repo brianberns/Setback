@@ -23,7 +23,7 @@ module Deal =
 
             // get bid animation for each seat
         let auctionMap =
-            Enum.getValues<Seat>
+            Seat.allSeats
                 |> Seq.map (fun seat ->
                     let animBid =
                         AuctionView.bidAnim surface seat

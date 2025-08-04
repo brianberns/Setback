@@ -17,64 +17,98 @@ module Encoding =
                 if bits[i] then 1f else 0f
         |]
 
-    /// Encodes the given (card, value) pairs as a
-    /// vector in the deck size.
+    let encodedCardLength = Card.numCards
+
+    /// Encodes the given (card, value) pairs as a vector
+    /// in the deck size.
     let inline encodeCardValues pairs =
         let valueMap =
             pairs
                 |> Seq.map (fun (card, value) ->
                     Card.toIndex card, value)
                 |> Map
-        [|
-            for index = 0 to Card.numCards - 1 do
-                valueMap
-                    |> Map.tryFind index
-                    |> Option.defaultValue
-                        LanguagePrimitives.GenericZero   // encode to input type
-        |]
+        let encoded =
+            [|
+                for index = 0 to Card.numCards - 1 do
+                    valueMap
+                        |> Map.tryFind index
+                        |> Option.defaultValue
+                            LanguagePrimitives.GenericZero   // encode to input type
+            |]
+        assert(encoded.Length = encodedCardLength)
+        encoded
 
-    /// Encodes the given cards as a multi-hot vector
-    /// in the deck size.
+    /// Encodes the given cards as a multi-hot vector in
+    /// the deck size.
     let encodeCards cards =
         let cardIndexes =
             cards
                 |> Seq.map Card.toIndex
                 |> set
+        let encoded =
+            [|
+                for index = 0 to Card.numCards - 1 do
+                    cardIndexes.Contains(index)
+            |]
+        assert(encoded.Length = encodedCardLength)
+        encoded
+
+    let encodedSeatLength = Seat.numSeats
+
+    /// Encodes the given seat as a one-hot vector in the
+    /// number of seats.
+    let encodeSeat (seatOpt : Option<Seat>) =
         [|
-            for index = 0 to Card.numCards - 1 do
-                cardIndexes.Contains(index)
+            for seat in Seat.allSeats do
+                Some seat = seatOpt
         |]
 
-    /// Encodes each card in the given trick as a one-
-    /// hot vector in the deck size and concatenates those
-    /// vectors. Since the cards are in reverse order (e.g.
-    /// ENW for South about to play), this gets encoded like:
-    ///    After 3 plays: ENW  -> WNE
-    ///    After 2 plays: EN   -> -NE
-    ///    After 1 plays: E    -> --E
-    ///    After 0 plays:      -> ---
+    let encodedPlayLength =
+        encodedSeatLength + encodedCardLength
+
+    let encodedCompleteTrickLength =
+        Seat.numSeats * encodedPlayLength
+
+    let encodedIncompleteTrickLength =
+        (Seat.numSeats - 1) * encodedPlayLength
+
+    /// Encodes each seat+card in the given trick as one-hot
+    /// vectors and concatenates those vectors.
     let encodeTrick isCurrent trickOpt =
-        let cards =
+        let plays =
             trickOpt
-                |> Option.map (fun trick ->
-                    List.toArray trick.Cards)
+                |> Option.map (Trick.plays >> Seq.toArray)
                 |> Option.defaultValue Array.empty
         assert(
             match isCurrent, trickOpt.IsSome with
-                | true, true -> cards.Length < Seat.numSeats
+                | true, true -> plays.Length < Seat.numSeats
                 | true, false -> false
-                | false, true -> cards.Length = Seat.numSeats
-                | false, false -> cards.Length = 0)
-        let decr = if isCurrent then 2 else 1
-        [|
-            for iCard = Seat.numSeats - decr downto 0 do
-                yield!
-                    if iCard < cards.Length then
-                        Some cards[iCard]
-                    else None
-                    |> Option.toArray
-                    |> encodeCards
-        |]
+                | false, true -> plays.Length = Seat.numSeats
+                | false, false -> plays.Length = 0)
+        let numPlays =
+            if isCurrent then Seat.numSeats - 1
+            else Seat.numSeats
+        let encoded =
+            [|
+                for iPlay = 0 to numPlays - 1 do
+                    let seatOpt, cards =
+                        if iPlay < plays.Length then
+                            let seat, card = plays[iPlay]
+                            Some seat, [| card |]
+                        else
+                            None, Array.empty
+                    yield! encodeSeat seatOpt
+                    yield! encodeCards cards
+            |]
+        assert(encoded.Length =
+            if isCurrent then encodedIncompleteTrickLength
+            else encodedCompleteTrickLength)
+        encoded
+
+    let encodedPlayoutLength =
+        (encodedCompleteTrickLength
+            * (Setback.numCardsPerHand - 1))
+            + encodedIncompleteTrickLength
 
     let encodePlayout playout =
         let pairs =
@@ -85,32 +119,22 @@ module Encoding =
                 for trick in playout.CompletedTricks do
                     trick, false
             |]
-        [|
-            for iTrick = Setback.numCardsPerHand - 1 downto 0 do
-                yield!
-                    if iTrick < pairs.Length then
-                        let trick, isCurrent = pairs[iTrick]
-                        encodeTrick isCurrent (Some trick)
-                    else
-                        encodeTrick false None
-        |]
-
-    let encodedCardLength = Card.numCards
-
-    let encodedCompleteTrickLength =
-        Seat.numSeats * encodedCardLength
-
-    let encodedIncompleteTrickLength =
-        (Seat.numSeats - 1) * encodedCardLength
-
-    let encodedPlayoutLength =
-        (encodedCompleteTrickLength
-            * (Setback.numCardsPerDeal - 1))
-            + encodedIncompleteTrickLength
+        let encoded =
+            [|
+                for iTrick = Setback.numCardsPerHand - 1 downto 0 do
+                    yield!
+                        if iTrick < pairs.Length then
+                            let trick, isCurrent = pairs[iTrick]
+                            encodeTrick isCurrent (Some trick)
+                        else
+                            encodeTrick false None
+            |]
+        assert(encoded.Length = encodedPlayoutLength)
+        encoded
 
     /// Total encoded length of an info set.
     let encodedLength =
-        Card.numCards                // current player's hand
+        encodedCardLength            // current player's hand
             + encodedPlayoutLength   // playout
 
     /// Encodes the given info set as a vector.

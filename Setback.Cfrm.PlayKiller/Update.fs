@@ -84,7 +84,7 @@ module Message =
                     dealer ewScore nsScore
             NumCards = 0
             CardMap =
-                Enum.getValues<Seat>
+                Seat.allSeats
                     |> Seq.map (fun seat ->
                         seat, Array.empty)
                     |> Map
