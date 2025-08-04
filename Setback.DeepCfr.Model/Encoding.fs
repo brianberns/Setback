@@ -53,32 +53,32 @@ module Encoding =
         assert(encoded.Length = encodedCardLength)
         encoded
 
-    let encodedSuitLength = Suit.numSuits
+    let private encodedSuitLength = Suit.numSuits
 
     /// Encodes the given suit as a one-hot vector in the
     /// number of seats.
-    let encodeSuit (suitOpt : Option<Suit>) =
+    let private encodeSuit (suitOpt : Option<Suit>) =
         [|
             for suit in Suit.allSuits do
                 Some suit = suitOpt
         |]
 
-    let encodedSeatLength = Seat.numSeats
+    let private encodedSeatLength = Seat.numSeats
 
     /// Encodes the given seat as a one-hot vector in the
     /// number of seats.
-    let encodeSeat (seatOpt : Option<Seat>) =
+    let private encodeSeat (seatOpt : Option<Seat>) =
         [|
             for seat in Seat.allSeats do
                 Some seat = seatOpt
         |]
 
-    let encodedCurrentTrickLength =
+    let private encodedCurrentTrickLength =
         (Seat.numSeats - 1) * encodedCardLength
 
     /// Encodes each card in the given trick as a one-hot
     /// vector and concatenates those vectors.
-    let encodeTrick trick =
+    let private encodeTrick trick =
         assert(Trick.isComplete trick |> not)
         let cards = Seq.toArray trick.Cards
         let encoded =
@@ -94,23 +94,44 @@ module Encoding =
         assert(encoded.Length = encodedCurrentTrickLength)
         encoded
 
-    let encodedPlayoutLength =
-        encodedSuitLength + encodedCurrentTrickLength
+    let private encodedVoidLength =
+        (Seat.numSeats - 1) * Suit.numSuits
 
-    let encodePlayout playout =
+    /// Encodes the given voids as a multi-hot vector in the
+    /// number of suits times the number of other seats.
+    let private encodeVoids player voids =
+        let encoded =
+            [|
+                for suit in Suit.allSuits do
+                    let seats =
+                        Seat.cycle player |> Seq.skip 1
+                    for seat in seats do
+                        Set.contains (seat, suit) voids
+            |]
+        assert(encoded.Length = encodedVoidLength)
+        encoded
+
+    let private encodedPlayoutLength =
+        encodedSuitLength
+            + encodedCurrentTrickLength
+            + encodedVoidLength
+
+    let private encodePlayout playout =
+        let player = Playout.currentPlayer playout
         let trick = Playout.currentTrick playout
         let encoded =
             [|
                 yield! encodeSuit playout.TrumpOpt
                 yield! encodeTrick trick
+                yield! encodeVoids player playout.Voids
             |]
         assert(encoded.Length = encodedPlayoutLength)
         encoded
 
     /// Total encoded length of an info set.
     let encodedLength =
-        encodedCardLength            // current player's hand
-            + encodedPlayoutLength   // playout
+        encodedCardLength
+            + encodedPlayoutLength
 
     /// Encodes the given info set as a vector.
     let encode infoSet : Encoding =
@@ -120,8 +141,8 @@ module Encoding =
                 | None -> failwith "No playout"
         let encoded =
             BitArray [|
-                yield! encodeCards infoSet.Hand   // current player's hand
-                yield! encodePlayout playout      // playout
+                yield! encodeCards infoSet.Hand
+                yield! encodePlayout playout
             |]
         assert(encoded.Length = encodedLength)
         encoded
