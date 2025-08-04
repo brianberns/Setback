@@ -95,10 +95,13 @@ module Encoding =
                         encodeTrick false None
         |]
 
+    let encodedCardLength = Card.numCards
+
     /// Total encoded length of an info set.
     let encodedLength =
-        Card.numCards                                           // current player's hand
-            + ((Setback.numCardsPerDeal - 1) * Card.numCards)   // tricks so far
+        Card.numCards                          // current player's hand
+            + ((Setback.numCardsPerDeal - 1)   // tricks so far
+                * encodedCardLength)
 
     /// Encodes the given info set as a vector.
     let encode infoSet : Encoding =
