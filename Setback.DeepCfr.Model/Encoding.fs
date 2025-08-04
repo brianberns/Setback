@@ -76,7 +76,7 @@ module Encoding =
                     |> encodeCards
         |]
 
-    let private encodeTricks playout =
+    let encodePlayout playout =
         let pairs =
             [|
                 match playout.CurrentTrickOpt with
@@ -112,7 +112,7 @@ module Encoding =
         let encoded =
             BitArray [|
                 yield! encodeCards infoSet.Hand   // current player's hand
-                yield! encodeTricks playout       // tricks so far
+                yield! encodePlayout playout      // tricks so far
             |]
         assert(encoded.Length = encodedLength)
         encoded
