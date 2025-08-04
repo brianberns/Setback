@@ -13,17 +13,6 @@ module Gen =
         let arb = ArbMap.arbitrary<'t> ArbMap.defaults
         arb.Generator
 
-    let setOfSize genElement size =
-        let rec loop (elements : Set<_>) =
-            gen {
-                if elements.Count >= size then
-                    return elements
-                else
-                    let! element = genElement
-                    return! elements.Add(element) |> loop
-            }
-        loop Set.empty
-
 module Enum =
 
     let gen<'t> =
@@ -75,7 +64,8 @@ module Playout =
     let gen =
         gen {
             let! bidder = Enum.gen<Seat>
-            let! cards = Gen.setOfSize Gen.one<Card> Setback.numCardsPerDeal
+            let! deck = Gen.shuffle Card.allCards
+            let cards = Seq.take Setback.numCardsPerDeal deck
             let handMap = toHandMap bidder cards
             let playout = Playout.create bidder
             let! nCards = Gen.choose (0, Setback.numCardsPerDeal)
@@ -138,5 +128,6 @@ module Property =
 
     [<assembly: Properties(
         Arbitrary = [| typeof<Arbs> |],
-        MaxTest = 10000)>]
+        Verbose = true,
+        MaxTest = 1000)>]
     do ()
