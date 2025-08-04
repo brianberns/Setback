@@ -65,7 +65,7 @@ module Trickster =
     let private chooseTrump hand =
         let cloudHand =
             cloud.Hand(toCloudCards hand)
-        Enum.getValues<Suit>
+        Suit.allSuits
             |> Seq.map toCloudSuit
             |> Seq.maxBy (fun cloudSuit ->
                 bidBot.EstimatedPoints(cloudHand, cloudSuit))

@@ -9,9 +9,11 @@ type Suit =
 
 module Suit =
 
+    /// All suits in a deck.
+    let allSuits = Enum.getValues<Suit>
+
     /// Number of suits in a deck.
-    let numSuits =
-        Enum.getValues<Suit>.Length
+    let numSuits = allSuits.Length
 
     /// Converts the given suit to a character.
     let toChar suit =

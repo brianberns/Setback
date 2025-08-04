@@ -53,6 +53,16 @@ module Encoding =
         assert(encoded.Length = encodedCardLength)
         encoded
 
+    let encodedSuitLength = Suit.numSuits
+
+    /// Encodes the given suit as a one-hot vector in the
+    /// number of seats.
+    let encodeSuit (suitOpt : Option<Suit>) =
+        [|
+            for suit in Suit.allSuits do
+                Some suit = suitOpt
+        |]
+
     let encodedSeatLength = Seat.numSeats
 
     /// Encodes the given seat as a one-hot vector in the
@@ -63,71 +73,36 @@ module Encoding =
                 Some seat = seatOpt
         |]
 
-    let encodedPlayLength =
-        encodedSeatLength + encodedCardLength
+    let encodedCurrentTrickLength =
+        (Seat.numSeats - 1) * encodedCardLength
 
-    let encodedCompleteTrickLength =
-        Seat.numSeats * encodedPlayLength
-
-    let encodedIncompleteTrickLength =
-        (Seat.numSeats - 1) * encodedPlayLength
-
-    /// Encodes each seat+card in the given trick as one-hot
-    /// vectors and concatenates those vectors.
-    let encodeTrick isCurrent trickOpt =
-        let plays =
-            trickOpt
-                |> Option.map (Trick.plays >> Seq.toArray)
-                |> Option.defaultValue Array.empty
-        assert(
-            match isCurrent, trickOpt.IsSome with
-                | true, true -> plays.Length < Seat.numSeats
-                | true, false -> false
-                | false, true -> plays.Length = Seat.numSeats
-                | false, false -> plays.Length = 0)
-        let numPlays =
-            if isCurrent then Seat.numSeats - 1
-            else Seat.numSeats
+    /// Encodes each card in the given trick as a one-hot
+    /// vector and concatenates those vectors.
+    let encodeTrick trick =
+        assert(Trick.isComplete trick |> not)
+        let cards = Seq.toArray trick.Cards
         let encoded =
             [|
-                for iPlay = 0 to numPlays - 1 do
-                    let seatOpt, cards =
-                        if iPlay < plays.Length then
-                            let seat, card = plays[iPlay]
-                            Some seat, [| card |]
-                        else
-                            None, Array.empty
-                    yield! encodeSeat seatOpt
+                for iCard = 0 to Seat.numSeats - 2 do
+                    let cards =
+                        if iCard < cards.Length then
+                            Some cards[iCard]
+                        else None
+                        |> Option.toArray
                     yield! encodeCards cards
             |]
-        assert(encoded.Length =
-            if isCurrent then encodedIncompleteTrickLength
-            else encodedCompleteTrickLength)
+        assert(encoded.Length = encodedCurrentTrickLength)
         encoded
 
     let encodedPlayoutLength =
-        (encodedCompleteTrickLength
-            * (Setback.numCardsPerHand - 1))
-            + encodedIncompleteTrickLength
+        encodedSuitLength + encodedCurrentTrickLength
 
     let encodePlayout playout =
-        let pairs =
-            [|
-                match playout.CurrentTrickOpt with
-                    | Some trick -> trick, true
-                    | None -> failwith "No current trick"
-                for trick in playout.CompletedTricks do
-                    trick, false
-            |]
+        let trick = Playout.currentTrick playout
         let encoded =
             [|
-                for iTrick = Setback.numCardsPerHand - 1 downto 0 do
-                    yield!
-                        if iTrick < pairs.Length then
-                            let trick, isCurrent = pairs[iTrick]
-                            encodeTrick isCurrent (Some trick)
-                        else
-                            encodeTrick false None
+                yield! encodeSuit playout.TrumpOpt
+                yield! encodeTrick trick
             |]
         assert(encoded.Length = encodedPlayoutLength)
         encoded
