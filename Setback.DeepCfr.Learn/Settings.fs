@@ -71,7 +71,7 @@ module Settings =
 
         let settings =
             {
-                HiddenSize = 256
+                HiddenSize = 1024
                 NumHiddenLayers = 1
                 LearningRate = 1e-3
                 SampleDecay = 0.5
