@@ -70,18 +70,23 @@ module Encoding =
                 Some suit = suitOpt
         |]
 
-    let private encodedSeatLength = Seat.numSeats
-
-    /// Encodes the given seat as a one-hot vector in the
-    /// number of seats.
-    let private encodeSeat (seatOpt : Option<Seat>) =
-        [|
-            for seat in Seat.allSeats do
-                Some seat = seatOpt
-        |]
-
     let private encodedCurrentTrickLength =
         (Seat.numSeats - 1) * encodedCardLength
+
+    let private encodePointTeam trumpOpt rankTeamOpt =
+        let cardOpt =
+            match trumpOpt, rankTeamOpt with
+                | Some trump, Some (rank, _team : Team) ->
+                    Some (Card(rank, trump))
+                | _, None -> None
+                | None, Some _ -> failwith "No trump"
+        encodeCard cardOpt
+
+    let private encodeJackTeam trumpOpt jackTeamOpt =
+        jackTeamOpt
+            |> Option.map (fun team ->
+                Rank.Jack, team)
+            |> encodePointTeam trumpOpt
 
     /// Encodes each card in the given trick as one-hot
     /// vectors, and concatenates those vectors.
@@ -100,11 +105,11 @@ module Encoding =
         assert(encoded.Length = encodedCurrentTrickLength)
         encoded
 
-    let private encodedVoidsLength = Seat.numSeats - 1
+    let private encodedTrumpVoidsLength = Seat.numSeats - 1
 
     /// Encodes the given trump voids as a multi-hot vector
     /// in the the number of other seats.
-    let private encodeVoids player trumpOpt voids =
+    let private encodeTrumpVoids player trumpOpt voids =
         let seats = Seat.cycle player |> Seq.skip 1
         let encoded =
             [|
@@ -114,13 +119,14 @@ module Encoding =
                             Set.contains (seat, (trump : Suit)) voids)
                         |> Option.defaultValue false
             |]
-        assert(encoded.Length = encodedVoidsLength)
+        assert(encoded.Length = encodedTrumpVoidsLength)
         encoded
 
     let private encodedPlayoutLength =
-        encodedSuitLength
-            + encodedCurrentTrickLength
-            + encodedVoidsLength
+        encodedSuitLength                 // trump
+            + (3 * encodedCardLength)     // high, low, jack
+            + encodedCurrentTrickLength   // current trick
+            + encodedTrumpVoidsLength     // trump voids
 
     let private encodePlayout playout =
         let player = Playout.currentPlayer playout
@@ -128,8 +134,14 @@ module Encoding =
         let encoded =
             [|
                 yield! encodeSuit playout.TrumpOpt
+                yield! encodePointTeam
+                    playout.TrumpOpt playout.HighTrumpTeamOpt
+                yield! encodePointTeam
+                    playout.TrumpOpt playout.LowTrumpTeamOpt
+                yield! encodeJackTeam
+                    playout.TrumpOpt playout.JackTrumpTeamOpt
                 yield! encodeTrick trick
-                yield! encodeVoids
+                yield! encodeTrumpVoids
                     player playout.TrumpOpt playout.Voids
             |]
         assert(encoded.Length = encodedPlayoutLength)
