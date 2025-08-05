@@ -81,37 +81,22 @@ module Encoding =
         |]
 
     let private encodedCurrentTrickLength =
-        (Seat.numSeats - 1) * (encodedCardLength + 1)
+        (Seat.numSeats - 1) * encodedCardLength
 
-    /// Encodes each card in the given trick as a one-hot
-    /// vector plus a flag, and concatenates those vectors.
+    /// Encodes each card in the given trick as one-hot
+    /// vectors, and concatenates those vectors.
     let private encodeTrick trick =
         assert(Trick.isComplete trick |> not)
-
         let cards = Seq.toArray trick.Cards
-        let highCardOpt = Option.map snd trick.HighPlayOpt
         let encoded =
             [|
-                    // up to n-1 cards on trick so far
                 for iCard = 0 to Seat.numSeats - 2 do
-
-                        // card played?
-                    let cardOpt =
+                    yield!
                         if iCard < cards.Length then
                             Some cards[iCard]
                         else None
-
-                        // encode card
-                    yield! encodeCard cardOpt
-
-                        // card is winning this trick?
-                    yield
-                        match cardOpt, highCardOpt with
-                            | Some card, Some highCard ->
-                                card = highCard
-                            | _ -> false
+                        |> encodeCard
             |]
-
         assert(encoded.Length = encodedCurrentTrickLength)
         encoded
 
