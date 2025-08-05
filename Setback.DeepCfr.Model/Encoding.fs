@@ -17,7 +17,7 @@ module Encoding =
                 if bits[i] then 1f else 0f
         |]
 
-    let encodedCardLength = Card.numCards
+    let encodedCardsLength = Card.numCards
 
     /// Encodes the given (card, value) pairs as a vector
     /// in the deck size.
@@ -35,7 +35,7 @@ module Encoding =
                         |> Option.defaultValue
                             LanguagePrimitives.GenericZero   // encode to input type
             |]
-        assert(encoded.Length = encodedCardLength)
+        assert(encoded.Length = encodedCardsLength)
         encoded
 
     /// Encodes the given cards as a multi-hot vector in
@@ -50,7 +50,7 @@ module Encoding =
                 for index = 0 to Card.numCards - 1 do
                     cardIndexes.Contains(index)
             |]
-        assert(encoded.Length = encodedCardLength)
+        assert(encoded.Length = encodedCardsLength)
         encoded
 
     /// Encodes the given card as a single-hot vector in
@@ -71,22 +71,7 @@ module Encoding =
         |]
 
     let private encodedCurrentTrickLength =
-        (Seat.numSeats - 1) * encodedCardLength
-
-    let private encodePointTeam trumpOpt rankTeamOpt =
-        let cardOpt =
-            match trumpOpt, rankTeamOpt with
-                | Some trump, Some (rank, _team : Team) ->
-                    Some (Card(rank, trump))
-                | _, None -> None
-                | None, Some _ -> failwith "No trump"
-        encodeCard cardOpt
-
-    let private encodeJackTeam trumpOpt jackTeamOpt =
-        jackTeamOpt
-            |> Option.map (fun team ->
-                Rank.Jack, team)
-            |> encodePointTeam trumpOpt
+        (Seat.numSeats - 1) * encodedCardsLength
 
     /// Encodes each card in the given trick as one-hot
     /// vectors, and concatenates those vectors.
@@ -124,7 +109,6 @@ module Encoding =
 
     let private encodedPlayoutLength =
         encodedSuitLength                 // trump
-            + (3 * encodedCardLength)     // high, low, jack
             + encodedCurrentTrickLength   // current trick
             + encodedTrumpVoidsLength     // trump voids
 
@@ -134,12 +118,6 @@ module Encoding =
         let encoded =
             [|
                 yield! encodeSuit playout.TrumpOpt
-                yield! encodePointTeam
-                    playout.TrumpOpt playout.HighTrumpTeamOpt
-                yield! encodePointTeam
-                    playout.TrumpOpt playout.LowTrumpTeamOpt
-                yield! encodeJackTeam
-                    playout.TrumpOpt playout.JackTrumpTeamOpt
                 yield! encodeTrick trick
                 yield! encodeTrumpVoids
                     player playout.TrumpOpt playout.Voids
@@ -149,7 +127,9 @@ module Encoding =
 
     /// Total encoded length of an info set.
     let encodedLength =
-        encodedCardLength + encodedPlayoutLength
+        encodedCardsLength           // current player's hand
+            + encodedPlayoutLength   // playout 
+            + encodedCardsLength     // unplayed cards not in current player's hand
 
     /// Encodes the given info set as a vector.
     let encode infoSet : Encoding =
@@ -157,10 +137,13 @@ module Encoding =
             match infoSet.Deal.PlayoutOpt with
                 | Some playout -> playout
                 | None -> failwith "No playout"
+        let unseen =
+            playout.UnplayedCards - set infoSet.Hand
         let encoded =
             BitArray [|
                 yield! encodeCards infoSet.Hand
                 yield! encodePlayout playout
+                yield! encodeCards unseen
             |]
         assert(encoded.Length = encodedLength)
         encoded
