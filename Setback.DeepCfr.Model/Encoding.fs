@@ -75,12 +75,12 @@ module Encoding =
 
     /// Encodes each card in the given trick as one-hot
     /// vectors, and concatenates those vectors.
-    let private encodeTrick trick =
+    let private encodeCurrentTrick trick =
         assert(Trick.isComplete trick |> not)
         let cards = Seq.toArray trick.Cards
         let encoded =
             [|
-                for iCard = 0 to Seat.numSeats - 2 do
+                for iCard = 0 to Seat.numSeats - 2 do   // exclude the current player
                     yield!
                         if iCard < cards.Length then
                             Some cards[iCard]
@@ -123,7 +123,7 @@ module Encoding =
         let encoded =
             [|
                 yield! encodeSuit playout.TrumpOpt
-                yield! encodeTrick trick
+                yield! encodeCurrentTrick trick
                 yield! encodeCards seen
                 yield! encodeTrumpVoids
                     player playout.TrumpOpt playout.Voids
