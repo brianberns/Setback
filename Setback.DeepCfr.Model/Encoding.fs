@@ -107,18 +107,24 @@ module Encoding =
         assert(encoded.Length = encodedTrumpVoidsLength)
         encoded
 
+    let private allCards = set Card.allCards
+
     let private encodedPlayoutLength =
         encodedSuitLength                 // trump
             + encodedCurrentTrickLength   // current trick
+            + encodedCardsLength          // played cards not in current trick
             + encodedTrumpVoidsLength     // trump voids
 
     let private encodePlayout playout =
         let player = Playout.currentPlayer playout
         let trick = Playout.currentTrick playout
+        let seen =
+            allCards - playout.UnplayedCards - set trick.Cards
         let encoded =
             [|
                 yield! encodeSuit playout.TrumpOpt
                 yield! encodeTrick trick
+                yield! encodeCards seen
                 yield! encodeTrumpVoids
                     player playout.TrumpOpt playout.Voids
             |]
@@ -129,7 +135,6 @@ module Encoding =
     let encodedLength =
         encodedCardsLength           // current player's hand
             + encodedPlayoutLength   // playout 
-            + encodedCardsLength     // unplayed cards not in current player's hand
 
     /// Encodes the given info set as a vector.
     let encode infoSet : Encoding =
@@ -137,13 +142,10 @@ module Encoding =
             match infoSet.Deal.PlayoutOpt with
                 | Some playout -> playout
                 | None -> failwith "No playout"
-        let unseen =
-            playout.UnplayedCards - set infoSet.Hand
         let encoded =
             BitArray [|
                 yield! encodeCards infoSet.Hand
                 yield! encodePlayout playout
-                yield! encodeCards unseen
             |]
         assert(encoded.Length = encodedLength)
         encoded
