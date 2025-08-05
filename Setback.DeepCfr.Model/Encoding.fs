@@ -100,27 +100,27 @@ module Encoding =
         assert(encoded.Length = encodedCurrentTrickLength)
         encoded
 
-    let private encodedVoidLength =
-        (Seat.numSeats - 1) * Suit.numSuits
+    let private encodedVoidsLength = Seat.numSeats - 1
 
-    /// Encodes the given voids as a multi-hot vector in the
-    /// number of suits times the number of other seats.
-    let private encodeVoids player voids =
+    /// Encodes the given trump voids as a multi-hot vector
+    /// in the the number of other seats.
+    let private encodeVoids player trumpOpt voids =
+        let seats = Seat.cycle player |> Seq.skip 1
         let encoded =
             [|
-                for suit in Suit.allSuits do
-                    let seats =
-                        Seat.cycle player |> Seq.skip 1
-                    for seat in seats do
-                        Set.contains (seat, suit) voids
+                for seat in seats do
+                    trumpOpt
+                        |> Option.map (fun trump ->
+                            Set.contains (seat, (trump : Suit)) voids)
+                        |> Option.defaultValue false
             |]
-        assert(encoded.Length = encodedVoidLength)
+        assert(encoded.Length = encodedVoidsLength)
         encoded
 
     let private encodedPlayoutLength =
         encodedSuitLength
             + encodedCurrentTrickLength
-            // + encodedVoidLength
+            + encodedVoidsLength
 
     let private encodePlayout playout =
         let player = Playout.currentPlayer playout
@@ -129,15 +129,15 @@ module Encoding =
             [|
                 yield! encodeSuit playout.TrumpOpt
                 yield! encodeTrick trick
-                // yield! encodeVoids player playout.Voids
+                yield! encodeVoids
+                    player playout.TrumpOpt playout.Voids
             |]
         assert(encoded.Length = encodedPlayoutLength)
         encoded
 
     /// Total encoded length of an info set.
     let encodedLength =
-        encodedCardLength
-            + encodedPlayoutLength
+        encodedCardLength + encodedPlayoutLength
 
     /// Encodes the given info set as a vector.
     let encode infoSet : Encoding =
