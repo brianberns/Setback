@@ -53,6 +53,13 @@ module Encoding =
         assert(encoded.Length = encodedCardLength)
         encoded
 
+    /// Encodes the given card as a single-hot vector in
+    /// the deck size.
+    let encodeCard cardOpt =
+        cardOpt
+            |> Option.toArray
+            |> encodeCards
+
     let private encodedSuitLength = Suit.numSuits
 
     /// Encodes the given suit as a one-hot vector in the
@@ -74,23 +81,30 @@ module Encoding =
         |]
 
     let private encodedCurrentTrickLength =
-        (Seat.numSeats - 1) * encodedCardLength
+        (Seat.numSeats - 1) * (encodedCardLength + 1)
 
     /// Encodes each card in the given trick as a one-hot
     /// vector and concatenates those vectors.
     let private encodeTrick trick =
         assert(Trick.isComplete trick |> not)
+
         let cards = Seq.toArray trick.Cards
+        let highCardOpt = Option.map snd trick.HighPlayOpt
         let encoded =
             [|
                 for iCard = 0 to Seat.numSeats - 2 do
-                    let cards =
+                    let cardOpt =
                         if iCard < cards.Length then
                             Some cards[iCard]
                         else None
-                        |> Option.toArray
-                    yield! encodeCards cards
+                    yield! encodeCard cardOpt
+                    yield
+                        match cardOpt, highCardOpt with
+                            | Some card, Some highCard ->
+                                card = highCard
+                            | _ -> false
             |]
+
         assert(encoded.Length = encodedCurrentTrickLength)
         encoded
 
@@ -114,7 +128,7 @@ module Encoding =
     let private encodedPlayoutLength =
         encodedSuitLength
             + encodedCurrentTrickLength
-            + encodedVoidLength
+            // + encodedVoidLength
 
     let private encodePlayout playout =
         let player = Playout.currentPlayer playout
@@ -123,7 +137,7 @@ module Encoding =
             [|
                 yield! encodeSuit playout.TrumpOpt
                 yield! encodeTrick trick
-                yield! encodeVoids player playout.Voids
+                // yield! encodeVoids player playout.Voids
             |]
         assert(encoded.Length = encodedPlayoutLength)
         encoded
