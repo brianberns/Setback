@@ -112,7 +112,7 @@ module Encoding =
     let private encodedPlayoutLength =
         encodedSuitLength                 // trump
             + encodedCurrentTrickLength   // current trick
-            + encodedCardsLength          // played cards not in current trick
+            // + encodedCardsLength          // played cards not in current trick
             + encodedTrumpVoidsLength     // trump voids
 
     let private encodePlayout playout =
@@ -124,7 +124,7 @@ module Encoding =
             [|
                 yield! encodeSuit playout.TrumpOpt
                 yield! encodeCurrentTrick trick
-                yield! encodeCards seen
+                // yield! encodeCards seen
                 yield! encodeTrumpVoids
                     player playout.TrumpOpt playout.Voids
             |]
