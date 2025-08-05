@@ -2,7 +2,6 @@
 
 open System
 open TorchSharp
-open Setback.DeepCfr.Model
 
 /// Hyperparameters.
 type Settings =
@@ -83,7 +82,7 @@ module Settings =
                 NumTraversals = 5000
                 TraversalBatchSize = 20
                 NumIterations = 50
-                NumEvaluationDeals = 2000
+                NumEvaluationDeals = 5000
                 Device = torch.CUDA
                 ModelDirPath = "./Models"
                 Writer = writer
