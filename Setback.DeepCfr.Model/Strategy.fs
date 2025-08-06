@@ -83,18 +83,18 @@ module Strategy =
         else Array.empty
 
     /// Creates a Setback player using the given model.
-    let createPlayer bidder model =
+    let createPlayer other model =
 
         let rng = Random()   // each player has its own RNG
 
         let act infoSet =
-            if infoSet.Deal.PlayoutOpt.IsSome then
-                let strategy =
-                    getFromAdvantage model [|infoSet|]
-                        |> Array.exactlyOne
-                Vector.sample rng strategy
-                    |> Array.get infoSet.LegalActions
-            else
-                bidder.Act infoSet
+            match infoSet.Deal.PlayoutOpt with
+                | Some playout when playout.TrumpOpt.IsNone ->
+                    let strategy =
+                        getFromAdvantage model [|infoSet|]
+                            |> Array.exactlyOne
+                    Vector.sample rng strategy
+                        |> Array.get infoSet.LegalActions
+                | _ -> other.Act infoSet
 
         { Act = act }
