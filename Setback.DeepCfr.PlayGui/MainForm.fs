@@ -255,11 +255,11 @@ type MainForm() as this =
         let playerMap =
             let modelPlayer =
                 let bidder = DeepCfr.Learn.Trickster.player
-                DeepCfr.Model.Strategy.createPlayer bidder model
+                Strategy.createPlayer bidder model
             Map [
-                Seat.West, DeepCfr.Learn.Trickster.player
-                Seat.North, DeepCfr.Learn.Trickster.player
-                Seat.East, DeepCfr.Learn.Trickster.player
+                Seat.West, modelPlayer
+                Seat.North, modelPlayer
+                Seat.East, modelPlayer
                 Seat.South, userPlayer
             ]
         let rng = Random()
