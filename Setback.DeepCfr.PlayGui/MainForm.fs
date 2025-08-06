@@ -27,7 +27,7 @@ type MainForm() as this =
                 let ctrl =
                     new HandControl(
                         seat,
-                        ShowFront = (seat = Seat.South))
+                        ShowFront = true)
                         |> Control.addTo this
                 seat, ctrl)
             |> Map
