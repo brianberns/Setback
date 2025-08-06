@@ -66,10 +66,7 @@ module Encoding =
 
     /// Encodes the given info set as a vector.
     let encode infoSet : Encoding =
-        let playout =
-            match infoSet.Deal.PlayoutOpt with
-                | Some playout -> playout
-                | None -> failwith "No playout"
+        assert(infoSet.Deal.PlayoutOpt.Value.TrumpOpt.IsNone)
         let encoded =
             BitArray [|
                 yield! encodeCards infoSet.Hand
