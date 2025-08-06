@@ -17,6 +17,30 @@ module Encoding =
                 if bits[i] then 1f else 0f
         |]
 
+    let private encodedRankLength = Rank.numRanks
+
+    let private encodeRank rankOpt =
+        let encoded =
+            [|
+                for rank in Rank.allRanks do
+                    Some rank = rankOpt
+            |]
+        assert(encoded.Length = encodedRankLength)
+        encoded
+
+    let private encodedSuitLength = Suit.numSuits
+
+    /// Encodes the given suit as a one-hot vector in the
+    /// number of seats.
+    let private encodeSuit suitOpt =
+        let encoded =
+            [|
+                for suit in Suit.allSuits do
+                    Some suit = suitOpt
+            |]
+        assert(encoded.Length = encodedSuitLength)
+        encoded
+
     let encodedCardsLength = Card.numCards
 
     /// Encodes the given (card, value) pairs as a vector
@@ -60,19 +84,6 @@ module Encoding =
             |> Option.toArray
             |> encodeCards
 
-    let private encodedSuitLength = Suit.numSuits
-
-    /// Encodes the given suit as a one-hot vector in the
-    /// number of seats.
-    let private encodeSuit suitOpt =
-        let encoded =
-            [|
-                for suit in Suit.allSuits do
-                    Some suit = suitOpt
-            |]
-        assert(encoded.Length = encodedSuitLength)
-        encoded
-
     let private encodedCurrentTrickLength =
         (Seat.numSeats - 1) * encodedCardsLength
 
@@ -91,17 +102,6 @@ module Encoding =
                         |> encodeCard
             |]
         assert(encoded.Length = encodedCurrentTrickLength)
-        encoded
-
-    let private encodedRankLength = Rank.numRanks
-
-    let private encodeRank rankOpt =
-        let encoded =
-            [|
-                for rank in Rank.allRanks do
-                    Some rank = rankOpt
-            |]
-        assert(encoded.Length = encodedRankLength)
         encoded
 
     let private encodePoint rankTeamOpt =
