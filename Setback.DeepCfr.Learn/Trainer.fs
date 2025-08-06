@@ -50,6 +50,7 @@ module Trainer =
                             infoSet.Hand
                             infoSet.Deal.Auction
                     OpenDeal.addBid bid deal)
+        assert(Auction.isComplete deal.ClosedDeal.Auction)
         Traverse.traverse iter deal rng
 
     /// Generates training data using the given model.

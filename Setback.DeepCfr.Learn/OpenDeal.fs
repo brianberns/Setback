@@ -19,10 +19,28 @@ module OpenDeal =
                     |> playFun)
 
     /// Gets the score of the given deal if it is complete.
-    let tryGetDealScore deal =
+    let rec tryGetDealScore deal =
+
+        let rec loop deal =
+            if ClosedDeal.isComplete deal.ClosedDeal then
+                deal
+            else
+                match deal.ClosedDeal.PlayoutOpt with
+                    | Some playout ->
+                        let player = ClosedDeal.currentPlayer deal.ClosedDeal
+                        let hand = deal.UnplayedCardMap[player]
+                        let card = Trickster.makePlay player hand deal.ClosedDeal.Auction playout
+                        OpenDeal.addPlay card deal
+                    | None -> deal
+
         if ClosedDeal.isComplete deal.ClosedDeal then
             deal.ClosedDeal.PlayoutOpt
                 |> Option.map Playout.getDealScore
                 |> Option.defaultValue Score.zero   // all pass
                 |> Some
-        else None
+        else
+            match deal.ClosedDeal.PlayoutOpt with
+                | Some playout ->
+                    if playout.TrumpOpt.IsNone then None
+                    else loop deal |> tryGetDealScore
+                | None -> None
