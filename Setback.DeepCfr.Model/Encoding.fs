@@ -17,17 +17,6 @@ module Encoding =
                 if bits[i] then 1f else 0f
         |]
 
-    let private encodedRankLength = Rank.numRanks
-
-    let private encodeRank rankOpt =
-        let encoded =
-            [|
-                for rank in Rank.allRanks do
-                    Some rank = rankOpt
-            |]
-        assert(encoded.Length = encodedRankLength)
-        encoded
-
     let private encodedSuitLength = Suit.numSuits
 
     /// Encodes the given suit as a one-hot vector in the
@@ -104,33 +93,9 @@ module Encoding =
         assert(encoded.Length = encodedCurrentTrickLength)
         encoded
 
-    let private encodePoint rankTeamOpt =
-        rankTeamOpt
-            |> Option.map fst
-            |> encodeRank
-
-    let private encodedTrumpVoidsLength = Seat.numSeats - 1
-
-    /// Encodes the given trump voids as a multi-hot vector
-    /// in the the number of other seats.
-    let private encodeTrumpVoids player trumpOpt voids =
-        let seats = Seat.cycle player |> Seq.skip 1
-        let encoded =
-            [|
-                for seat in seats do
-                    trumpOpt
-                        |> Option.map (fun trump ->
-                            Set.contains (seat, (trump : Suit)) voids)
-                        |> Option.defaultValue false
-            |]
-        assert(encoded.Length = encodedTrumpVoidsLength)
-        encoded
-
     let private encodedPlayoutLength =
         encodedSuitLength                 // trump
             + encodedCurrentTrickLength   // current trick
-            + encodedRankLength           // low trump
-            // + encodedTrumpVoidsLength     // trump voids
 
     let private encodePlayout playout =
         let trick = Playout.currentTrick playout
@@ -138,9 +103,6 @@ module Encoding =
             [|
                 yield! encodeSuit playout.TrumpOpt
                 yield! encodeCurrentTrick trick
-                yield! encodePoint playout.LowTrumpTeamOpt
-                // yield! encodeTrumpVoids
-                //     player playout.TrumpOpt playout.Voids
             |]
         assert(encoded.Length = encodedPlayoutLength)
         encoded
