@@ -2,10 +2,12 @@
 
 open System
 open System.Drawing
+open System.IO
 open System.Windows.Forms
 
 open PlayingCards
 open Setback
+open Setback.DeepCfr.Model
 
 /// Main form for playing Setback:
 ///    * One hand control per seat, arranged roughly in a circle
@@ -239,9 +241,21 @@ type MainForm() as this =
         let handControl = handControlMap[Seat.South]
         User.player bidControl handControl actionQueue
 
+    let model =
+        let model =
+            new AdvantageModel(
+                hiddenSize = 1024,
+                numHiddenLayers = 1,
+                device = TorchSharp.torch.CPU)
+        model.load("AdvantageModel.pt") |> ignore
+        model
+
     /// Underlying session.
     let session =
         let playerMap =
+            let modelPlayer =
+                let bidder = DeepCfr.Learn.Trickster.player
+                DeepCfr.Model.Strategy.createPlayer bidder model
             Map [
                 Seat.West, DeepCfr.Learn.Trickster.player
                 Seat.North, DeepCfr.Learn.Trickster.player
