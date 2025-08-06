@@ -64,11 +64,14 @@ module Encoding =
 
     /// Encodes the given suit as a one-hot vector in the
     /// number of seats.
-    let private encodeSuit (suitOpt : Option<Suit>) =
-        [|
-            for suit in Suit.allSuits do
-                Some suit = suitOpt
-        |]
+    let private encodeSuit suitOpt =
+        let encoded =
+            [|
+                for suit in Suit.allSuits do
+                    Some suit = suitOpt
+            |]
+        assert(encoded.Length = encodedSuitLength)
+        encoded
 
     let private encodedCurrentTrickLength =
         (Seat.numSeats - 1) * encodedCardsLength
@@ -89,6 +92,22 @@ module Encoding =
             |]
         assert(encoded.Length = encodedCurrentTrickLength)
         encoded
+
+    let private encodedRankLength = Rank.numRanks
+
+    let private encodeRank rankOpt =
+        let encoded =
+            [|
+                for rank in Rank.allRanks do
+                    Some rank = rankOpt
+            |]
+        assert(encoded.Length = encodedRankLength)
+        encoded
+
+    let private encodePoint rankTeamOpt =
+        rankTeamOpt
+            |> Option.map fst
+            |> encodeRank
 
     let private encodedTrumpVoidsLength = Seat.numSeats - 1
 
@@ -112,19 +131,16 @@ module Encoding =
     let private encodedPlayoutLength =
         encodedSuitLength                 // trump
             + encodedCurrentTrickLength   // current trick
-            // + encodedCardsLength          // played cards not in current trick
+            + encodedRankLength           // low trump
             // + encodedTrumpVoidsLength     // trump voids
 
     let private encodePlayout playout =
-        let player = Playout.currentPlayer playout
         let trick = Playout.currentTrick playout
-        let seen =
-            allCards - playout.UnplayedCards - set trick.Cards
         let encoded =
             [|
                 yield! encodeSuit playout.TrumpOpt
                 yield! encodeCurrentTrick trick
-                // yield! encodeCards seen
+                yield! encodePoint playout.LowTrumpTeamOpt
                 // yield! encodeTrumpVoids
                 //     player playout.TrumpOpt playout.Voids
             |]

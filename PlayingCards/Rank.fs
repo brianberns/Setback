@@ -18,9 +18,11 @@ type Rank =
 
 module Rank =
 
+    /// All ranks.
+    let allRanks = Enum.getValues<Rank>
+
     /// Number of ranks in each suit.
-    let numRanks =
-        Enum.getValues<Rank>.Length
+    let numRanks = allRanks.Length
 
     /// Converts the given rank to a character.
     let toChar rank = 
