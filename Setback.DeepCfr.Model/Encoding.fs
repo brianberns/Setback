@@ -126,8 +126,6 @@ module Encoding =
         assert(encoded.Length = encodedTrumpVoidsLength)
         encoded
 
-    let private allCards = set Card.allCards
-
     let private encodedPlayoutLength =
         encodedSuitLength                 // trump
             + encodedCurrentTrickLength   // current trick
