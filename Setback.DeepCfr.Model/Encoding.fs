@@ -17,19 +17,6 @@ module Encoding =
                 if bits[i] then 1f else 0f
         |]
 
-    let private encodedSuitLength = Suit.numSuits
-
-    /// Encodes the given suit as a one-hot vector in the
-    /// number of seats.
-    let private encodeSuit suitOpt =
-        let encoded =
-            [|
-                for suit in Suit.allSuits do
-                    Some suit = suitOpt
-            |]
-        assert(encoded.Length = encodedSuitLength)
-        encoded
-
     let encodedCardsLength = Card.numCards
 
     /// Encodes the given (card, value) pairs as a vector
@@ -76,41 +63,9 @@ module Encoding =
     let private encodedCurrentTrickLength =
         (Seat.numSeats - 1) * encodedCardsLength
 
-    /// Encodes each card in the given trick as one-hot
-    /// vectors, and concatenates those vectors.
-    let private encodeCurrentTrick trick =
-        assert(Trick.isComplete trick |> not)
-        let cards = Seq.toArray trick.Cards
-        let encoded =
-            [|
-                for iCard = 0 to Seat.numSeats - 2 do   // exclude the current player
-                    yield!
-                        if iCard < cards.Length then
-                            Some cards[iCard]
-                        else None
-                        |> encodeCard
-            |]
-        assert(encoded.Length = encodedCurrentTrickLength)
-        encoded
-
-    let private encodedPlayoutLength =
-        encodedSuitLength                 // trump
-            + encodedCurrentTrickLength   // current trick
-
-    let private encodePlayout playout =
-        let trick = Playout.currentTrick playout
-        let encoded =
-            [|
-                yield! encodeSuit playout.TrumpOpt
-                yield! encodeCurrentTrick trick
-            |]
-        assert(encoded.Length = encodedPlayoutLength)
-        encoded
-
     /// Total encoded length of an info set.
     let encodedLength =
         encodedCardsLength           // current player's hand
-            + encodedPlayoutLength   // playout 
 
     /// Encodes the given info set as a vector.
     let encode infoSet : Encoding =
@@ -121,7 +76,6 @@ module Encoding =
         let encoded =
             BitArray [|
                 yield! encodeCards infoSet.Hand
-                yield! encodePlayout playout
             |]
         assert(encoded.Length = encodedLength)
         encoded
