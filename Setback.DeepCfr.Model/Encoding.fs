@@ -60,9 +60,6 @@ module Encoding =
             |> Option.toArray
             |> encodeCards
 
-    let private encodedCurrentTrickLength =
-        (Seat.numSeats - 1) * encodedCardsLength
-
     /// Total encoded length of an info set.
     let encodedLength =
         encodedCardsLength           // current player's hand
