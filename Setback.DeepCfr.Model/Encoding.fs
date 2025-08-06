@@ -70,6 +70,23 @@ module Encoding =
                 Some suit = suitOpt
         |]
 
+    let private encodedSeatLength = Seat.numSeats
+
+    /// Encodes the given seat relative to the given player
+    /// as a one-hot vector in the number of seats.
+    let private encodeSeat player seatOpt =
+        [|
+            for seat in Seat.cycle player do
+                Some seat = seatOpt
+        |]
+
+    let private encodeIndexedCard iCard (cards : _[]) =
+        let cardOpt =
+            if iCard < cards.Length then
+                Some cards[iCard]
+            else None
+        encodeCard cardOpt
+
     let private encodedCurrentTrickLength =
         (Seat.numSeats - 1) * encodedCardsLength
 
@@ -81,13 +98,33 @@ module Encoding =
         let encoded =
             [|
                 for iCard = 0 to Seat.numSeats - 2 do   // exclude the current player
-                    yield!
-                        if iCard < cards.Length then
-                            Some cards[iCard]
-                        else None
-                        |> encodeCard
+                    yield! encodeIndexedCard iCard cards
             |]
         assert(encoded.Length = encodedCurrentTrickLength)
+        encoded
+
+    let private encodedCompleteTrickLength =
+        encodedSeatLength                            // trick leader
+            + (Seat.numSeats * encodedCardsLength)   // cards played on trick
+
+    /// Encodes each card in the given trick as one-hot
+    /// vectors, and concatenates those vectors.
+    let private encodeCompleteTrick player trickOpt =
+        let encoded =
+            [|
+                match trickOpt with
+                    | Some trick ->
+                        assert(Trick.isComplete trick)
+                        let cards = Seq.toArray trick.Cards
+                        yield! encodeSeat player (Some trick.Leader)
+                        for iCard = 0 to Seat.numSeats - 1 do
+                            yield! encodeIndexedCard iCard cards
+                    | None ->
+                        yield! encodeSeat player None
+                        for iCard = 0 to Seat.numSeats - 1 do
+                            yield! encodeCard None
+            |]
+        assert(encoded.Length = encodedCompleteTrickLength)
         encoded
 
     let private encodedTrumpVoidsLength = Seat.numSeats - 1
@@ -110,21 +147,20 @@ module Encoding =
     let private allCards = set Card.allCards
 
     let private encodedPlayoutLength =
-        encodedSuitLength                 // trump
-            + encodedCurrentTrickLength   // current trick
-            // + encodedCardsLength          // played cards not in current trick
+        encodedSuitLength                  // trump
+            + encodedCurrentTrickLength    // current trick
+            + encodedCompleteTrickLength   // last trick, if any
             // + encodedTrumpVoidsLength     // trump voids
 
     let private encodePlayout playout =
         let player = Playout.currentPlayer playout
         let trick = Playout.currentTrick playout
-        let seen =
-            allCards - playout.UnplayedCards - set trick.Cards
         let encoded =
             [|
                 yield! encodeSuit playout.TrumpOpt
                 yield! encodeCurrentTrick trick
-                // yield! encodeCards seen
+                yield! encodeCompleteTrick player
+                    (Seq.tryHead playout.CompletedTricks)
                 // yield! encodeTrumpVoids
                 //     player playout.TrumpOpt playout.Voids
             |]
