@@ -16,6 +16,10 @@ module OpenDeal =
             deck, dealer)
             |> Array.Parallel.map (fun (deck, dealer) ->
                 OpenDeal.fromDeck dealer deck
+                    |> OpenDeal.addBid Bid.Two
+                    |> OpenDeal.addBid Bid.Pass
+                    |> OpenDeal.addBid Bid.Pass
+                    |> OpenDeal.addBid Bid.Pass
                     |> playFun)
 
     /// Gets the score of the given deal if it is complete.

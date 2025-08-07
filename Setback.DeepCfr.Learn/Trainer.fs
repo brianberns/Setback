@@ -40,16 +40,6 @@ module Trainer =
     /// Traverses one deal.
     let private traverse iter deal =
         let rng = Random()   // each thread has its own RNG
-        let deal =
-            (deal, [1..Seat.numSeats])
-                ||> Seq.fold (fun deal _ ->
-                    let infoSet = OpenDeal.currentInfoSet deal
-                    let bid =
-                        Trickster.makeBid
-                            infoSet.Player
-                            infoSet.Hand
-                            infoSet.Deal.Auction
-                    OpenDeal.addBid bid deal)
         Traverse.traverse iter deal rng
 
     /// Generates training data using the given model.
@@ -139,7 +129,7 @@ module Trainer =
             Tournament.run
                 (Random(0))       // use repeatable test set, not seen during training
                 Trickster.player
-                (Strategy.createPlayer Trickster.player model)
+                (Strategy.createPlayer model)
         settings.Writer.add_scalar(
             $"advantage tournament", avgPayoff, iter)
 

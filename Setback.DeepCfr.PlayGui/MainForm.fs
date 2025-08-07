@@ -254,8 +254,7 @@ type MainForm() as this =
     let session =
         let playerMap =
             let modelPlayer =
-                let bidder = DeepCfr.Learn.Trickster.player
-                Strategy.createPlayer bidder model
+                Strategy.createPlayer model
             Map [
                 Seat.West, modelPlayer
                 Seat.North, modelPlayer
