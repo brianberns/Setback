@@ -48,11 +48,11 @@ module Tournament =
                 |> Map
         let score =
             playDeals rng
-                settings.NumEvaluationDealPairs
+                settings.NumEvaluationDealGroups
                 playerMap
         let payoff =
             (ZeroSum.getPayoff score)[challengerTeam]
-                / float32 (settings.NumEvaluationDealPairs * Seat.numSeats)
+                / float32 (settings.NumEvaluationDealGroups * Seat.numSeats)
 
         if settings.Verbose then
             printfn "\nTournament:"
