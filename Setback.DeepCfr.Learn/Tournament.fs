@@ -4,18 +4,35 @@ open Setback
 
 module Tournament =
 
+    let challengerTeam = Team.EastWest
+    let challengerSeats = Team.seats challengerTeam
+    let championTeam = Team.NorthSouth
+    let championSeats = Team.seats challengerTeam
+
     /// Creates and plays one deal.
     let playDeal (playerMap : Map<_, _>) deal =
 
         let rec loop deal =
-            let deal =
-                let infoSet = OpenDeal.currentInfoSet deal
-                let action =
-                    playerMap[infoSet.Player].Act infoSet
-                OpenDeal.addAction action deal
-            match OpenDeal.tryGetDealScore deal with
-                | Some score -> score
-                | None -> loop deal
+            let infoSet = OpenDeal.currentInfoSet deal
+            let player = infoSet.Player
+            let action = playerMap[player].Act infoSet
+            let deal' = OpenDeal.addAction action deal
+            match OpenDeal.tryGetDealScore deal' with
+                | Some score ->
+                    if challengerSeats.Contains(player) then
+                        let payoff = (ZeroSum.getPayoff score)[challengerTeam]
+                        let otherAction = playerMap[Seat.next player].Act infoSet
+                        if otherAction <> action then
+                            let otherDeal = OpenDeal.addAction otherAction deal
+                            let otherScore = (OpenDeal.tryGetDealScore otherDeal).Value
+                            let otherPayoff = (ZeroSum.getPayoff otherScore)[challengerTeam]
+                            match action, otherAction with
+                                | MakePlay play, MakePlay otherPlay ->
+                                    lock challengerSeats (fun () ->
+                                        printfn $"{PlayingCards.Hand.toString infoSet.Hand}, {play}, {otherPlay}, {payoff - otherPayoff}")
+                                | _ -> failwith "Unexpected"
+                    score
+                | None -> loop deal'
 
         loop deal
 
@@ -27,8 +44,6 @@ module Tournament =
 
     /// Runs a tournament between two players.
     let run rng champion challenger =
-        let challengerTeam = Team.EastWest
-        let challengerSeats = Team.seats challengerTeam
         let playerMap =
             Seat.allSeats
                 |> Seq.map (fun seat ->
