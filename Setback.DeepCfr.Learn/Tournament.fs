@@ -4,46 +4,40 @@ open Setback
 
 module Tournament =
 
-    let challengerTeam = Team.EastWest
-    let challengerSeats = Team.seats challengerTeam
-    let championTeam = Team.NorthSouth
-    let championSeats = Team.seats challengerTeam
-
-    /// Creates and plays one deal.
-    let playDeal (playerMap : Map<_, _>) deal =
+    /// Plays one deal pair.
+    let playDealPair (playerMap : Map<_, _>) deal =
 
         let rec loop deal =
-            let infoSet = OpenDeal.currentInfoSet deal
-            let player = infoSet.Player
-            let action = playerMap[player].Act infoSet
-            let deal' = OpenDeal.addAction action deal
-            match OpenDeal.tryGetDealScore deal' with
-                | Some score ->
-                    if challengerSeats.Contains(player) then
-                        let payoff = (ZeroSum.getPayoff score)[challengerTeam]
-                        let otherAction = playerMap[Seat.next player].Act infoSet
-                        if otherAction <> action then
-                            let otherDeal = OpenDeal.addAction otherAction deal
-                            let otherScore = (OpenDeal.tryGetDealScore otherDeal).Value
-                            let otherPayoff = (ZeroSum.getPayoff otherScore)[challengerTeam]
-                            match action, otherAction with
-                                | MakePlay play, MakePlay otherPlay ->
-                                    lock challengerSeats (fun () ->
-                                        printfn $"{PlayingCards.Hand.toString infoSet.Hand}, {play}, {otherPlay}, {payoff - otherPayoff}")
-                                | _ -> failwith "Unexpected"
-                    score
-                | None -> loop deal'
+            let deal =
+                let infoSet = OpenDeal.currentInfoSet deal
+                let action =
+                    playerMap[infoSet.Player].Act infoSet
+                OpenDeal.addAction action deal
+            match OpenDeal.tryGetDealScore deal with
+                | Some score -> score
+                | None -> loop deal
 
-        loop deal
+        let scoreA = loop deal
+        let deal =
+            { deal with
+                ClosedDeal =
+                    { deal.ClosedDeal with
+                        Auction =
+                            { deal.ClosedDeal.Auction with
+                                Dealer = Seat.next deal.ClosedDeal.Auction.Dealer } } }
+        let scoreB = loop deal
+        scoreA + scoreB
 
-    /// Plays the given number of deals.
-    let playDeals rng numDeals playerMap =
-        OpenDeal.generate rng numDeals (
-            playDeal playerMap)
+    /// Plays the given number of deal pairs.
+    let playDeals rng numDealPairs playerMap =
+        OpenDeal.generate rng numDealPairs (
+            playDealPair playerMap)
             |> Seq.reduce (+)
 
     /// Runs a tournament between two players.
     let run rng champion challenger =
+        let challengerTeam = Team.EastWest
+        let challengerSeats = Team.seats challengerTeam
         let playerMap =
             Seat.allSeats
                 |> Seq.map (fun seat ->
@@ -55,11 +49,11 @@ module Tournament =
                 |> Map
         let score =
             playDeals rng
-                settings.NumEvaluationDeals
+                settings.NumEvaluationDealPairs
                 playerMap
         let payoff =
             (ZeroSum.getPayoff score)[challengerTeam]
-                / float32 settings.NumEvaluationDeals
+                / float32 (2 * settings.NumEvaluationDealPairs)
 
         if settings.Verbose then
             printfn "\nTournament:"
