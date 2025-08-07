@@ -10,13 +10,12 @@ module OpenDeal =
     /// Plays the given number of deals in parallel.
     let generate (rng : Random) numDeals playFun =
         Array.init numDeals (fun iDeal ->
-            let deck = Deck.shuffle rng
-            let dealer =
-                enum<Seat> (iDeal % Seat.numSeats)
-            deck, dealer)
-            |> Array.Parallel.map (fun (deck, dealer) ->
-                OpenDeal.fromDeck dealer deck
-                    |> playFun)
+            Deck.shuffle rng)
+            |> Array.Parallel.collect (fun deck ->
+                [|Seat.South; Seat.West|]
+                    |> Array.map (fun dealer ->
+                        OpenDeal.fromDeck dealer deck
+                            |> playFun))
 
     /// Gets the score of the given deal if it is complete.
     let rec tryGetDealScore deal =

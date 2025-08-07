@@ -28,8 +28,9 @@ module Tournament =
                             let otherPayoff = (ZeroSum.getPayoff otherScore)[challengerTeam]
                             match action, otherAction with
                                 | MakePlay play, MakePlay otherPlay ->
-                                    lock challengerSeats (fun () ->
-                                        printfn $"{PlayingCards.Hand.toString infoSet.Hand}, {play}, {otherPlay}, {payoff - otherPayoff}")
+                                    // lock challengerSeats (fun () ->
+                                    //    printfn $"{PlayingCards.Hand.toString infoSet.Hand}, {play}, {otherPlay}, {payoff - otherPayoff}")
+                                    ()
                                 | _ -> failwith "Unexpected"
                     score
                 | None -> loop deal'
