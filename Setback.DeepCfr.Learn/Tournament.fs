@@ -17,16 +17,15 @@ module Tournament =
                 | Some score -> score
                 | None -> loop deal
 
-        let scoreA = loop deal
-        let deal =
-            { deal with
-                ClosedDeal =
-                    { deal.ClosedDeal with
-                        Auction =
-                            { deal.ClosedDeal.Auction with
-                                Dealer = Seat.next deal.ClosedDeal.Auction.Dealer } } }
-        let scoreB = loop deal
-        scoreA + scoreB
+        let hands = deal.UnplayedCardMap.Values
+        Seat.allSeats
+            |> Seq.map (fun seat ->
+                let handMap =
+                    let seats = Seat.cycle seat
+                    Seq.zip seats hands |> Map
+                { deal with UnplayedCardMap = handMap })
+            |> Seq.map loop
+            |> Seq.reduce (+)
 
     /// Plays the given number of deal pairs.
     let playDeals rng numDealPairs playerMap =
@@ -53,7 +52,7 @@ module Tournament =
                 playerMap
         let payoff =
             (ZeroSum.getPayoff score)[challengerTeam]
-                / float32 (2 * settings.NumEvaluationDealPairs)
+                / float32 (settings.NumEvaluationDealPairs * Seat.numSeats)
 
         if settings.Verbose then
             printfn "\nTournament:"
