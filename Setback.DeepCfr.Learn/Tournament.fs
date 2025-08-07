@@ -4,8 +4,8 @@ open Setback
 
 module Tournament =
 
-    /// Creates and plays one deal.
-    let playDeal (playerMap : Map<_, _>) deal =
+    /// Plays one deal pair.
+    let playDealPair (playerMap : Map<_, _>) deal =
 
         let rec loop deal =
             let deal =
@@ -17,12 +17,21 @@ module Tournament =
                 | Some score -> score
                 | None -> loop deal
 
-        loop deal
+        let scoreA = loop deal
+        let deal =
+            { deal with
+                ClosedDeal =
+                    { deal.ClosedDeal with
+                        Auction =
+                            { deal.ClosedDeal.Auction with
+                                Dealer = Seat.next deal.ClosedDeal.Auction.Dealer } } }
+        let scoreB = loop deal
+        scoreA + scoreB
 
-    /// Plays the given number of deals.
-    let playDeals rng numDeals playerMap =
-        OpenDeal.generate rng numDeals (
-            playDeal playerMap)
+    /// Plays the given number of deal pairs.
+    let playDeals rng numDealPairs playerMap =
+        OpenDeal.generate rng numDealPairs (
+            playDealPair playerMap)
             |> Seq.reduce (+)
 
     /// Runs a tournament between two players.
@@ -40,11 +49,11 @@ module Tournament =
                 |> Map
         let score =
             playDeals rng
-                settings.NumEvaluationDeals
+                settings.NumEvaluationDealPairs
                 playerMap
         let payoff =
             (ZeroSum.getPayoff score)[challengerTeam]
-                / float32 settings.NumEvaluationDeals
+                / float32 (2 * settings.NumEvaluationDealPairs)
 
         if settings.Verbose then
             printfn "\nTournament:"

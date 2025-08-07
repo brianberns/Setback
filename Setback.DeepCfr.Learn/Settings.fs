@@ -41,8 +41,8 @@ type Settings =
         /// Number of iterations to perform.
         NumIterations : int
 
-        /// Number of deals to evaluate model.
-        NumEvaluationDeals : int
+        /// Number of deal pairs to evaluate model.
+        NumEvaluationDealPairs : int
 
         /// Device to use for training and running models.
         Device : torch.Device
@@ -82,7 +82,7 @@ module Settings =
                 NumTraversals = 5000
                 TraversalBatchSize = 200
                 NumIterations = 50
-                NumEvaluationDeals = 5000
+                NumEvaluationDealPairs = 5000
                 Device = torch.CUDA
                 ModelDirPath = "./Models"
                 Writer = writer
@@ -125,7 +125,7 @@ module Settings =
             $"settings/NumIterations",
             string settings.NumIterations, 0)
         writer.add_text(
-            $"settings/NumEvaluationDeals",
-            string settings.NumEvaluationDeals, 0)
+            $"settings/NumEvaluationDealPairs",
+            string settings.NumEvaluationDealPairs, 0)
 
         settings
