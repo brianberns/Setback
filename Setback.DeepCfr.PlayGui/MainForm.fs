@@ -259,9 +259,9 @@ type MainForm() as this =
                 Seat.West, modelPlayer
                 Seat.North, modelPlayer
                 Seat.East, modelPlayer
-                Seat.South, modelPlayer
+                Seat.South, userPlayer
             ]
-        let rng = Random()
+        let rng = Random(0)
         Session(playerMap, rng, this)
 
     /// Runs the session once form is loaded.
