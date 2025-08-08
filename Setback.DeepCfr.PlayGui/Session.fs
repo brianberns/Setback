@@ -58,17 +58,11 @@ type Session
             // auction
         trigger auctionStartEvent dealer.Next
         let deal =
-            (deal, [1 .. Seat.numSeats])
-                ||> Seq.fold (fun deal _ ->
-                    let infoSet = OpenDeal.currentInfoSet deal
-                    let player = playerMap[infoSet.Player]
-                    let bid =
-                        match player.Act infoSet with
-                            | MakeBid bid -> bid
-                            | MakePlay _ -> failwith "Unexpected"
-                    let deal = deal |> OpenDeal.addBid bid
-                    trigger bidEvent (infoSet.Player, bid, deal)
-                    deal)
+            deal
+                |> OpenDeal.addBid Bid.Two
+                |> OpenDeal.addBid Bid.Pass
+                |> OpenDeal.addBid Bid.Pass
+                |> OpenDeal.addBid Bid.Pass
         assert(deal.ClosedDeal.Auction |> Auction.isComplete)
         trigger auctionFinishEvent ()
 

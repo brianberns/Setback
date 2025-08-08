@@ -259,7 +259,7 @@ type MainForm() as this =
                 Seat.West, modelPlayer
                 Seat.North, modelPlayer
                 Seat.East, modelPlayer
-                Seat.South, userPlayer
+                Seat.South, modelPlayer
             ]
         let rng = Random()
         Session(playerMap, rng, this)
@@ -278,7 +278,7 @@ type MainForm() as this =
         session.GameStartEvent.Add(delayGameStart)
         session.DealStartEvent.Add(delayDealStart)
         session.AuctionStartEvent.Add(delayAuctionStart)
-        session.BidEvent.Add(delayBid)
+        // session.BidEvent.Add(delayBid)
         session.AuctionFinishEvent.Add(delayAuctionFinish)
         session.TrickStartEvent.Add(delayTrickStart)
         session.PlayEvent.Add(delayPlay)
