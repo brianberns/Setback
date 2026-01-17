@@ -2,18 +2,18 @@
   "private": true,
   "scripts": {
     "postinstall": "dotnet tool restore",
-    "start": "dotnet fable watch src --run webpack-dev-server",
+    "start": "dotnet fable watch src --run webpack serve",
     "build": "dotnet fable src --run webpack --mode production"
   },
   "devDependencies": {
-    "css-loader": "^6.7.1",
-    "style-loader": "^3.3.1",
-    "webpack": "^5.72.0",
-    "webpack-cli": "^4.9.2",
-    "webpack-dev-server": "^4.8.1"
+    "css-loader": "^7.1.2",
+    "style-loader": "^4.0.0",
+    "webpack": "^5.104.1",
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-server": "^5.2.3"
   },
   "version": "1.0.0",
   "dependencies": {
-    "jquery": "^3.6.0"
+    "jquery": "^3.7.1"
   }
 }

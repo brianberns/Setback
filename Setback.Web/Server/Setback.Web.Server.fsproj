@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
 	<EnableDynamicLoading>true</EnableDynamicLoading>
     <SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
   </PropertyGroup>
@@ -12,9 +12,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Fable.Remoting.Suave" Version="4.43.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="Suave" Version="2.6.2">
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="Suave" Version="3.2.3">
       <ExcludeAssets>runtime</ExcludeAssets>
 	</PackageReference>
 	<PackageReference Update="FSharp.Core">
@@ -23,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Fable.Remoting.Suave\Fable.Remoting.Suave\Fable.Remoting.Suave.fsproj" />
     <ProjectReference Include="..\..\Setback.Cfrm\Setback.Cfrm.fsproj" />
   </ItemGroup>
 
