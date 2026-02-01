@@ -1,7 +1,5 @@
 ﻿namespace Setback.Cfrm
 
-open Cfrm
-
 open Setback
 
 /// Score-sensitive player.

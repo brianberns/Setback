@@ -2,13 +2,28 @@
 
 open System
 open System.Diagnostics
-open System.IO
 
-open Cfrm
+open FastCfr
+
+open MathNet.Numerics.LinearAlgebra
 
 open PlayingCards
 open Setback
 open Setback.Cfrm
+
+module InfoSetMap =
+
+    /// Creates a strategy profile from the given info set map.
+    let toStrategyProfile infoSetMap =
+        infoSetMap
+            |> Map.map (fun _ infoSet ->
+                let strategy =
+                    infoSet
+                        |> InformationSet.getAverageStrategy
+                        |> Vector.toArray
+                assert(strategy.Length > 1)
+                strategy)
+            |> StrategyProfile
 
 module Program =
 
@@ -17,53 +32,39 @@ module Program =
         let dealer = Seat.South
         Deck.shuffle rng
             |> AbstractOpenDeal.fromDeck dealer
-            |> BaselineGameState
+            |> BaselineGameState.createGameState
 
-    /// Runs CFR with the given batch size.
-    let minimize batchSize =
+    /// Generates an infinite sequence of games.
+    let generate rng =
+        Seq.initInfinite (fun _ ->
+            createGame rng)
 
-            // initialize
-        let batchFileName = "Baseline.batch"
-        let initialState =
-            let fileInfo = FileInfo(batchFileName)
-            if fileInfo.Exists then
-                printfn "Loading existing file"
-                let rng = Random(int fileInfo.Length)   // avoid revisiting original deals
-                CfrBatch.load batchFileName (fun _ -> createGame rng)
+    let run () =
+
+            // settings for this run
+        let chunkSize = 100
+        printfn $"Chunk size: {chunkSize}"
+
+            // train on chunks of deals lazily
+        let tuples =
+            let rng = Random(0)
+            generate rng
+                |> Seq.chunkBySize chunkSize
+                |> Trainer.trainScan Seat.numSeats
+
+        printfn "Iteration, # Info Sets, Duration (ms), Saved"
+        let stopwatch = Stopwatch.StartNew()
+        for (iter, state) in Seq.indexed tuples do
+            printf $"{iter}, {state.InfoSetMap.Count}, {stopwatch.ElapsedMilliseconds}"
+            if iter % 10 = 0 then
+                (state.InfoSetMap
+                    |> InfoSetMap.toStrategyProfile)
+                    .Save("Baseline.strategy")
+                printfn ", saved"
             else
-                let numPlayers = 2
-                let rng = Random(0)
-                CfrBatch.create numPlayers (fun _ -> createGame rng)
-        let batchNums = Seq.initInfinite ((+) 1)   // 1, 2, 3, ...
-        let stopwatch = Stopwatch()
+                printfn ""
+            stopwatch.Restart()
 
-            // run CFR
-        printfn "Iteration,Payoff,Size,Time"
-        (initialState, batchNums)
-            ||> Seq.fold (fun inBatch batchNum ->
-
-                    // run CFR on this batch of games
-                stopwatch.Start()
-                let outBatch =
-                    inBatch
-                        |> CounterFactualRegret.minimizeBatch batchSize
-                outBatch.StrategyProfile.Save("Baseline.strategy")
-                outBatch |> CfrBatch.save batchFileName
-                stopwatch.Stop()
-
-                    // report results from this batch
-                printfn "%d,%A,%d,%A"
-                    (batchNum * batchSize)
-                    outBatch.ExpectedGameValues[1]   // value of a deal from the first bidder's point of view
-                    outBatch.InfoSetMap.Count
-                    stopwatch.Elapsed
-                stopwatch.Reset()
-
-                    // feed results into next loop
-                outBatch)
-            |> ignore
-
-    [<EntryPoint>]
-    let main argv =
-        minimize 100000
-        0
+    Console.OutputEncoding <- System.Text.Encoding.UTF8
+    printfn $"Server garbage collection: {Runtime.GCSettings.IsServerGC}"
+    run ()

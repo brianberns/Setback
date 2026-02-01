@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Setback.Cfrm.TrainBaseline": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_gcServer": "1"
+      }
+    }
+  }
+}

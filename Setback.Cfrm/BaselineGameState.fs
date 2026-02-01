@@ -262,7 +262,7 @@ module BaselineGameState =
                         |> createGameState
         }
 
-    and private createGameState openDeal =
+    and createGameState openDeal =
         if openDeal |> AbstractOpenDeal.isExhausted then
             createTerminalGameState openDeal
         else

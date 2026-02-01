@@ -271,7 +271,7 @@ module BootstrapGameState =
                     createGameState baselineProfile openDeal gameScore
         }
 
-    and private createGameState baselineProfile openDeal gameScore =
+    and createGameState baselineProfile openDeal gameScore =
         if openDeal |> AbstractOpenDeal.isExhausted then
             createTerminalGameState openDeal gameScore
         else

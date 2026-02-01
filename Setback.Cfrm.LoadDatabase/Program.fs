@@ -4,8 +4,6 @@ open System
 open System.Data
 open System.Data.SQLite
 
-open Cfrm
-
 open Setback.Cfrm
 
 module Program =

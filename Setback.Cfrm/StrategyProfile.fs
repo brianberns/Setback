@@ -13,7 +13,11 @@ type StrategyProfile(strategyMap : StrategyMap) =
         strategyMap
             |> Map.tryFind key
             |> Option.map (fun strategy ->
-                Categorical.Sample(rng, strategy))
+                let strategy' =
+                    strategy
+                        |> Seq.map float
+                        |> Seq.toArray
+                Categorical.Sample(rng, strategy'))
 
     /// Chooses the action with the highest probability in the
     /// given game state. Answers the index of the chosen action,
@@ -61,7 +65,7 @@ type StrategyProfile(strategyMap : StrategyMap) =
                         let nProbs = rdr.ReadByte() |> int
                         [|
                             for _ = 1 to nProbs do
-                                rdr.ReadSingle() |> float
+                                rdr.ReadSingle()
                         |]
                     acc |> Map.add key strategy)
                 |> StrategyProfile
@@ -71,4 +75,4 @@ type StrategyProfile(strategyMap : StrategyMap) =
 
 /// Tracks a strategy for each information set.
 and private StrategyMap =
-    Map<string (*InfoSet.Key*), float[] (*action probabilities*)>
+    Map<string (*InfoSet.Key*), float32[] (*action probabilities*)>
