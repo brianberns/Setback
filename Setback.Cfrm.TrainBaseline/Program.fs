@@ -42,7 +42,7 @@ module Program =
     let run () =
 
             // settings for this run
-        let chunkSize = 100
+        let chunkSize = 1
         printfn $"Chunk size: {chunkSize}"
 
             // train on chunks of deals lazily
@@ -50,7 +50,7 @@ module Program =
             let rng = Random(0)
             generate rng
                 |> Seq.chunkBySize chunkSize
-                |> Trainer.trainScan Seat.numSeats
+                |> Trainer.trainScan Setback.numTeams
 
         printfn "Iteration, # Info Sets, Duration (ms), Saved"
         let stopwatch = Stopwatch.StartNew()
