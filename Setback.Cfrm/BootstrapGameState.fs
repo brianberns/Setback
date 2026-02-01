@@ -4,7 +4,7 @@ open System
 
 #if !FABLE_COMPILER
 open System.Buffers
-open Cfrm
+open FastCfr
 #endif
 
 open PlayingCards
@@ -99,6 +99,19 @@ module BootstrapGameState =
             (Hand.toAbbr hand)
 
 #if !FABLE_COMPILER
+
+    let getKey openDeal gameScore =
+        let hand =
+            let iPlayer =
+                openDeal
+                    |> AbstractOpenDeal.currentPlayerIndex
+            openDeal.UnplayedCards[iPlayer]
+        assert(hand.Count = Setback.numCardsPerHand)
+        toAbbr
+            openDeal.ClosedDeal.Auction
+            gameScore
+            hand
+
     /// Plays a card in the given deal using the given baseline strategy
     /// profile.
     let play (baselineProfile : StrategyProfile) deal =
@@ -156,17 +169,12 @@ module BootstrapGameState =
                     playout
                     action
 
-/// State of a Setback game for counterfactual regret minimization
-/// of score-sensitive bidding behavior.
-type BootstrapGameState
-    (baselineProfile : StrategyProfile,
-    openDeal : AbstractOpenDeal,
-    gameScore : AbstractScore) =
-    inherit BaselineGameState(openDeal)
+    /// Final score-sensitive payoffs for this game.
+    let private createTerminalGameState
+        (openDeal : AbstractOpenDeal)
+        (gameScore : AbstractScore) =
 
-    /// Final payoffs for this game, if it is now over.
-    override _.TerminalValuesOpt =
-        if openDeal |> AbstractOpenDeal.isExhausted then
+        let score =
             if openDeal.ClosedDeal.PlayoutOpt.IsSome then
 
                     // dealer's team's delta
@@ -182,11 +190,11 @@ type BootstrapGameState
                         gameScore + dealScore
 
                         // compute reward
-                    match BootstrapGameState.winningTeamOpt gameScore with
+                    match winningTeamOpt gameScore with
 
                             // reward for winning the game (regardless of deal score)
                         | Some iWinningTeam ->
-                            let reward = 5.5   // value determined empirically
+                            let reward = 5.5f   // value determined empirically
                             if iWinningTeam = 0 then reward
                             else -reward
 
@@ -194,38 +202,22 @@ type BootstrapGameState
                         | None ->
                             dealScore
                                 |> AbstractScore.delta 0
-                                |> float
+                                |> float32
 
                     // zero-sum
-                Some [| delta; -delta |]
+                [| delta; -delta |]
 
                 // no high bidder
             else
                 assert(openDeal.ClosedDeal.Auction.HighBid = AbstractHighBid.none)
-                Array.replicate Setback.numTeams 0.0 |> Some
-        else None
+                Array.replicate Setback.numTeams 0.0f
 
-    /// This state's unique identifier.
-    override _.Key =
-        let hand =
-            let iPlayer =
-                openDeal
-                    |> AbstractOpenDeal.currentPlayerIndex
-            openDeal.UnplayedCards[iPlayer]
-        assert(hand.Count = Setback.numCardsPerHand)
-        BootstrapGameState.toAbbr
-            openDeal.ClosedDeal.Auction
-            gameScore
-            hand
-
-    /// Actions available to the current player in this state.
-    override _.LegalActions =
-        openDeal.ClosedDeal.Auction
-            |> AbstractAuction.legalBids
-            |> Array.map (BidAction >> DealBidAction)
+        score
+            |> TerminalGameState.create
+            |> Terminal
 
     /// Takes the given action, which moves the game to a new state.
-    override _.AddAction(action) =
+    let addAction baselineProfile openDeal gameScore action =
         assert(
             match action with
                 | DealBidAction _ -> true
@@ -235,36 +227,53 @@ type BootstrapGameState
             openDeal
                 |> AbstractOpenDeal.addAction action
 
-        let openDeal, gameScore =
-            if openDeal.ClosedDeal.Auction |> AbstractAuction.isComplete then
-                match openDeal.ClosedDeal.PlayoutOpt with
+        if openDeal.ClosedDeal.Auction |> AbstractAuction.isComplete then
+            match openDeal.ClosedDeal.PlayoutOpt with
 
-                        // complete playout
-                    | Some playout ->
-                        assert(playout.History.NumTricksCompleted = 0)
-                        assert(playout.CurrentTrick.NumPlays = 0)
+                    // complete playout
+                | Some playout ->
+                    assert(playout.History.NumTricksCompleted = 0)
+                    assert(playout.CurrentTrick.NumPlays = 0)
 
-                        let openDeal =
-                            (openDeal, [1 .. Setback.numCardsPerDeal])
-                                ||> Seq.fold (fun openDeal _ ->
-                                    let card =
-                                        BootstrapGameState.play
-                                            baselineProfile
-                                            openDeal
-                                    openDeal |> AbstractOpenDeal.addPlay card)
-                        assert(openDeal |> AbstractOpenDeal.isComplete)
+                    let openDeal =
+                        (openDeal, [1 .. Setback.numCardsPerDeal])
+                            ||> Seq.fold (fun openDeal _ ->
+                                let card =
+                                    play
+                                        baselineProfile
+                                        openDeal
+                                openDeal |> AbstractOpenDeal.addPlay card)
+                    assert(openDeal |> AbstractOpenDeal.isComplete)
 
-                            // compute resulting game score (to-do: avoid doing this twice)
-                        let dealScore =
-                            openDeal |> AbstractOpenDeal.dealScore
-                        let gameScore = gameScore + dealScore
-                        openDeal, gameScore
+                        // compute resulting game score (to-do: avoid doing this twice)
+                    let dealScore =
+                        openDeal |> AbstractOpenDeal.dealScore
+                    let gameScore = gameScore + dealScore
+                    openDeal, gameScore
 
-                        // no bidder
-                    | None -> openDeal, gameScore
+                    // no bidder
+                | None -> openDeal, gameScore
 
-                // continue auction
-            else openDeal, gameScore
+            // continue auction
+        else openDeal, gameScore
 
-        BootstrapGameState(baselineProfile, openDeal, gameScore) :> _
+    let rec private createNonTerminalGameState baselineProfile openDeal gameScore =
+        let dealActions = openDeal |> AbstractOpenDeal.getActions
+        NonTerminal {
+            ActivePlayerIdx =
+                BaselineGameState.currentPlayerIdx openDeal
+            InfoSetKey = getKey openDeal gameScore
+            LegalActions = dealActions
+            AddAction =
+                fun action ->
+                    let openDeal, gameScore =
+                        addAction baselineProfile openDeal gameScore action
+                    createGameState baselineProfile openDeal gameScore
+        }
+
+    and private createGameState baselineProfile openDeal gameScore =
+        if openDeal |> AbstractOpenDeal.isExhausted then
+            createTerminalGameState openDeal gameScore
+        else
+            createNonTerminalGameState baselineProfile openDeal gameScore
 #endif

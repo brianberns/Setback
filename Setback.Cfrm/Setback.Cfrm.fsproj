@@ -22,6 +22,7 @@
     <Compile Include="DealAction.fs" />
     <Compile Include="AbstractClosedDeal.fs" />
     <Compile Include="AbstractOpenDeal.fs" />
+    <Compile Include="StrategyProfile.fs" />
     <Compile Include="BaselineGameState.fs" />
     <Compile Include="BaselinePlayer.fs" />
     <Compile Include="BootstrapGameState.fs" />
