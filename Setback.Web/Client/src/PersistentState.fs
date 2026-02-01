@@ -35,18 +35,19 @@ type PersistentState =
 
 module PersistentState =
 
-    /// Creates initial persistent state.
-    let private create gamesWon =
+    /// Initial persistent state.
+    let private initial =
         {
-            GamesWon = gamesWon
+            GamesWon = AbstractScore.zero
             GameScore = AbstractScore.zero
             RandomState = Random().State   // start with arbitrary seed
             Dealer = Seat.South
             DealOpt = None
         }
 
-    /// Local storage key.
-    let private key = "PersistentState"
+    /// Local storage keys.
+    let private key = "Setback"
+    let private oldKey = "PersistentState"
 
     /// Saves the given state.
     let save (persState : PersistentState) =
@@ -55,22 +56,15 @@ module PersistentState =
 
     /// Answers the current state.
     let get () =
-        let json = WebStorage.localStorage[key] 
+        let json =
+            let json = WebStorage.localStorage[key]
+            if isNull json then
+                let json = WebStorage.localStorage[oldKey]   // backward compatibility
+                WebStorage.localStorage.removeItem(oldKey)
+                json
+            else json
         if isNull json then
-
-                // backward compatibility
-            let gamesWon =
-                let ewScore, nsScore =
-                    let parse (key : string) =
-                        let str = WebStorage.localStorage[key]
-                        WebStorage.localStorage.removeItem(key)
-                        if isNull str then 0
-                        else System.Int32.Parse(str)
-                    parse "ewGamesWon",
-                    parse "nsGamesWon"
-                AbstractScore [| ewScore; nsScore |]
-
-            let persState = create gamesWon
+            let persState = initial
             save persState
             persState
         else
