@@ -3,7 +3,7 @@
 #if !FABLE_COMPILER
 open System
 open System.Buffers
-open Cfrm
+open FastCfr
 #endif
 
 open PlayingCards
@@ -214,34 +214,10 @@ module BaselineGameState =
         str.TrimEnd('.')   // shorten key to save space if possbile
 
 #if !FABLE_COMPILER
-/// State of a Setback game for counterfactual regret minimization.
-/// Score-insensitive.
-type BaselineGameState(openDeal : AbstractOpenDeal) =
-    inherit GameState<DealAction>()
+    /// Final payoffs for this game.
+    let private createTerminalGameState openDeal =
 
-    /// Actions available to the current player in this state.
-    let dealActions =
-        if openDeal |> AbstractOpenDeal.isExhausted then
-            Array.empty
-        else
-            openDeal |> AbstractOpenDeal.getActions
-
-    /// Current player's team's 0-based index, relative to the dealer's team.
-    /// (This is at the team level, rather than the player level, in order to
-    /// model Setback as a two-player game.)
-    override _.CurrentPlayerIdx =
-        let iPlayer =
-            openDeal
-                |> AbstractOpenDeal.currentPlayerIndex
-        iPlayer % Setback.numTeams
-
-    /// This state's unique identifier.
-    override _.Key =
-        BaselineGameState.getKey dealActions openDeal
-
-    /// Final payoffs for this game, if it is now over.
-    override _.TerminalValuesOpt =
-        if openDeal |> AbstractOpenDeal.isExhausted then
+        let score =
             if openDeal.ClosedDeal.PlayoutOpt.IsSome then
 
                     // compute reward score for this deal
@@ -253,23 +229,42 @@ type BaselineGameState(openDeal : AbstractOpenDeal) =
                 let delta =
                     score
                         |> AbstractScore.delta 0
-                        |> float
-                Some [| delta; -delta |]
+                        |> float32
+                [| delta; -delta |]
 
                 // no high bidder
             else
                 assert(openDeal.ClosedDeal.Auction.HighBid = AbstractHighBid.none)
-                Array.replicate Setback.numTeams 0.0 |> Some
-        else None
+                Array.replicate Setback.numTeams 0.0f
 
-    /// Actions available to the current player in this state.
-    override _.LegalActions =
-        dealActions
+        score
+            |> TerminalGameState.create
+            |> Terminal
 
-    /// Takes the given action, which moves the game to a new state.
-    override _.AddAction(action) =
-        openDeal
-            |> AbstractOpenDeal.addAction action
-            |> BaselineGameState
-            :> _
+    /// Current player's team's 0-based index, relative to the dealer's team.
+    /// (This is at the team level, rather than the player level, in order to
+    /// model Setback as a two-player game.)
+    let currentPlayerIdx openDeal =
+        let iPlayer =
+            openDeal
+                |> AbstractOpenDeal.currentPlayerIndex
+        iPlayer % Setback.numTeams
+
+    let rec private createNonTerminalGameState openDeal =
+        let dealActions = openDeal |> AbstractOpenDeal.getActions
+        NonTerminal {
+            ActivePlayerIdx = currentPlayerIdx openDeal
+            InfoSetKey = getKey dealActions openDeal
+            LegalActions = dealActions
+            AddAction =
+                fun action ->
+                    AbstractOpenDeal.addAction action openDeal
+                        |> createGameState
+        }
+
+    and private createGameState openDeal =
+        if openDeal |> AbstractOpenDeal.isExhausted then
+            createTerminalGameState openDeal
+        else
+            createNonTerminalGameState openDeal
 #endif

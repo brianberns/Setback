@@ -1,9 +1,9 @@
 ﻿namespace Setback.Cfrm
 
-open Cfrm
-
 open PlayingCards
 open Setback
+
+open Microsoft.Data.Sqlite
 
 /// A Setback player. Scores are relative to the dealer.
 type Player =
@@ -21,9 +21,30 @@ module BaselinePlayer =
     /// Score-insenstive player.
     let player path =
 
-        /// Strategy profile.
-        let profile =
-            StrategyProfile.Load(path)
+        /// Strategy database connection.
+        let conn =
+            let conn = new SqliteConnection($"Data Source={path};Mode=ReadOnly")
+            conn.Open()
+            conn
+
+        /// Tries to lookup the best action for the given deal.
+        let tryGetActionIndex openDeal =
+            let dealActions = openDeal |> AbstractOpenDeal.getActions
+            use cmd =
+                conn.CreateCommand(
+                    CommandText =
+                        "select Action from Strategy where Key = $Key")
+            let key = BaselineGameState.getKey dealActions openDeal
+            cmd.Parameters.AddWithValue("$Key", key)
+                |> ignore
+
+            let actionObj = cmd.ExecuteScalar()
+            if isNull actionObj then None
+            else
+                let actionIdx = actionObj :?> int64 |> int
+                assert(actionIdx >= 0
+                    && actionIdx < dealActions.Length)
+                Some actionIdx
 
         /// Makes a bid in the given deal.
         let makeBid (_ : AbstractScore) (deal : AbstractOpenDeal) =
@@ -50,18 +71,9 @@ module BaselinePlayer =
 
                                 // choose action
                             | _ ->
-                                    // determine key for this situation
-                                let key =
-                                    let legalDealActions =
-                                        legalBidActions |> Array.map DealBidAction
-                                    BaselineGameState.getKey legalDealActions deal
-
-                                    // profile contains key?
-                                profile.Best(key)
+                                tryGetActionIndex deal
                                     |> Option.map (fun iAction ->
                                         legalBidActions[iAction])
-
-                                        // fallback
                                     |> Option.defaultWith (fun () ->
                                         if legalBids |> Array.contains Bid.Three then Bid.Three
                                         else Bid.Pass
@@ -101,19 +113,9 @@ module BaselinePlayer =
 
                                 // choose action
                             | _ ->
-                                    // determine key for this situation
-                                let key =
-                                    let legalDealActions =
-                                        legalPlayActions
-                                            |> Array.map DealPlayAction
-                                    BaselineGameState.getKey legalDealActions deal
-
-                                    // profile contains key?
-                                profile.Best(key)
+                                tryGetActionIndex deal
                                     |> Option.map (fun iAction ->
                                         legalPlayActions[iAction])
-
-                                        // fallback
                                     |> Option.defaultWith (fun () ->
                                         legalPlayActions[0])
 

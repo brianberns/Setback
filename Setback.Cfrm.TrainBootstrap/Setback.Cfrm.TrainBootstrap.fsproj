@@ -11,10 +11,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Cfrm" Version="2.6.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Setback.Cfrm\Setback.Cfrm.fsproj" />
     <ProjectReference Include="..\Setback\Setback.fsproj" />
   </ItemGroup>

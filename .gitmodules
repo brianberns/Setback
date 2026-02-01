@@ -1,0 +1,3 @@
+[submodule "FastCfr"]
+	path = FastCfr
+	url = https://github.com/brianberns/FastCfr

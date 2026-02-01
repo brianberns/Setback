@@ -33,11 +33,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Cfrm" Version="2.6.0" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.2" />
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.119" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\FastCfr\FastCfr\FastCfr.fsproj" />
     <ProjectReference Include="..\PlayingCards\PlayingCards.fsproj" />
     <ProjectReference Include="..\Setback\Setback.fsproj" />
   </ItemGroup>
