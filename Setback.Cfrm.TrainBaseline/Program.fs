@@ -55,8 +55,9 @@ module Program =
         printfn "Iteration, # Info Sets, Duration (ms), Saved"
         let stopwatch = Stopwatch.StartNew()
         for (iter, state) in Seq.indexed tuples do
+            let iter = iter + 1
             printf $"{iter}, {state.InfoSetMap.Count}, {stopwatch.ElapsedMilliseconds}"
-            if iter % 10 = 0 then
+            if iter % 100 = 0 then
                 (state.InfoSetMap
                     |> InfoSetMap.toStrategyProfile)
                     .Save("Baseline.strategy")
