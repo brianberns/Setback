@@ -39,31 +39,37 @@ module Program =
         Seq.initInfinite (fun _ ->
             createGame rng)
 
+    /// Determines whether the given number is a power of two.
+    let isPowerOfTwo n =
+        n > 0 && (n &&& (n - 1)) = 0
+
     let run () =
 
             // settings for this run
-        let chunkSize = 4
+        let chunkSize = 20
         printfn $"Chunk size: {chunkSize}"
 
             // train on chunks of deals lazily
-        let tuples =
+        let states =
             let rng = Random(0)
             generate rng
                 |> Seq.chunkBySize chunkSize
                 |> Trainer.trainScan Setback.numTeams
 
-        printfn "Iteration, # Info Sets, Duration (ms), Saved"
+        printfn "Chunk, Iteration, # Info Sets, Duration (ms), Saved"
         let stopwatch = Stopwatch.StartNew()
-        for (iter, state) in Seq.indexed tuples do
-            let iter = iter + 1
-            printf $"{iter}, {state.InfoSetMap.Count}, {stopwatch.ElapsedMilliseconds}"
-            if iter % 100 = 0 then
+        for (iChunk, state) in Seq.indexed states do
+            let chunkNum = iChunk + 1
+            let save =
+                let threshold = 1000
+                if chunkNum < threshold then isPowerOfTwo chunkNum
+                else chunkNum % threshold = 0
+            if save then
+                printf $"{chunkNum}, {chunkNum * chunkSize}, {state.InfoSetMap.Count}, {stopwatch.ElapsedMilliseconds}"
                 (state.InfoSetMap
                     |> InfoSetMap.toStrategyProfile)
                     .Save("Baseline.strategy")
                 printfn ", saved"
-            else
-                printfn ""
             stopwatch.Restart()
 
     Console.OutputEncoding <- System.Text.Encoding.UTF8
