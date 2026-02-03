@@ -229,13 +229,13 @@ module BaselineGameState =
                 let delta =
                     score
                         |> AbstractScore.delta 0
-                        |> float32
+                        |> float
                 [| delta; -delta |]
 
                 // no high bidder
             else
                 assert(openDeal.ClosedDeal.Auction.HighBid = AbstractHighBid.none)
-                Array.replicate Setback.numTeams 0.0f
+                Array.replicate Setback.numTeams 0.0
 
         score
             |> TerminalGameState.create

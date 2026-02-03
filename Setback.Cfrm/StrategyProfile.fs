@@ -65,7 +65,7 @@ type StrategyProfile(strategyMap : StrategyMap) =
                         let nProbs = rdr.ReadByte() |> int
                         [|
                             for _ = 1 to nProbs do
-                                rdr.ReadSingle()
+                                rdr.ReadSingle() |> float
                         |]
                     acc |> Map.add key strategy)
                 |> StrategyProfile
@@ -75,4 +75,4 @@ type StrategyProfile(strategyMap : StrategyMap) =
 
 /// Tracks a strategy for each information set.
 and private StrategyMap =
-    Map<string (*InfoSet.Key*), float32[] (*action probabilities*)>
+    Map<string (*InfoSet.Key*), float[] (*action probabilities*)>

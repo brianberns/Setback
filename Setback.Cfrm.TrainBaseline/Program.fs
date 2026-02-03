@@ -46,7 +46,7 @@ module Program =
     let run () =
 
             // settings for this run
-        let chunkSize = 20
+        let chunkSize = 1
         printfn $"Chunk size: {chunkSize}"
 
             // train on chunks of deals lazily

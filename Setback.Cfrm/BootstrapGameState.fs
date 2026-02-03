@@ -194,7 +194,7 @@ module BootstrapGameState =
 
                             // reward for winning the game (regardless of deal score)
                         | Some iWinningTeam ->
-                            let reward = 5.5f   // value determined empirically
+                            let reward = 5.5   // value determined empirically
                             if iWinningTeam = 0 then reward
                             else -reward
 
@@ -202,7 +202,7 @@ module BootstrapGameState =
                         | None ->
                             dealScore
                                 |> AbstractScore.delta 0
-                                |> float32
+                                |> float
 
                     // zero-sum
                 [| delta; -delta |]
@@ -210,7 +210,7 @@ module BootstrapGameState =
                 // no high bidder
             else
                 assert(openDeal.ClosedDeal.Auction.HighBid = AbstractHighBid.none)
-                Array.replicate Setback.numTeams 0.0f
+                Array.replicate Setback.numTeams 0.0
 
         score
             |> TerminalGameState.create
