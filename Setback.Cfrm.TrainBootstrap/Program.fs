@@ -31,11 +31,10 @@ module Program =
     let minimize batchSize =
 
             // initialize
-        let rng = Random(0)
         let initialState =
             let numPlayers = 2
             CfrBatch.create numPlayers (fun _ ->
-                createGame rng)
+                createGame Random.Shared)
         let batchNums = Seq.initInfinite ((+) 1)   // 1, 2, 3, ...
         let stopwatch = Stopwatch()
 

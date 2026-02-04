@@ -28,12 +28,10 @@ module Program =
             let fileInfo = FileInfo(batchFileName)
             if fileInfo.Exists then
                 printfn "Loading existing file"
-                let rng = Random(int fileInfo.Length)   // avoid revisiting original deals
-                CfrBatch.load batchFileName (fun _ -> createGame rng)
+                CfrBatch.load batchFileName (fun _ -> createGame Random.Shared)
             else
                 let numPlayers = 2
-                let rng = Random(0)
-                CfrBatch.create numPlayers (fun _ -> createGame rng)
+                CfrBatch.create numPlayers (fun _ -> createGame Random.Shared)
         let batchNums = Seq.initInfinite ((+) 1)   // 1, 2, 3, ...
         let stopwatch = Stopwatch()
 
