@@ -38,7 +38,7 @@ module Program =
             // run CFR
         printfn "Iteration,Payoff,Size,Time"
         (initialState, batchNums)
-            ||> Seq.fold (fun inBatch batchNum ->
+            ||> Seq.fold (fun inBatch _ ->
 
                     // run CFR on this batch of games
                 stopwatch.Start()
@@ -51,7 +51,7 @@ module Program =
 
                     // report results from this batch
                 printfn "%d,%A,%d,%A"
-                    (batchNum * batchSize)
+                    outBatch.NumIterations
                     outBatch.ExpectedGameValues[1]   // value of a deal from the first bidder's point of view
                     outBatch.InfoSetMap.Count
                     stopwatch.Elapsed
@@ -61,7 +61,4 @@ module Program =
                 outBatch)
             |> ignore
 
-    [<EntryPoint>]
-    let main argv =
-        minimize 100000
-        0
+    minimize 100_000
