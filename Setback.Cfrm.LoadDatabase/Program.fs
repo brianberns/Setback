@@ -1,6 +1,5 @@
 ﻿namespace Setback.Cfrm.LoadDatabase
 
-open System
 open System.Data
 open System.Data.SQLite
 
@@ -15,9 +14,17 @@ module Program =
         use cmd =
             new SQLiteCommand(
                 "create table Strategy ( \
-                    Key text primary key, \
+                    Key text not null, \
                     ActionIndex integer not null \
                 )",
+                conn)
+        cmd.ExecuteNonQuery() |> ignore
+
+    /// Creates index after bulk insert.
+    let createIndex conn =
+        use cmd =
+            new SQLiteCommand(
+                "create unique index Strategy_Key_Idx on Strategy (Key)",
                 conn)
         cmd.ExecuteNonQuery() |> ignore
 
@@ -36,12 +43,6 @@ module Program =
         createSchema conn
 
         conn
-
-    /// Converts the given option to a database-safe value.
-    let safeValue valueOpt =
-        valueOpt
-            |> Option.map (fun value -> value :> obj)
-            |> Option.defaultValue (DBNull.Value :> _)
 
     /// Is a playout key?
     let isPlayout (key : string) =
@@ -65,12 +66,16 @@ module Program =
                 conn)
         pragmaCmd.ExecuteNonQuery() |> ignore
 
+            // wrap all inserts in a transaction
+        use transaction = conn.BeginTransaction()
+
             // prepare insert command
         use strategyCmd =
             new SQLiteCommand(
                 "insert into Strategy (Key, ActionIndex) \
                 values (@Key, @ActionIndex)",
-                conn)
+                conn,
+                transaction)
         let stratKeyParam = strategyCmd.Parameters.Add("Key", DbType.String)
         let stratActionIdxParam = strategyCmd.Parameters.Add("ActionIndex", DbType.Int32)
 
@@ -96,8 +101,9 @@ module Program =
                     let nRows = strategyCmd.ExecuteNonQuery()
                     assert(nRows = 1)
 
-    [<EntryPoint>]
-    let main argv =
+        transaction.Commit()
+
+    do
         use conn = connect "Setback.db"
         load conn
-        0
+        createIndex conn
