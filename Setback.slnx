@@ -1,0 +1,18 @@
+<Solution>
+  <Project Path="Fable.Remoting.Suave/Fable.Remoting.Json/Fable.Remoting.Json.fsproj" />
+  <Project Path="Fable.Remoting.Suave/Fable.Remoting.MsgPack/Fable.Remoting.MsgPack.fsproj" />
+  <Project Path="Fable.Remoting.Suave/Fable.Remoting.Server/Fable.Remoting.Server.fsproj" />
+  <Project Path="Fable.Remoting.Suave/Fable.Remoting.Suave/Fable.Remoting.Suave.fsproj" />
+  <Project Path="PlayingCards/PlayingCards/PlayingCards.fsproj" />
+  <Project Path="Setback.Cfrm.LoadDatabase/Setback.Cfrm.LoadDatabase.fsproj" />
+  <Project Path="Setback.Cfrm.PlayGui/Setback.Cfrm.PlayGui.fsproj" />
+  <Project Path="Setback.Cfrm.PlayKiller/Setback.Cfrm.PlayKiller.fsproj" />
+  <Project Path="Setback.Cfrm.PlaySelf/Setback.Cfrm.PlaySelf.fsproj" />
+  <Project Path="Setback.Cfrm.TrainBaseline/Setback.Cfrm.TrainBaseline.fsproj" />
+  <Project Path="Setback.Cfrm.TrainBootstrap/Setback.Cfrm.TrainBootstrap.fsproj" />
+  <Project Path="Setback.Cfrm/Setback.Cfrm.fsproj" />
+  <Project Path="Setback.Web/Client/src/Setback.Web.Client.fsproj" />
+  <Project Path="Setback.Web/Harness/Setback.Web.Harness.fsproj" />
+  <Project Path="Setback.Web/Server/Setback.Web.Server.fsproj" />
+  <Project Path="Setback/Setback.fsproj" />
+</Solution>
