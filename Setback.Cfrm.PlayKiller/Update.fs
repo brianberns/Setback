@@ -116,7 +116,7 @@ module Message =
                 let deal =
                     cardMap
                         |> Map.map (fun _ cards ->
-                            Seq.ofArray cards)
+                            set cards)
                         |> AbstractOpenDeal.fromHands dealing.Dealer
                 Playing {|
                     EwGamesWon = dealing.EwGamesWon

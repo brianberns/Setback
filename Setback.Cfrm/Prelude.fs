@@ -1,5 +1,13 @@
 ﻿namespace Setback.Cfrm
 
+module Array =
+
+    /// Clones the given array. Array.Clone is not supported by Fable.
+    let clone (items : 'item[]) =
+        items
+            |> Seq.readonly   // force a copy
+            |> Seq.toArray
+
 /// https://stackoverflow.com/questions/62082930/best-way-to-do-trymax-and-trymin-in-f
 module Seq =
 
@@ -96,10 +104,10 @@ type ImmutableArray<'t> =
     member this.Item(index) = this.Items[index]
     member this.Length = this.Items.Length
     member this.SetItem(index, item) =
-        let items' = PlayingCards.Array.clone this.Items
+        let items' = Array.clone this.Items
         items'[index] <- item
         { Items = items' }
-    member this.ToArray() = PlayingCards.Array.clone this.Items
+    member this.ToArray() = Array.clone this.Items
 
 type ImmutableArrayBuilder<'t>(n) =
     let items = ResizeArray(n : int)

@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PlayingCards\PlayingCards.fsproj" />
+    <ProjectReference Include="..\PlayingCards\PlayingCards\PlayingCards.fsproj" />
     <ProjectReference Include="..\Setback.Cfrm\Setback.Cfrm.fsproj" />
   </ItemGroup>
 

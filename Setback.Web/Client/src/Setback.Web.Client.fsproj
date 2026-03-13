@@ -9,17 +9,17 @@
     <DefineConstants>TRACE;FABLE_COMPILER</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\..\..\PlayingCards\Prelude.fs" />
-    <Compile Include="..\..\..\PlayingCards\Rank.fs" />
-    <Compile Include="..\..\..\PlayingCards\Suit.fs" />
-    <Compile Include="..\..\..\PlayingCards\Card.fs" />
+    <Compile Include="..\..\..\PlayingCards\PlayingCards\Prelude.fs" Link="CardsPrelude.fs" />
+    <Compile Include="..\..\..\PlayingCards\PlayingCards\Rank.fs" />
+    <Compile Include="..\..\..\PlayingCards\PlayingCards\Suit.fs" />
+    <Compile Include="..\..\..\PlayingCards\PlayingCards\Card.fs" />
+    <Compile Include="..\..\..\Setback.Cfrm\Prelude.fs" Link="CfrmPrelude.fs" />
     <Compile Include="Deck.fs" />
-    <Compile Include="..\..\..\PlayingCards\Hand.fs" />
+    <Compile Include="..\..\..\PlayingCards\PlayingCards\Hand.fs" />
     <Compile Include="..\..\..\Setback\Rank.fs" />
     <Compile Include="..\..\..\Setback\Bid.fs" />
     <Compile Include="..\..\..\Setback\Seat.fs" />
     <Compile Include="..\..\..\Setback\Setback.fs" />
-    <Compile Include="..\..\..\Setback.Cfrm\Prelude.fs" />
     <Compile Include="..\..\..\Setback.Cfrm\SpanLayout.fs" />
     <Compile Include="..\..\..\Setback.Cfrm\AbstractScore.fs" />
     <Compile Include="..\..\..\Setback.Cfrm\AbstractHighBid.fs" />
@@ -38,6 +38,7 @@
     <Compile Include="..\..\..\Setback.Cfrm\BootstrapGameState.fs" />
     <Compile Include="..\..\..\Setback.Cfrm\Game.fs" />
     <Compile Include="..\..\Shared\SharedTypes.fs" />
+    <Compile Include="Prelude.fs" />
     <Compile Include="WebPlayer.fs" />
     <Compile Include="JQuery.fs" />
     <Compile Include="Settings.fs" />

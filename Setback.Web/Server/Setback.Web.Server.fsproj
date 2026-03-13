@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Fable.Remoting.Suave\Fable.Remoting.Suave\Fable.Remoting.Suave.fsproj" />
+    <ProjectReference Include="..\..\Fable.Remoting.Suave\Fable.Remoting.Suave\Fable.Remoting.Suave.fsproj" />
     <ProjectReference Include="..\..\Setback.Cfrm\Setback.Cfrm.fsproj" />
   </ItemGroup>
 

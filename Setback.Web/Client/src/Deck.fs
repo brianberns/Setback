@@ -67,6 +67,6 @@ module Deck =
         {
             Cards =
                 Card.allCards
-                    |> Array.clone
+                    |> Setback.Cfrm.Array.clone
                     |> knuthShuffle rng
         }

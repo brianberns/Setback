@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PlayingCards\PlayingCards.fsproj" />
+    <ProjectReference Include="..\PlayingCards\PlayingCards\PlayingCards.fsproj" />
   </ItemGroup>
 
 </Project>
