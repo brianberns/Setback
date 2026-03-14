@@ -19,6 +19,10 @@ type InformationSet =
         /// Public information.
         Deal : ClosedDeal
 
+        /// Game score at the start of the deal. (This is the
+        /// score of the game, not the number of Game points.)
+        GameScore : Score
+
         /// What actions can be taken in this information set?
         LegalActions : Action[]
     }
@@ -36,13 +40,14 @@ module InformationSet =
                     |> Seq.map Choice2Of2
 
     /// Creates an information set.
-    let create player hand deal =
+    let create player hand deal gameScore =
         assert(ClosedDeal.currentPlayer deal = player)
         assert(ClosedDeal.isComplete deal |> not)
         {
             Player = player
             Hand = hand
             Deal = deal
+            GameScore = gameScore
             LegalActions =
                 legalActions hand deal
                     |> Seq.toArray

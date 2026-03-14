@@ -39,7 +39,7 @@ type Session
         dealer |> Seat.incr iPlayer
 
     /// Plays the given deal.
-    let playDeal (dealer : Seat) (deal : AbstractOpenDeal) game =
+    let playDeal (dealer : Seat) (deal : AbstractOpenDeal) (game : Setback.Cfrm.Game) =
 
         trigger dealStartEvent (dealer, deal)
 

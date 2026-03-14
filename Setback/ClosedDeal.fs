@@ -12,6 +12,9 @@ type ClosedDeal =
         PlayoutOpt : Option<Playout>
     }
 
+    /// Player who dealt this hand.
+    member this.Dealer = this.Auction.Dealer
+
 module ClosedDeal =
 
     /// Creates a new deal.

@@ -17,9 +17,6 @@ type OpenDeal =
 
 module OpenDeal =
 
-    /// Number of cards dealt to each player.
-    let numCardsPerHand = 6
-
     /// Creates a deal from the given hands.
     let fromHands dealer handMap =
         assert(
@@ -52,9 +49,17 @@ module OpenDeal =
             |> Map
             |> fromHands dealer
 
+    /// Indicates whether the given deal has finished.
+    let isComplete deal =
+        ClosedDeal.isComplete deal.ClosedDeal
+
+    /// Current player in the given deal.
+    let currentPlayer deal = 
+        ClosedDeal.currentPlayer deal.ClosedDeal
+
     /// Answers the current player's information set.
     let currentInfoSet deal =
-        let player = ClosedDeal.currentPlayer deal.ClosedDeal
+        let player = currentPlayer deal
         let hand = deal.UnplayedCardMap[player]
         InformationSet.create player hand deal.ClosedDeal
 
@@ -73,7 +78,7 @@ module OpenDeal =
 
             // remove card from play
         let unplayedCardMap =
-            let seat = ClosedDeal.currentPlayer deal.ClosedDeal
+            let seat = currentPlayer deal
             let unplayedCards = deal.UnplayedCardMap[seat]
             assert(unplayedCards.Contains(card))
             let unplayedCards = unplayedCards.Remove(card)
@@ -90,20 +95,3 @@ module OpenDeal =
         match action with
             | Choice1Of2 bid -> addBid bid deal
             | Choice2Of2 card -> addPlay card deal
-
-    /// Generates an infinite sequence of deals.
-    let generate (rng : Random) =
-        Seq.initInfinite (fun iDeal ->
-            let deck = Deck.shuffle rng
-            let dealer = enum<Seat> (iDeal % Seat.numSeats)
-            fromDeck dealer deck)
-
-    /// Plays the given number of deals.
-    let playDeals rng inParallel numDeals playFun =
-        let map =
-            if inParallel then Array.Parallel.map
-            else Array.map
-        generate rng
-            |> Seq.take numDeals
-            |> Seq.toArray
-            |> map playFun
