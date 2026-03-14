@@ -5,11 +5,12 @@
 /// how unplayed cards are distributed among the players.
 type ClosedDeal =
     {
+        /// Auction phase.
         Auction : Auction
+
+        /// Playout phase, if it has started.
         PlayoutOpt : Option<Playout>
     }
-
-    member this.Dealer = this.Auction.Dealer
 
 module ClosedDeal =
 
@@ -20,11 +21,13 @@ module ClosedDeal =
             PlayoutOpt = None
         }
 
+    /// Indicates whether the given deal has finished.
     let isComplete deal =
         match deal.PlayoutOpt with
             | Some playout -> Playout.isComplete playout
             | None -> Auction.isComplete deal.Auction   // all players passed?
 
+    /// Current player in the given deal.
     let currentPlayer deal =
         match deal.PlayoutOpt with
             | Some playout ->

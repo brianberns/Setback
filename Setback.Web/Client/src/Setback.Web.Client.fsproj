@@ -16,6 +16,7 @@
     <Compile Include="..\..\..\Setback.Cfrm\Prelude.fs" Link="CfrmPrelude.fs" />
     <Compile Include="Deck.fs" />
     <Compile Include="..\..\..\PlayingCards\PlayingCards\Hand.fs" />
+    <Compile Include="..\..\..\Setback\Prelude.fs" Link="SetbackPrelude.fs" />
     <Compile Include="..\..\..\Setback\Rank.fs" />
     <Compile Include="..\..\..\Setback\Bid.fs" />
     <Compile Include="..\..\..\Setback\Seat.fs" />
@@ -38,7 +39,6 @@
     <Compile Include="..\..\..\Setback.Cfrm\BootstrapGameState.fs" />
     <Compile Include="..\..\..\Setback.Cfrm\Game.fs" />
     <Compile Include="..\..\Shared\SharedTypes.fs" />
-    <Compile Include="Prelude.fs" />
     <Compile Include="WebPlayer.fs" />
     <Compile Include="JQuery.fs" />
     <Compile Include="Settings.fs" />

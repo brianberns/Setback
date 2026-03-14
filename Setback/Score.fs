@@ -32,3 +32,17 @@ module Score =
     let zero =
         Array.zeroCreate Team.numTeams
             |> ofPoints
+
+    /// Creates a score for the given team.
+    let create (team : Team) points =
+        Array.init Team.numTeams (fun iTeam ->
+            if iTeam = int team then points
+            else 0)
+            |> ofPoints
+
+    /// Indexes the given score by team.
+    let indexed score =
+        score.Points
+            |> Seq.indexed
+            |> Seq.map (fun (iTeam, points) ->
+                enum<Team> iTeam, points)

@@ -283,8 +283,8 @@ module Playout =
                 | None -> ()
         }
 
-    /// Gets the number of Game points taken by each team in the
-    /// given playout.
+    /// Gets the number of deal points (High, Low, Jack, and Game) taken
+    /// by each team in the given playout.
     let getDealScore playout =
 
         let teams =
@@ -306,13 +306,10 @@ module Playout =
 
                     // Game
                 let teamOpt =
-                    let teamPoints =
-                        Map.toArray playout.GameScore.ScoreMap
                     let maxPoints =
-                        teamPoints
-                            |> Seq.map snd
-                            |> Seq.max
-                    teamPoints
+                        Seq.max playout.GameScore.Points
+                    playout.GameScore
+                        |> Score.indexed
                         |> Seq.where (fun (_, points) ->
                             points = maxPoints)
                         |> Seq.map fst
@@ -333,29 +330,3 @@ module Playout =
                     |> Map.tryFind team
                     |> Option.defaultValue 0)
         createScore Team.EastWest + createScore Team.NorthSouth
-
-    /// Display string.
-    let toString playout =
-
-        let sb = new System.Text.StringBuilder()
-        let write (s : string) = sb.Append(s) |> ignore
-        let writeline (s : string) = sb.AppendFormat("{0}\r\n", s) |> ignore
-
-        let tricks = tricks playout |> Seq.toArray
-        if tricks.Length > 0 then
-            writeline ""
-            tricks
-                |> Seq.iteri (fun iTrick trick ->
-                    write (sprintf "%A: " (iTrick + 1))
-                    let sTrick =
-                        trick
-                            |> Trick.plays
-                            |> Seq.map (fun (seat, card) ->
-                                sprintf "%c:%A" seat.Char card)
-                            |> String.concat " "
-                    writeline (sprintf "%s" sTrick))
-
-            writeline ""
-            write (Score.toString (getDealScore playout))
-
-        sb.ToString()

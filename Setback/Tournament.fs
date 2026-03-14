@@ -10,6 +10,8 @@ module Tournament =
     let private playDeal (playerMap : Map<_, _>) deal =
 
         let rec loop deal =
+
+                // take an action
             let deal =
                 let infoSet = OpenDeal.currentInfoSet deal
                 let action =
@@ -17,9 +19,14 @@ module Tournament =
                         | Some action -> action
                         | None -> playerMap[infoSet.Player].Act infoSet
                 OpenDeal.addAction action deal
-            match Game.tryUpdateScore deal Score.zero with
-                | Some gameScore -> gameScore
-                | None -> loop deal
+
+                // loop again?
+            if ClosedDeal.isComplete deal.ClosedDeal then
+                match deal.ClosedDeal.PlayoutOpt with
+                    | Some playout when Playout.isComplete playout ->
+                        Playout.getDealScore playout
+                    | _ -> Score.zero   // all pass auction
+            else loop deal
 
         loop deal
 
