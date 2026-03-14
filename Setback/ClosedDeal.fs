@@ -54,10 +54,3 @@ module ClosedDeal =
                 | Some playout -> Playout.addPlay card playout
                 | None -> failwith "No playout"
         { deal with PlayoutOpt = Some playout }
-
-    let toString deal =
-        let auctionStr = Auction.toString deal.Auction
-        deal.PlayoutOpt
-            |> Option.map (fun playout ->
-                auctionStr + "\r\n" + Playout.toString playout)
-            |> Option.defaultValue auctionStr

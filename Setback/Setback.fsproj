@@ -16,6 +16,7 @@
     <Compile Include="Auction.fs" />
     <Compile Include="Playout.fs" />
     <Compile Include="ClosedDeal.fs" />
+    <Compile Include="InformationSet.fs" />
     <Compile Include="OpenDeal.fs" />
     <Compile Include="Tournament.fs" />
   </ItemGroup>

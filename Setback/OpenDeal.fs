@@ -51,6 +51,12 @@ module OpenDeal =
             |> Map
             |> fromHands dealer
 
+    /// Answers the current player's information set.
+    let currentInfoSet deal =
+        let player = ClosedDeal.currentPlayer deal.ClosedDeal
+        let hand = deal.UnplayedCardMap[player]
+        InformationSet.create player hand deal.ClosedDeal
+
     /// Adds the given bid to the given deal.
     let addBid bid deal =
         { deal with
@@ -78,21 +84,8 @@ module OpenDeal =
                 UnplayedCardMap = unplayedCardMap
         }
 
-    let toString (deal : OpenDeal) =
-
-        let sb = new System.Text.StringBuilder()
-        let write (s : string) = sb.Append(s) |> ignore
-        let writeline (s : string) = sb.AppendFormat("{0}\r\n", s) |> ignore
-
-        writeline ""
-        for seat in Seat.cycle deal.ClosedDeal.Dealer.Next do
-            let sHand = deal.UnplayedCardMap[seat] |> Hand.toString
-            writeline (sprintf "%-5s: %s" (seat.ToString()) sHand)
-
-        write (ClosedDeal.toString deal.ClosedDeal)
-
-        let dumpScore teams (score : Score) =
-            for team in teams do
-                sb.AppendFormat("   {0}: {1}\r\n", team, score[team]) |> ignore
-
-        sb.ToString()
+    /// Takes the given action in the given deal.
+    let addAction action deal =
+        match action with
+            | Choice1Of2 bid -> addBid bid deal
+            | Choice2Of2 card -> addPlay card deal

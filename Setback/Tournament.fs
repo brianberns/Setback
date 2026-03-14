@@ -16,8 +16,7 @@ module Tournament =
                     match Seq.tryExactlyOne infoSet.LegalActions with
                         | Some action -> action
                         | None -> playerMap[infoSet.Player].Act infoSet
-                OpenDeal.addAction
-                    infoSet.LegalActionType action deal
+                OpenDeal.addAction action deal
             match Game.tryUpdateScore deal Score.zero with
                 | Some gameScore -> gameScore
                 | None -> loop deal
