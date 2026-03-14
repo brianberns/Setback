@@ -4,6 +4,23 @@ open System
 open PlayingCards
 open Setback
 
+/// Model Setback as a zero-sum game.
+module ZeroSum =
+
+    /// Gets the payoff for the given raw score from each team's
+    /// point of view.
+    let getPayoff score =
+        let points = score.Points
+        assert(points.Length = Team.numTeams)
+        let sum = Seq.sum points
+        [|
+            for pt in points do
+                let otherAvg =
+                    float32 (sum - pt)
+                        / float32 (Seat.numSeats - 1)
+                otherAvg - float32 pt
+        |]
+
 module Tournament =
 
     /// Plays one deal.

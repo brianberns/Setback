@@ -1,5 +1,6 @@
 ﻿namespace Setback
 
+open System
 open PlayingCards
 
 /// An open deal contains each player's hand. This is used for two purposes:
@@ -89,3 +90,20 @@ module OpenDeal =
         match action with
             | Choice1Of2 bid -> addBid bid deal
             | Choice2Of2 card -> addPlay card deal
+
+    /// Generates an infinite sequence of deals.
+    let generate (rng : Random) =
+        Seq.initInfinite (fun iDeal ->
+            let deck = Deck.shuffle rng
+            let dealer = enum<Seat> (iDeal % Seat.numSeats)
+            fromDeck dealer deck)
+
+    /// Plays the given number of deals.
+    let playDeals rng inParallel numDeals playFun =
+        let map =
+            if inParallel then Array.Parallel.map
+            else Array.map
+        generate rng
+            |> Seq.take numDeals
+            |> Seq.toArray
+            |> map playFun
