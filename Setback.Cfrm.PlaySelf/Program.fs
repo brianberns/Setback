@@ -1,4 +1,7 @@
-﻿open System.Collections.Immutable
+﻿open System
+open System.Collections.Immutable
+open System.Runtime
+open System.Text
 
 open PlayingCards
 open Setback
@@ -82,8 +85,15 @@ let getPlayer path =
                     |> Choice2Of2
     { Act = act }
 
-System.Console.OutputEncoding <- System.Text.Encoding.UTF8
-let champion = getPlayer "Champion.db"
-let challenger = getPlayer "Challenger.db"
-Tournament.run 0 true 100 champion challenger
-    |> printfn "%A"
+[<EntryPoint>]
+let main argv =
+
+    Console.OutputEncoding <- Encoding.UTF8
+    printfn $"Server garbage collection: {GCSettings.IsServerGC}"
+
+    let champion = getPlayer "Champion.db"
+    let challenger = getPlayer "Challenger.db"
+    Tournament.run 0 true 10000 champion challenger
+        |> printfn "%A"
+
+    0

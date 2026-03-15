@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Setback.Cfrm.PlaySelf": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_gcServer": "1"
+      }
+    }
+  }
+}

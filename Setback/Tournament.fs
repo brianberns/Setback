@@ -22,10 +22,9 @@ module Tournament =
                     |> Map
             let rng = Random(rngSeed)
             Game.playGames rng inParallel numGames (   // to-do: avoid creating deals in two different places
-                fun game ->
-                    let winnerTeam = Game.playGame rng playerMap game
-                    winnerTeam = challengerTeam)
-                |> Array.length
+                Game.playGame rng playerMap)
+                |> Seq.where (fun team -> team = challengerTeam)
+                |> Seq.length
 
             // duplicate deals, so each deal runs twice
         assert(numGames % 2 = 0)
