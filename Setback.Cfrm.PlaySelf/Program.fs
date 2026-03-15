@@ -49,6 +49,7 @@ let toAbstractOpenDeal (hand : Hand) deal =
                                 card.Rank)
                             |> Seq.tryMin
                     }
+                else None
         |]
     {
         ClosedDeal = absClosedDeal
@@ -81,6 +82,7 @@ let getPlayer path =
                     |> Choice2Of2
     { Act = act }
 
+System.Console.OutputEncoding <- System.Text.Encoding.UTF8
 let champion = getPlayer "Champion.db"
 let challenger = getPlayer "Challenger.db"
 Tournament.run 0 true 100 champion challenger
