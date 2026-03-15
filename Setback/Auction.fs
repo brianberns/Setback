@@ -32,6 +32,7 @@ module Auction =
         assert(auction.Bids.Length <= Seat.numSeats)
         auction.Bids.Length = Seat.numSeats
 
+    /// High bidder in the given auction.
     let highBidder auction =
         match auction.HighBidderOpt with
             | Some bidder -> bidder

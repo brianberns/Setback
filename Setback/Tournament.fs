@@ -1,27 +1,31 @@
-namespace Hearts
+namespace Setback
 
 open System
 open PlayingCards
-open Setback
 
 module Tournament =
 
     /// Runs a 2v2 tournament between two players.
     let run rngSeed inParallel numGames champion challenger =
 
-        let runWith numGames (challengerSeats : Set<_>) =
+        let runWith numGames (challengerTeam : Team) =
             let playerMap =
                 Enum.getValues<Seat>
                     |> Seq.map (fun seat ->
                         let player =
-                            if challengerSeats.Contains(seat) then
-                                challenger
+                            let isChallenger =
+                                Team.seats challengerTeam
+                                    |> Set.contains seat
+                            if isChallenger then challenger
                             else champion
                         seat, player)
                     |> Map
             let rng = Random(rngSeed)
             Game.playGames rng inParallel numGames (   // to-do: avoid creating deals in two different places
-                Game.playGame rng playerMap)
+                fun game ->
+                    let winnerTeam = Game.playGame rng playerMap game
+                    winnerTeam = challengerTeam)
+                |> Array.length
 
             // duplicate deals, so each deal runs twice
         assert(numGames % 2 = 0)
@@ -31,13 +35,5 @@ module Tournament =
         assert(Seat.numSeats % 2 = 0)
         let nSeats = Seat.numSeats / 2
 
-        let teamMap =
-            [|
-                yield! runWith halfGames (set [ Seat.East; Seat.West ])
-                yield! runWith halfGames (set [ Seat.North; Seat.South ])
-            |]
-                |> Seq.groupBy id
-                |> Seq.map (fun (team, group) ->
-                    team, Seq.length group)
-                |> Map
-        teamMap
+        Enum.getValues<Team>
+            |> Array.sumBy (runWith halfGames)
