@@ -19,8 +19,8 @@ type InformationSet =
         /// Public information.
         Deal : ClosedDeal
 
-        /// Game score at the start of the deal. (This is the
-        /// score of the game, not the number of Game points.)
+        /// Game score at the start of the deal. (The score of
+        /// the game, not the number of Game points.)
         GameScore : Score
 
         /// What actions can be taken in this information set?
