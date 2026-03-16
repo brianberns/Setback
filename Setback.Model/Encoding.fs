@@ -97,41 +97,58 @@ module Encoding =
                 flags[suitOffset + seatOffset] <- true   // use mutation for speed
         flags
 
-    /// Determines the number of deal points needed by each team
-    /// to win a game with the given score.
-    let toNeeds usTeam gameScore =
+    /// Encodes the given auction.
+    let encodeAuction player auction =
+        [|
+        |]
 
-        let winThreshold =
-            seq {
-                for point in gameScore.Points do
-                    yield point + 1
-                yield Setback.winThreshold
-            } |> Seq.max
+    /// Encodes the given playout, which might not have started.
+    let encodePlayout player playoutOpt =
+        [|
+                // cards previously played by each player
+            let tricks =
+                playoutOpt
+                    |> Option.map _.CompletedTricks
+                    |> Option.defaultValue List.empty
+            yield! encodePlays player tricks
 
-        assert(Setback.numTeams = 2)
-        let themTeam =
-            if usTeam = Team.NorthSouth then Team.EastWest
-            else Team.NorthSouth
-        winThreshold - gameScore[usTeam],  // "us" need
-        winThreshold - gameScore[themTeam]
+                // current trick
+            let trickOpt =
+                playoutOpt
+                    |> Option.bind _.CurrentTrickOpt
+            yield! encodeTrick trickOpt
 
-    /// Encodes the given need as a "thermomenter".
-    let encodeNeed need =
-        assert(need > 0)
-        let cutoff = Setback.numDealPoints + 1
-        let count = (min cutoff need) - 1
-        assert(count >= 0 && count < cutoff)   // 0-4
-        Array.init (cutoff - 1) (fun i ->
-            i < count)
+                // voids
+            let voids =
+                playoutOpt
+                    |> Option.map _.Voids
+                    |> Option.defaultValue Set.empty
+            yield! encodeVoids player voids
+        |]
 
     /// Encodes the given game score as thermometers.
     let encodeGameScore player gameScore =
-        let usNeed, themNeed =
-            toNeeds (Team.ofSeat player) gameScore
-        [|
-            yield! encodeNeed usNeed
-            yield! encodeNeed themNeed
-        |]
+       
+            // find point range (e.g. 0-10, 1-11 for a tie at 11, etc.)
+        let length = Setback.winThreshold - 1
+        let maxPoint =
+            seq {
+                yield! gameScore.Points
+                yield length
+            } |> Seq.max
+        let minPoint = maxPoint - length
+
+            // encode as thermometers
+        assert(Setback.numTeams = 2)
+        let usTeam = Team.ofSeat player
+        let themTeam = 
+            if usTeam = Team.NorthSouth then Team.EastWest
+            else Team.NorthSouth
+        [| usTeam; themTeam |]
+            |> Array.collect (fun team ->
+                let count = gameScore[team] - minPoint
+                assert(count <= length)
+                Array.init length (fun i -> i < count))
 
     /// Total encoded length of an info set.
     let encodedLength =
@@ -145,15 +162,13 @@ module Encoding =
     let encode infoSet : Encoding =
         let flags =
             [|
-                yield! encodeCards infoSet.Hand             // current player's hand
-                yield! encodePlays                          // cards previously played by each player
-                    infoSet.Player infoSet.Deal.CompletedTricks
-                yield! encodeTrick                          // current trick
-                    infoSet.Deal.CurrentTrickOpt
-                yield! encodeVoids                          // voids
-                    infoSet.Player infoSet.Deal.Voids
-                yield! encodeGameScore                          // deal score
-                    infoSet.Player infoSet.Deal.Score
+                yield! encodeCards infoSet.Hand
+                yield! encodeAuction
+                    infoSet.Player infoSet.Deal.Auction
+                yield! encodePlayout
+                    infoSet.Player infoSet.Deal.PlayoutOpt
+                yield! encodeGameScore
+                    infoSet.Player infoSet.GameScore
             |]
         assert(flags.Length = encodedLength)
         flags
