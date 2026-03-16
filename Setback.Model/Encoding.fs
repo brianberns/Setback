@@ -26,8 +26,8 @@ type Encoding = bool[]
 
 module Encoding =
 
-    /// Encodes the given (card, value) pairs as a
-    /// vector in the deck size.
+    /// Encodes the given (card, value) pairs as a vector
+    /// in the deck size.
     let inline encodeCardValues pairs =
         let valueMap =
             pairs
@@ -97,9 +97,36 @@ module Encoding =
                 flags[suitOffset + seatOffset] <- true   // use mutation for speed
         flags
 
+    /// Encodes the given seat as a one-hot vector in the number
+    /// of seats.
+    let encodeSeat player seat =
+        [|
+            for st in Seat.cycle player do
+                st = seat
+        |]
+
+    /// Encodes the given bid as a one-hot vector in the number
+    /// of bids, or zero-hot if none.
+    let encodeBid bidOpt =
+        [|
+            for bid in Enum.getValues<Bid> do
+                Some bid = bidOpt
+        |]
+
     /// Encodes the given auction.
     let encodeAuction player auction =
         [|
+                // dealer
+            yield! encodeSeat player auction.Dealer
+
+                // each player's bid in chronological order
+            let bids = Seq.toArray auction.Bids
+            for iBid = 0 to Seat.numSeats - 1 do
+                yield!
+                    if iBid < bids.Length then
+                        Some bids[bids.Length - 1 - iBid]   // unreverse into chronological order
+                    else None
+                    |> encodeBid
         |]
 
     /// Encodes the given playout, which might not have started.
@@ -153,6 +180,8 @@ module Encoding =
     /// Total encoded length of an info set.
     let encodedLength =
         Card.numCards                                         // current player's hand
+            + Seat.numSeats                                   // dealer
+            + Seat.numSeats * Bid.numBids                     // each player's bid
             + Seat.numSeats * Card.numCards                   // cards previously played by each player
             + (Seat.numSeats - 1) * Card.numCards             // current trick
             + (Seat.numSeats - 1) * Suit.numSuits             // voids
