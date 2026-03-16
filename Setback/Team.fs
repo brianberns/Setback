@@ -19,7 +19,10 @@ module Team =
         | Team.NorthSouth -> "N+S"
         | _ -> failwith "Unexpected team"
 
+    /// East/West team.
     let private ewTeam = set [ Seat.East; Seat.West ]
+
+    /// North/South team.
     let private nsTeam = set [ Seat.North; Seat.South ]
 
     /// Seats that play in the given team.
