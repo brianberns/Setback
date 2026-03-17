@@ -31,7 +31,8 @@ module Game =
             |> OpenDeal.fromDeck dealer
 
     /// Creates a new game.
-    let create rng dealer =
+    let create dealer =
+        let rng = Random()
         let deal = createDeal rng dealer
         {
             Random = rng
@@ -109,7 +110,7 @@ module Game =
         game.Current.IsChoice2Of2
 
     /// Plays the given game to completion.
-    let playGame playerMap game =
+    let playGame (playerMap : Map<_, _>) game =
 
         let rec loop game =
 
@@ -119,24 +120,25 @@ module Game =
                     | Some action -> action
                     | None -> playerMap[infoSet.Player].Act infoSet
             let game = addAction action game
-            if isComplete game |> not then
-                loop game
+            match game.Current with
+                | Choice1Of2 _ -> loop game
+                | Choice2Of2 team -> team   // game is over
 
         loop game
 
     /// Generates an infinite sequence of games.
-    let generate rng =
+    let generate () =
         Seq.initInfinite (fun iGame ->
             iGame % Seat.numSeats
                 |> enum<Seat>
-                |> create rng)
+                |> create)
 
     /// Plays the given number of games.
-    let playGames rng inParallel numGames playFun =
+    let playGames inParallel numGames playFun =
         let map =
             if inParallel then Array.Parallel.map
             else Array.map
-        generate rng
+        generate ()
             |> Seq.take numGames
             |> Seq.toArray
             |> map playFun

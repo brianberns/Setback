@@ -93,7 +93,7 @@ let main argv =
 
     let champion = getPlayer "Champion.db"
     let challenger = getPlayer "Challenger.db"
-    Tournament.run 0 true 10000 champion challenger
+    Tournament.run true 10000 champion challenger
         |> printfn "%A"
 
     0

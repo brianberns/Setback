@@ -84,7 +84,7 @@ module Node =
 module Traverse =
 
     /// Evaluates the utility of the given game.
-    let traverse settings iter game (rng : Random) =
+    let traverse settings iter game =
 
         /// Top-level loop.
         let rec loop game depth =
@@ -114,7 +114,9 @@ module Traverse =
                 addLoop game depth legalActions[0]                    // forced action
             else
                     // get utility of current player's strategy
-                let rnd = lock rng (fun () -> rng.NextDouble())       // lock RNG to allow multi-threaded batch inference
+                let rnd =
+                    lock game.Random (fun () ->                       // lock RNG to allow multi-threaded batch inference
+                        game.Random.NextDouble())
                 let threshold =
                     settings.SampleBranchRate
                         / (settings.SampleBranchRate + float depth)   // nodes near the root have a greater chance of being expanded
@@ -167,7 +169,8 @@ module Traverse =
         /// sampling a single action.
         and getOneUtility infoSet game depth strategy =
             let result =
-                lock rng (fun () -> Vector.sample rng strategy)   // lock RNG to allow multi-threaded batch inference
+                lock game.Random (fun () ->   // lock RNG to allow multi-threaded batch inference
+                    Vector.sample game.Random strategy)
                     |> Array.get infoSet.LegalActions
                     |> addLoop game (depth+1)
             Node.getUtility

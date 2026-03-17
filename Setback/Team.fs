@@ -20,15 +20,15 @@ module Team =
         | _ -> failwith "Unexpected team"
 
     /// East/West team.
-    let private ewTeam = set [ Seat.East; Seat.West ]
+    let private ewSeats = set [ Seat.East; Seat.West ]
 
     /// North/South team.
-    let private nsTeam = set [ Seat.North; Seat.South ]
+    let private nsSeats = set [ Seat.North; Seat.South ]
 
     /// Seats that play in the given team.
     let seats = function
-        | Team.EastWest -> ewTeam
-        | Team.NorthSouth -> nsTeam
+        | Team.EastWest -> ewSeats
+        | Team.NorthSouth -> nsSeats
         | _ -> failwith "Unexpected team"
 
     /// Team on which the given seat plays.

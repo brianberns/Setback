@@ -5,34 +5,25 @@ open PlayingCards
 
 module Tournament =
 
+    /// Challenger's team.
+    let private challengerTeam = Team.EastWest
+
+    /// Seats occupied by challenger players.
+    let private challengerSeats =
+        Team.seats challengerTeam
+
     /// Runs a 2v2 tournament between two players.
-    let run rngSeed inParallel numGames champion challenger =
-
-        let runWith numGames (challengerTeam : Team) =
-            let playerMap =
-                Enum.getValues<Seat>
-                    |> Seq.map (fun seat ->
-                        let player =
-                            let isChallenger =
-                                Team.seats challengerTeam
-                                    |> Set.contains seat
-                            if isChallenger then challenger
-                            else champion
-                        seat, player)
-                    |> Map
-            let rng = Random(rngSeed)
-            Game.playGames rng inParallel numGames (
-                Game.playGame rng playerMap)
-                |> Seq.where (fun team -> team = challengerTeam)
-                |> Seq.length
-
-            // duplicate deals, so each deal runs twice
-        assert(numGames % 2 = 0)
-        let halfGames = numGames / 2
-
-            // champion and challenger are represented equally
-        assert(Seat.numSeats % 2 = 0)
-        let nSeats = Seat.numSeats / 2
-
-        Enum.getValues<Team>
-            |> Array.sumBy (runWith halfGames)
+    let run inParallel numGames champion challenger =
+        let playerMap =
+            Enum.getValues<Seat>
+                |> Seq.map (fun seat ->
+                    let player =
+                        if challengerSeats.Contains(seat) then
+                            challenger
+                        else champion
+                    seat, player)
+                |> Map
+        Game.playGames inParallel numGames (
+            Game.playGame playerMap)
+            |> Seq.where ((=) challengerTeam)
+            |> Seq.length

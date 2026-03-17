@@ -38,10 +38,9 @@ module Program =
 
                     // generate samples
                 let samples =
-                    Game.playGames (Random()) true numGames
+                    Game.playGames true numGames
                         (fun game ->
-                            let rng = Random()   // each thread has its own RNG
-                            Traverse.traverse settings iteration game rng)
+                            Traverse.traverse settings iteration game)
                         |> Inference.complete
                             settings.InferenceBatchSize
                             state.ModelOpt
