@@ -154,7 +154,7 @@ module Traverse =
                 let sample =
                     let encoding = Encoding.encode infoSet
                     let wideRegrets =
-                        let idx = int infoSet.Player
+                        let idx = int (Team.ofSeat infoSet.Player)
                         (actionUtilities.Row(idx) - utility[idx])
                             |> Strategy.toWide legalActions
                     AdvantageSample.create encoding wideRegrets iter
