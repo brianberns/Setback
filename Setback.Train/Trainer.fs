@@ -19,11 +19,11 @@ module Trainer =
         let nGames =
             Tournament.run
                 false             // avoid cross-thread TorchSharp problems (memory leaks, toFloat crash)
-                settings.NumEvaluationDeals
+                settings.NumEvaluationGames
                 champion
                 (Strategy.createPlayer model)
         let payoff =
-            float32 nGames / float32 settings.NumEvaluationDeals
+            float32 nGames / float32 settings.NumEvaluationGames
 
         if settings.Verbose then
             printfn $"Tournament payoff: %0.5f{payoff}"

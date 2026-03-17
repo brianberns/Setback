@@ -27,7 +27,7 @@ module Program =
             printfn $"   Training sub-batch size: {settings.TrainingSubBatchSize}"
             printfn $"   Dropout rate: {settings.DropoutRate}"
             printfn $"   Learning rate: {settings.LearningRate}"
-            printfn $"   # evaluation deals: {settings.NumEvaluationDeals}"
+            printfn $"   # evaluation games: {settings.NumEvaluationGames}"
             printfn $"   Device: {settings.Device}"
             printfn $"   Model directory: {settings.ModelDirPath}"
             printfn $"   Model input size: {Model.inputSize}"

@@ -29,8 +29,8 @@ type Settings =
         /// Optimizer learning rate to use when training the model.
         LearningRate : float
 
-        /// Number of deals to evaluate model after training.
-        NumEvaluationDeals : int
+        /// Number of games to evaluate model after training.
+        NumEvaluationGames : int
 
         /// Device to use for training and running models.
         Device : torch.Device
@@ -58,9 +58,9 @@ module Settings =
             DropoutRate = 0.3
             LearningRate = 1e-3
 #if DEBUG
-            NumEvaluationDeals = 200
+            NumEvaluationGames = 40
 #else
-            NumEvaluationDeals = 20_000
+            NumEvaluationGames = 4000
 #endif
             Device = torch.CUDA
             ModelDirPath = Path.Combine(".", "Models")
@@ -93,8 +93,8 @@ module Settings =
             $"settings/LearningRate",
             string settings.LearningRate, 0)
         writer.add_text(
-            $"settings/NumEvaluationDeals",
-            string settings.NumEvaluationDeals, 0)
+            $"settings/NumEvaluationGames",
+            string settings.NumEvaluationGames, 0)
 
         settings.ModelDirPath   // to-do: move this somewhere else?
             |> Directory.CreateDirectory
