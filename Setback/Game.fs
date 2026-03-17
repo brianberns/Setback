@@ -68,7 +68,7 @@ module Game =
             // update the current deal
         let deal = OpenDeal.addAction action game.Deal
 
-            // end of deal bookkeeping
+            // end-of-deal bookkeeping
         if OpenDeal.isComplete deal then
 
                 // update score
@@ -93,7 +93,7 @@ module Game =
                     let deal = createDeal game.Random dealer
                     { game with Current = Choice1Of2 deal }
 
-        else game
+        else { game with Current = Choice1Of2 deal }
 
     /// Plays the given game to completion.
     let playGame (playerMap : Map<_, _>) game =
