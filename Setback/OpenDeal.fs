@@ -12,7 +12,7 @@ type OpenDeal =
         ClosedDeal : ClosedDeal
 
         /// Each player's unplayed cards.
-        UnplayedCardMap : Map<Seat, Set<Card>>   // to-do: Define Hand = Set<Card> instead of Seq<Card>
+        UnplayedCardMap : Map<Seat, Hand>
     }
 
 module OpenDeal =
