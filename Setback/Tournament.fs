@@ -21,7 +21,7 @@ module Tournament =
                         seat, player)
                     |> Map
             let rng = Random(rngSeed)
-            Game.playGames rng inParallel numGames (   // to-do: avoid creating deals in two different places
+            Game.playGames rng inParallel numGames (
                 Game.playGame rng playerMap)
                 |> Seq.where (fun team -> team = challengerTeam)
                 |> Seq.length

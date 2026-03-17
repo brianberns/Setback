@@ -88,19 +88,23 @@ module Traverse =
 
         /// Top-level loop.
         let rec loop game depth =
-            match Game.winningTeamOpt game with
-                | Some team ->
+            match game.Current with
+
+                    // game is not over
+                | Choice1Of2 _ ->
+                    loopNonTerminal game depth
+
+                    // game is over
+                | Choice2Of2 team ->
                     let payoff =
                         match int team with
                             | 0 -> [|  1f; -1f |]
                             | 1 -> [| -1f;  1f |]
                             | _ -> failwith "Unexpected"
-                    Node.complete   // game is over
+                    Node.complete
                         payoff
                         None
                         Array.empty
-                | None ->
-                    loopNonTerminal game depth
 
         /// Recurses for non-terminal game state.
         and loopNonTerminal game depth =
