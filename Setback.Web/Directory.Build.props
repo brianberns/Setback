@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <OutputPath />
+    <AppendTargetFrameworkToOutputPath />
+  </PropertyGroup>
+</Project>
