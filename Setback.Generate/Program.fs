@@ -38,7 +38,7 @@ module Program =
 
                     // generate samples
                 let samples =
-                    OpenDeal.playDeals (Random()) true numDeals
+                    Game.playGames (Random()) true numDeals
                         (fun deal ->
                             let rng = Random()   // each thread has its own RNG
                             Traverse.traverse settings iteration deal rng)
