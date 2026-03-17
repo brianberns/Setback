@@ -48,16 +48,6 @@ module Game =
         InformationSet.create
             player hand deal.ClosedDeal game.Score
 
-    /// Adds the given bid to the given game.
-    let private addBid bid (game : Game) =
-        let deal = OpenDeal.addBid bid game.Deal
-        { game with Current = Choice1Of2 deal }
-
-    /// Plays the given card in the given game.
-    let private addPlay card (game : Game) =
-        let deal = OpenDeal.addPlay card game.Deal
-        { game with Current = Choice1Of2 deal }
-
     /// Which team (if any) won the game with the given score.
     let private tryGetWinningTeam score =
         let maxPoint = Array.max score.Points
@@ -104,10 +94,6 @@ module Game =
                     { game with Current = Choice1Of2 deal }
 
         else game
-
-    /// Indicates whether the given game has finished.
-    let isComplete game =
-        game.Current.IsChoice2Of2
 
     /// Plays the given game to completion.
     let playGame (playerMap : Map<_, _>) game =
