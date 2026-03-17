@@ -31,21 +31,21 @@ module Strategy =
                 if i = idx then 1.0f
                 else 0.0f)
 
-    /// Converts a wide vector (indexed by entire deck) to
+    /// Converts a wide vector (indexed by entire bids/deck) to
     /// a narrow vector (indexed by legal actions).
-    let private toNarrow (legalActions : _[]) (wide : Vector<_>) =
+    let private toNarrow legalActions (wide : Vector<_>) =
         assert(wide.Count = Card.numCards)
         legalActions
             |> Seq.map (
-                Card.toIndex >> Vector.get wide)
+                Action.toIndex >> Vector.get wide)
             |> DenseVector.ofSeq
 
     /// Converts a narrow vector (indexed by legal actions) to
-    /// a wide vector (indexed by entire deck).
+    /// a wide vector (indexed by entire bids/deck).
     let toWide (legalActions : _[]) (narrow : Vector<float32>) =
         assert(narrow.Count = legalActions.Length)
         Seq.zip legalActions narrow
-            |> Encoding.encodeCardValues
+            |> Encoding.encodeActionValues
             |> DenseVector.ofArray
 
     /// Computes strategies for the given info sets using the

@@ -1,7 +1,5 @@
 ﻿namespace Setback.Model
 
-open MathNet.Numerics.LinearAlgebra
-
 open PlayingCards
 open Setback
 
@@ -21,26 +19,21 @@ module Card =
         assert(index < Card.numCards)
         index
 
+module Action =
+
+    /// Converts the given action to an integer, 0..N-1,
+    /// where N is number of bids + cards in the deck.
+    let toIndex (action : Action) =
+        match action with
+            | Choice1Of2 bid ->
+                int bid
+            | Choice2Of2 card ->
+                Bid.numBids + Card.toIndex card
+
 /// Encoded value for input to a model.
 type Encoding = bool[]
 
 module Encoding =
-
-    /// Encodes the given (card, value) pairs as a vector
-    /// in the deck size.
-    let inline encodeCardValues pairs =
-        let valueMap =
-            pairs
-                |> Seq.map (fun (card, value) ->
-                    Card.toIndex card, value)
-                |> Map
-        [|
-            for index = 0 to Card.numCards - 1 do
-                valueMap
-                    |> Map.tryFind index
-                    |> Option.defaultValue
-                        LanguagePrimitives.GenericZero   // encode to input type
-        |]
 
     /// Encodes the given cards as a multi-hot vector
     /// in the deck size.
@@ -179,13 +172,13 @@ module Encoding =
 
     /// Total encoded length of an info set.
     let encodedLength =
-        Card.numCards                                         // current player's hand
-            + Seat.numSeats                                   // dealer
-            + Seat.numSeats * Bid.numBids                     // each player's bid
-            + Seat.numSeats * Card.numCards                   // cards previously played by each player
-            + (Seat.numSeats - 1) * Card.numCards             // current trick
-            + (Seat.numSeats - 1) * Suit.numSuits             // voids
-            + Seat.numSeats                                   // deal score
+        Card.numCards                               // current player's hand
+            + Seat.numSeats                         // dealer
+            + Seat.numSeats * Bid.numBids           // each player's bid
+            + Seat.numSeats * Card.numCards         // cards previously played by each player
+            + (Seat.numSeats - 1) * Card.numCards   // current trick
+            + (Seat.numSeats - 1) * Suit.numSuits   // voids
+            + Seat.numSeats                         // deal score
 
     /// Encodes the given info set as a vector.
     let encode infoSet : Encoding =
@@ -201,6 +194,22 @@ module Encoding =
             |]
         assert(flags.Length = encodedLength)
         flags
+
+    /// Encodes the given (action, value) pairs as a vector
+    /// in the bid + deck size.
+    let encodeActionValues pairs =
+        let valueMap =
+            pairs
+                |> Seq.map (fun (action, value) ->
+                    Action.toIndex action, value)
+                |> Map
+        [|
+            let nActions = Bid.numBids + Card.numCards
+            for index = 0 to nActions - 1 do
+                valueMap
+                    |> Map.tryFind index
+                    |> Option.defaultValue 0f
+        |]
 
     /// Converts the given encoding to an array of float32.
     let toFloat32Array (encoding : Encoding) =
