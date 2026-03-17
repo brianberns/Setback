@@ -4,6 +4,7 @@ open TorchSharp
 open type torch
 open type torch.nn
 
+open Setback
 open PlayingCards
 
 /// Neural network that maps an input tensor to an output
@@ -16,7 +17,7 @@ module Model =
     let inputSize = Encoding.encodedLength
 
     /// Size of neural network output.
-    let outputSize = Card.numCards
+    let outputSize = Bid.numBids + Card.numCards
 
 /// Skip connection module.
 type SkipConnection(inner : Model) as this =

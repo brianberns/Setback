@@ -146,11 +146,14 @@ module Encoding =
             yield! encodeVoids player voids
         |]
 
+    /// Encoded length of game points for one team.
+    let encodedGamePointLength = Setback.winThreshold - 1
+
     /// Encodes the given game score as thermometers.
     let encodeGameScore player gameScore =
        
             // find point range (e.g. 0-10, 1-11 for a tie at 11, etc.)
-        let length = Setback.winThreshold - 1
+        let length = encodedGamePointLength
         let maxPoint =
             seq {
                 yield! gameScore.Points
@@ -172,13 +175,13 @@ module Encoding =
 
     /// Total encoded length of an info set.
     let encodedLength =
-        Card.numCards                               // current player's hand
-            + Seat.numSeats                         // dealer
-            + Seat.numSeats * Bid.numBids           // each player's bid
-            + Seat.numSeats * Card.numCards         // cards previously played by each player
-            + (Seat.numSeats - 1) * Card.numCards   // current trick
-            + (Seat.numSeats - 1) * Suit.numSuits   // voids
-            + Seat.numSeats                         // deal score
+        Card.numCards                                  // current player's hand
+            + Seat.numSeats                            // dealer
+            + Seat.numSeats * Bid.numBids              // each player's bid
+            + Seat.numSeats * Card.numCards            // cards previously played by each player
+            + (Seat.numSeats - 1) * Card.numCards      // current trick
+            + (Seat.numSeats - 1) * Suit.numSuits      // voids
+            + Team.numTeams * encodedGamePointLength   // game score
 
     /// Encodes the given info set as a vector.
     let encode infoSet : Encoding =
