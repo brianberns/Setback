@@ -19,9 +19,6 @@ type Playout =
         /// Completed tricks, in reverse chronological order.
         CompletedTricks : List<Trick>
 
-        /// Cards not yet played.
-        UnplayedCards : Set<Card>
-
         /// Suits that players are known to be void in.
         Voids : Set<Seat * Suit>
 
@@ -56,7 +53,6 @@ module Playout =
             TrumpOpt = None
             CurrentTrickOpt = Some (Trick.create bidder)
             CompletedTricks = List.empty
-            UnplayedCards = set Card.allCards
             Voids = Set.empty
             HighTrumpTeamOpt = None
             LowTrumpTeamOpt = None
@@ -238,13 +234,6 @@ module Playout =
 
         trick, player, playout
 
-    /// Removes the given card from play.
-    let private updateUnplayedCards card playout =
-        assert(playout.UnplayedCards.Contains(card))
-        let unplayedCards =
-            playout.UnplayedCards.Remove(card)
-        { playout with UnplayedCards = unplayedCards }
-
     /// Updates void suits in the given playout.
     let private updateVoids
         player suit (trick : Trick) (playout : Playout) =
@@ -269,7 +258,6 @@ module Playout =
                 |> updateTrump card.Suit
                 |> updateCurrentTrick card
         playout
-            |> updateUnplayedCards card
             |> updateVoids player card.Suit trick
 
     /// Tricks in the given playout, in chronological order,

@@ -146,11 +146,11 @@ module Traverse =
                         |> Array.map _.Utilities
                         |> DenseMatrix.ofColumnArrays
                 assert(actionUtilities.ColumnCount = legalActions.Length)
-                assert(actionUtilities.RowCount = Seat.numSeats)
+                assert(actionUtilities.RowCount = Team.numTeams)
 
                     // utility of this info set is action utilities weighted by action probabilities
                 let utility = actionUtilities * strategy
-                assert(utility.Count = Seat.numSeats)
+                assert(utility.Count = Team.numTeams)
                 let sample =
                     let encoding = Encoding.encode infoSet
                     let wideRegrets =

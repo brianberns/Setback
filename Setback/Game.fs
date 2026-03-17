@@ -73,14 +73,14 @@ module Game =
 
                 // update score
             let game =
-                match game.Deal.ClosedDeal.PlayoutOpt with
+                match deal.ClosedDeal.PlayoutOpt with
                     | Some playout ->
                         assert(Playout.isComplete playout)
                         let dealScore = Playout.getDealScore playout
                         { game with Score = game.Score + dealScore }
                     | _ ->
-                        assert(Auction.isComplete game.Deal.ClosedDeal.Auction)
-                        assert(game.Deal.ClosedDeal.Auction.HighBid = Bid.Pass)
+                        assert(Auction.isComplete deal.ClosedDeal.Auction)
+                        assert(deal.ClosedDeal.Auction.HighBid = Bid.Pass)
                         game   // all pass auction
 
                 // game is over?
@@ -89,7 +89,7 @@ module Game =
                     { game with Current = Choice2Of2 team }
                 | None ->
                     let dealer =
-                        Seat.incr 1 game.Deal.ClosedDeal.Dealer
+                        Seat.incr 1 deal.ClosedDeal.Dealer
                     let deal = createDeal game.Random dealer
                     { game with Current = Choice1Of2 deal }
 
