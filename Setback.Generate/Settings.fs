@@ -57,7 +57,7 @@ module Settings =
 #endif
             GameBatchSize = 25
             InferenceBatchSize = 50_000
-            SampleBranchRate = 0.23
+            SampleBranchRate = 0.7
             HiddenSize = Encoding.encodedLength * 2
             NumHiddenLayers = 4
             Device = torch.CUDA
