@@ -2,7 +2,7 @@ namespace Setback
 
 open PlayingCards
 
-/// A game of Hearts.
+/// A game of Setback.
 type Game =
     {
         /// Current deal.

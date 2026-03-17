@@ -9,10 +9,9 @@ open Setback
 
 module Strategy =
 
-    /// Creates a one-hot strategy vector.
-    let createOneHot idx n =
-        DenseVector.init n (fun i ->
-            if i = idx then 1.0f else 0.0f)
+    /// Creates a random strategy of the given length.
+    let random n =
+        DenseVector.create n (1.0f / float32 n)
 
     /// Computes strategy from the given per-action regrets.
     /// A strategy is normalized so that its elements sum
@@ -85,7 +84,7 @@ module Strategy =
         getFromAdvantage model [|infoSet|]
             |> Array.exactlyOne
 
-    /// Creates a non-deterministic Hearts player using the
+    /// Creates a non-deterministic Setback player using the
     /// given model.
     let createPlayer model =
 
