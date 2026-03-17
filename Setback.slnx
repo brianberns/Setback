@@ -11,6 +11,7 @@
   <Project Path="Setback.Cfrm.TrainBaseline/Setback.Cfrm.TrainBaseline.fsproj" />
   <Project Path="Setback.Cfrm.TrainBootstrap/Setback.Cfrm.TrainBootstrap.fsproj" />
   <Project Path="Setback.Cfrm/Setback.Cfrm.fsproj" />
+  <Project Path="Setback.Learn/Setback.Learn.fsproj" Id="ecee59f5-f6d2-4ada-bea7-4a3cd6ceb642" />
   <Project Path="Setback.Model/Setback.Model.fsproj" Id="32ba2174-6a1d-486d-a052-a089548d7c9f" />
   <Project Path="Setback.Web/Client/src/Setback.Web.Client.fsproj" />
   <Project Path="Setback.Web/Harness/Setback.Web.Harness.fsproj" />
