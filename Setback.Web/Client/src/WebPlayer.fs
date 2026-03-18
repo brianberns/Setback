@@ -3,7 +3,6 @@
 module Remoting =
 
     open Fable.Remoting.Client
-    open Browser.Dom
     open Setback.Web
 
     /// Prefix routes with /Setback.
