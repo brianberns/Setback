@@ -23,7 +23,7 @@ module Tournament =
                         else champion
                     seat, player)
                 |> Map
-        Game.playGames inParallel numGames (
+        Game.playGames Random.Shared inParallel numGames (
             Game.playGame Random.Shared playerMap)   // thread-safety needed
             |> Seq.where ((=) challengerTeam)
             |> Seq.length

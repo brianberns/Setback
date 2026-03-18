@@ -38,7 +38,7 @@ module Program =
 
                     // generate samples
                 let samples =
-                    Game.playGames true numGames
+                    Game.playGames Random.Shared true numGames
                         (Traverse.traverse settings iteration)
                         |> Inference.complete
                             settings.InferenceBatchSize
