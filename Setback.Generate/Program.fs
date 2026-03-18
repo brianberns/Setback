@@ -39,8 +39,7 @@ module Program =
                     // generate samples
                 let samples =
                     Game.playGames true numGames
-                        (fun game ->
-                            Traverse.traverse settings iteration game)
+                        (Traverse.traverse settings iteration)
                         |> Inference.complete
                             settings.InferenceBatchSize
                             state.ModelOpt
