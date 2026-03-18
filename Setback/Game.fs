@@ -66,7 +66,6 @@ module Game =
                         |> Array.map ((*) -1)
                         |> Score.ofPoints
                         |> apply -loseThreshold
-                if teamOpt.IsSome then printfn "%A" score.Points
                 match teamOpt with
                     | Some Team.NorthSouth -> Some Team.EastWest
                     | Some Team.EastWest -> Some Team.NorthSouth
