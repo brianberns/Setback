@@ -11,11 +11,14 @@ open Setback.Cfrm
 /// Persistent state.
 type PersistentState =
     {
+        /// Structure version number.
+        VersionNum : int
+
         /// Number of games won by each team.
-        GamesWon : AbstractScore
+        GamesWon : Score
 
         /// Absolute score of each team in the current game.
-        GameScore : AbstractScore
+        GameScore : Score
 
         /// State of random number generator.
         RandomState : uint64   // can't persist entire RNG
@@ -24,7 +27,7 @@ type PersistentState =
         Dealer : Seat
 
         /// Current deal, if any.
-        DealOpt : Option<AbstractOpenDeal>
+        DealOpt : Option<OpenDeal>
     }
 
     /// Current deal.
@@ -38,8 +41,9 @@ module PersistentState =
     /// Initial persistent state.
     let private initial =
         {
-            GamesWon = AbstractScore.zero
-            GameScore = AbstractScore.zero
+            VersionNum = 1   // Deep CFR conversion
+            GamesWon = Score.zero
+            GameScore = Score.zero
             RandomState = Random().State   // start with arbitrary seed
             Dealer = Seat.South
             DealOpt = None
@@ -47,7 +51,6 @@ module PersistentState =
 
     /// Local storage keys.
     let private key = "Setback"
-    let private oldKey = "PersistentState"
 
     /// Saves the given state.
     let save (persState : PersistentState) =
@@ -56,13 +59,7 @@ module PersistentState =
 
     /// Answers the current state.
     let get () =
-        let json =
-            let json = WebStorage.localStorage[key]
-            if isNull json then
-                let json = WebStorage.localStorage[oldKey]   // backward compatibility
-                WebStorage.localStorage.removeItem(oldKey)
-                json
-            else json
+        let json = WebStorage.localStorage[key]
         if isNull json then
             let persState = initial
             save persState
