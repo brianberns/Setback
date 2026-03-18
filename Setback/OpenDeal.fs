@@ -57,12 +57,6 @@ module OpenDeal =
     let currentPlayer deal = 
         ClosedDeal.currentPlayer deal.ClosedDeal
 
-    /// Answers the current player's information set.
-    let currentInfoSet deal =
-        let player = currentPlayer deal
-        let hand = deal.UnplayedCardMap[player]
-        InformationSet.create player hand deal.ClosedDeal
-
     /// Adds the given bid to the given deal.
     let addBid bid deal =
         { deal with

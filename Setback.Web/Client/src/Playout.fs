@@ -6,7 +6,6 @@ open Fable.Core
 
 open PlayingCards
 open Setback
-open Setback.Cfrm
 
 module Playout =
 

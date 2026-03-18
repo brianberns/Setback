@@ -1,12 +1,8 @@
 ﻿namespace Setback.Web.Client
 
 open Browser
-
 open Fable.SimpleJson
-
-open PlayingCards
 open Setback
-open Setback.Cfrm
 
 /// Persistent state.
 type PersistentState =
@@ -17,24 +13,9 @@ type PersistentState =
         /// Number of games won by each team.
         GamesWon : Score
 
-        /// Absolute score of each team in the current game.
-        GameScore : Score
-
-        /// State of random number generator.
-        RandomState : uint64   // can't persist entire RNG
-
-        /// Current dealer.
-        Dealer : Seat
-
-        /// Current deal, if any.
-        DealOpt : Option<OpenDeal>
+        /// Current game.
+        Game : Game
     }
-
-    /// Current deal.
-    member this.Deal =
-        match this.DealOpt with
-            | Some deal -> deal
-            | None -> failwith "No current deal"
 
 module PersistentState =
 
@@ -43,10 +24,7 @@ module PersistentState =
         {
             VersionNum = 1   // Deep CFR conversion
             GamesWon = Score.zero
-            GameScore = Score.zero
-            RandomState = Random().State   // start with arbitrary seed
-            Dealer = Seat.South
-            DealOpt = None
+            Game = Game.create Seat.South
         }
 
     /// Local storage keys.

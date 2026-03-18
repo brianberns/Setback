@@ -3,7 +3,6 @@ namespace Setback.Web.Client
 open Browser
 
 open Setback
-open Setback.Cfrm
 
 module Session =
 

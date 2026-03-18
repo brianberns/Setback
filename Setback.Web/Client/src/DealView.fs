@@ -2,7 +2,6 @@
 
 open PlayingCards
 open Setback
-open Setback.Cfrm
 
 [<AutoOpen>]
 module SeatExt =
