@@ -8,14 +8,17 @@
 
   <ItemGroup>
     <Compile Include="..\Shared\SharedTypes.fs" />
+    <Compile Include="Remoting.fs" />
     <Compile Include="WebPart.fs" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="MathNet.Numerics.FSharp" Version="5.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="Suave" Version="3.2.3">
       <ExcludeAssets>runtime</ExcludeAssets>
 	</PackageReference>
+    <PackageReference Include="TorchSharp-cpu" Version="0.105.2" />
 	<PackageReference Update="FSharp.Core">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
@@ -23,7 +26,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Fable.Remoting.Suave\Fable.Remoting.Suave\Fable.Remoting.Suave.fsproj" />
-    <ProjectReference Include="..\..\Setback.Cfrm\Setback.Cfrm.fsproj" />
+    <ProjectReference Include="..\..\Setback.Model\Setback.Model.fsproj" />
   </ItemGroup>
 
 </Project>
