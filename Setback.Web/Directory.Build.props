@@ -2,5 +2,9 @@
   <PropertyGroup>
     <OutputPath />
     <AppendTargetFrameworkToOutputPath />
+    <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="FSharp.Core" Version="10.0.103" />
+  </ItemGroup>
 </Project>
