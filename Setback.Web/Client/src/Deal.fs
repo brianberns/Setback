@@ -119,12 +119,13 @@ module Deal =
     /// Runs one deal.
     let run surface persState =
         async {
-
-                // new deal starting
+                // new deal starting?
             let deal = persState.Game.Deal
-            assert(deal.ClosedDeal.Auction.Bids.IsEmpty)
             let dealer = deal.ClosedDeal.Auction.Dealer
-            console.log($"Dealer is {Seat.toString dealer}")
+            if deal.ClosedDeal.Auction.Bids.IsEmpty then
+                console.log($"Dealer is {Seat.toString dealer}")
+            else
+                console.log("Finishing deal in progress")
 
                 // animate dealing the cards
             DealView.displayStatus dealer deal
