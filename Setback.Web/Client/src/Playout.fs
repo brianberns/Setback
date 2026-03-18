@@ -37,11 +37,11 @@ module Playout =
                 // play card on current trick
             assert(playout.CurrentTrickOpt.IsSome)
             let! trick = playout.CurrentTrickOpt
-            let trick' = Trick.addPlay trump card trick   // playout is not affected
+            let trick = Trick.addPlay trump card trick   // playout is not affected
 
                 // if this card completes the trick, determine winner
-            assert(Trick.highPlayerOpt trick' |> Option.isSome)
-            if Trick.isComplete trick' then
+            assert(Trick.highPlayerOpt trick |> Option.isSome)
+            if Trick.isComplete trick then
                 return! Trick.highPlayerOpt trick
         }
 
