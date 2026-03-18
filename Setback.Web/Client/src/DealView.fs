@@ -195,7 +195,7 @@ module DealView =
     /// Displays deal status (e.g. high, low, jack, and game).
     let displayStatus dealer deal =
 
-        let displayCard (elems : JQueryElement[]) historyFunc =
+        let displayCard (elems : JQueryElement[]) playoutFunc =
 
                 // reset all elements
             for elem in elems do
@@ -204,35 +204,35 @@ module DealView =
                 // display card, if it exists
             option {
                 let! playout = deal.ClosedDeal.PlayoutOpt
-                let! rank, iTeam = historyFunc playout.History
-                let elem =
-                    let iAbsoluteTeam =
-                        (int dealer + iTeam) % Setback.numTeams
-                    elems[iAbsoluteTeam]
+                let! rank, team = playoutFunc playout
                 let! trump = playout.TrumpOpt
                 let card = Card.create rank trump
-                elem.text(card.String)
+                elems[int team].text(card.String)
             } |> ignore
 
-        displayCard highElems (fun history -> history.HighTakenOpt)
-        displayCard lowElems (fun history -> history.LowTakenOpt)
-        displayCard jackElems (fun history ->
-            history.JackTakenOpt
-                |> Option.map (fun iTeam -> Rank.Jack, iTeam))
+        displayCard highElems _.HighTrumpTeamOpt
+        displayCard lowElems _.LowTrumpTeamOpt
+        displayCard jackElems (fun playout ->
+            option {
+                let! team = playout.JackTrumpTeamOpt
+                return Rank.Jack, team
+            })
 
             // game
-        let absoluteGameScore =
-            match deal.ClosedDeal.PlayoutOpt with
-                | Some playout ->
-                    playout.History.GameScore
-                        |> Game.absoluteScore dealer
-                | None -> AbstractScore.zero
-        for iTeam = 0 to Setback.numTeams - 1 do
-            let gamePointsElem = gamePointsElems[iTeam]
+        let gameScore =
+            deal.ClosedDeal.PlayoutOpt
+                |> Option.map _.GameScore
+                |> Option.defaultValue Score.zero
+        for team in Enum.getValues<Team> do
+            let gamePointsElem = gamePointsElems[int team]
             let text =
-                let teamScore = absoluteGameScore[iTeam]
-                assert(Setback.numTeams = 2)
-                if teamScore > absoluteGameScore[1 - iTeam] then
+                let teamScore = gameScore[team]
+                let otherTeam =
+                    match team with
+                        | Team.EastWest -> Team.NorthSouth
+                        | Team.NorthSouth -> Team.EastWest
+                        | _ -> failwith "Unexpected"
+                if teamScore > gameScore[otherTeam] then
                     $"▶ {teamScore}"
                 else string teamScore
             gamePointsElem.text(text)

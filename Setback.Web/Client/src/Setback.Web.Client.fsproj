@@ -24,8 +24,8 @@
     <Compile Include="..\..\..\Setback\Trick.fs" />
     <Compile Include="..\..\..\Setback\Team.fs" />
     <Compile Include="..\..\..\Setback\Score.fs" />
-    <Compile Include="..\..\..\Setback\Auction.fs" />
-    <Compile Include="..\..\..\Setback\Playout.fs" />
+    <Compile Include="..\..\..\Setback\Auction.fs" Link="SetbackAuction.fs" />
+    <Compile Include="..\..\..\Setback\Playout.fs" Link="SetbackPlayout.fs" />
     <Compile Include="..\..\..\Setback\ClosedDeal.fs" />
     <Compile Include="..\..\..\Setback\InformationSet.fs" />
     <Compile Include="..\..\..\Setback\OpenDeal.fs" />
