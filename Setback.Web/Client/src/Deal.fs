@@ -29,18 +29,13 @@ module Deal =
                 |> Map
 
             // create views for bids already made
-        let dealer = persState.Dealer
-        let auction = persState.Deal.ClosedDeal.Auction
-        for iBid = 0 to auction.NumBids - 1 do
-            let iPlayer = (iBid + 1) % Seat.numSeats
-            let bid, trumpOpt' =
-                if iPlayer = auction.HighBid.BidderIndex then
-                    auction.HighBid.Bid, trumpOpt
-                else
-                    Bid.Pass, None   // HORRIBLE HACK - we don't track the actual bid
-            let seat = Seat.incr iPlayer dealer
-            if seat = Seat.User then chooser.Element.remove()   // won't need this
-            AuctionView.createBidView surface seat bid trumpOpt'
+        let playerBids =
+            persState.Game.Deal.ClosedDeal.Auction
+                |> Auction.playerBids
+        for seat, bid in playerBids do
+            if seat = Seat.User then
+                chooser.Element.remove()   // won't need this
+            AuctionView.createBidView surface seat bid trumpOpt
                 |> ignore
 
             // run the auction
@@ -95,19 +90,22 @@ module Deal =
 
             // determine deal outcome
         let dealScore =
-            deal
-                |> AbstractOpenDeal.dealScore
-                |> Game.absoluteScore dealer
+            let playout =
+                match deal.ClosedDeal.PlayoutOpt with
+                    | Some playout -> playout
+                    | None -> failwith "Unexpected"
+            Playout.getDealScore playout
         let highBid = deal.ClosedDeal.Auction.HighBid
-        let bidder =
-            assert(highBid.BidderIndex >= 0)
-            dealer |> Seat.incr highBid.BidderIndex
-        let bid = highBid.Bid
+        assert(highBid <> Bid.Pass)
+        let highBidder =
+            match deal.ClosedDeal.Auction.HighBidderOpt with
+                | Some bidder -> bidder
+                | None -> failwith "Unexpected"
 
             // display banner
         let banner =
             let html =
-                $"<p>{Seat.toString bidder} bid {Bid.toString bid}</p><p>East + West make {dealScore[0]}<br />North + South make {dealScore[1]}</p>"   // to-do: use team names from Game module
+                $"<p>{Seat.toString highBidder} bid {Bid.toString highBid}</p><p>East + West make {dealScore[Team.EastWest]}<br />North + South make {dealScore[Team.NorthSouth]}</p>"
             ~~HTMLDivElement.Create(innerHTML = html)
         banner.addClass("banner")
         surface.append(banner)
@@ -122,28 +120,11 @@ module Deal =
     let run surface persState =
         async {
 
-                // new deal needed?
-            let dealer = persState.Dealer
-            let deal, persState =
-                match persState.DealOpt with
-
-                        // use existing deal
-                    | Some deal -> deal, persState
-
-                        // create random deal
-                    | None ->
-                        let rng = Random(persState.RandomState)
-                        do
-                            console.log($"Deal #{rng.State}")
-                            console.log($"Dealer is {Seat.toString dealer}")
-                        let deal =
-                            Deck.shuffle rng
-                                |> AbstractOpenDeal.fromDeck dealer
-                        let persState =
-                            { persState with
-                                RandomState = rng.State
-                                DealOpt = Some deal }.Save()
-                        deal, persState
+                // new deal starting
+            let deal = persState.Game.Deal
+            assert(deal.ClosedDeal.Auction.Bids.IsEmpty)
+            let dealer = deal.ClosedDeal.Auction.Dealer
+            console.log($"Dealer is {Seat.toString dealer}")
 
                 // animate dealing the cards
             DealView.displayStatus dealer deal
@@ -157,7 +138,7 @@ module Deal =
                     |> auction surface persState
 
                 // force cleanup after all-pass auction
-            if persState.Deal.ClosedDeal.Auction.HighBid.Bid = Bid.Pass then
+            if persState.Game.Deal.ClosedDeal.Auction.HighBid = Bid.Pass then
                 for (_, handView) in seatViews do
                     for cardView in handView do
                         cardView.remove()
@@ -166,7 +147,7 @@ module Deal =
                 // run the playout
             else
                 let! persState = playout surface persState seatViews
-                do! dealOver surface dealer persState.Deal
+                do! dealOver surface dealer persState.Game.Deal
                     |> Async.AwaitPromise
                 return persState
         }
