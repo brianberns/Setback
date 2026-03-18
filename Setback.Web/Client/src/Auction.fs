@@ -31,7 +31,8 @@ module Auction =
             do! context.AnimBid bid |> Animation.run
 
                 // add bid to deal
-            return context.Game |> Game.addAction (Choice1Of2 bid)
+            return context.Game
+                |> Game.addAction Random.Shared (Choice1Of2 bid)
         }
 
     /// Allows user to make a bid.

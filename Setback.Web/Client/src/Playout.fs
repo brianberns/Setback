@@ -68,7 +68,7 @@ module Playout =
                 // add the card to the game
             let game =
                 context.Game
-                    |> Game.addAction (Choice2Of2 card)
+                    |> Game.addAction Random.Shared (Choice2Of2 card)
 
                 // animate if setting trump
             match tryTrumpJustEstablished game.Deal with

@@ -4,6 +4,11 @@ open Browser
 open Fable.SimpleJson
 open Setback
 
+module Random =
+
+    /// Shared RNG.
+    let Shared = System.Random()
+
 /// Persistent state.
 type PersistentState =
     {
@@ -24,7 +29,7 @@ module PersistentState =
         {
             VersionNum = 1   // Deep CFR conversion
             GamesWon = Score.zero
-            Game = Game.create Seat.South
+            Game = Game.create Random.Shared Seat.South
         }
 
     /// Local storage keys.
