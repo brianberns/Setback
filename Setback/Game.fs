@@ -68,15 +68,9 @@ module Game =
 
                 // update score
             let game =
-                match deal.ClosedDeal.PlayoutOpt with
-                    | Some playout ->
-                        assert(Playout.isComplete playout)
-                        let dealScore = Playout.getDealScore playout
-                        { game with Score = game.Score + dealScore }
-                    | _ ->
-                        assert(Auction.isComplete deal.ClosedDeal.Auction)
-                        assert(deal.ClosedDeal.Auction.HighBid = Bid.Pass)
-                        game   // all pass auction
+                let dealScore =
+                    ClosedDeal.getDealScore deal.ClosedDeal
+                { game with Score = game.Score + dealScore }
 
                 // game is over?
             match tryGetWinningTeam game.Score with

@@ -271,9 +271,10 @@ module Playout =
                 | None -> ()
         }
 
-    /// Gets the number of deal points (High, Low, Jack, and Game) taken
-    /// by each team in the given playout.
-    let getDealScore playout =
+    /// Gets the number of deal points (High, Low, Jack, and Game)
+    /// taken by each team in the given playout, not including any
+    /// setback penalty.
+    let getRawDealScore playout =
 
         let teams =
             seq {

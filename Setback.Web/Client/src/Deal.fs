@@ -90,11 +90,7 @@ module Deal =
 
             // determine deal outcome
         let dealScore =
-            let playout =
-                match deal.ClosedDeal.PlayoutOpt with
-                    | Some playout -> playout
-                    | None -> failwith "Unexpected"
-            Playout.getDealScore playout
+            ClosedDeal.getDealScore deal.ClosedDeal
         let highBid = deal.ClosedDeal.Auction.HighBid
         assert(highBid <> Bid.Pass)
         let highBidder =

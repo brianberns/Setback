@@ -83,9 +83,8 @@ module Game =
 
                     // determine score of this deal
                 let dealScore =
-                    persState.Game.Deal.ClosedDeal.PlayoutOpt
-                        |> Option.map Playout.getDealScore
-                        |> Option.defaultValue Score.zero
+                    persState.Game.Deal.ClosedDeal
+                        |> ClosedDeal.getDealScore
                 do
                     console.log($"E+W make {dealScore[Team.EastWest]} point(s)")
                     console.log($"N+S make {dealScore[Team.NorthSouth]} point(s)")

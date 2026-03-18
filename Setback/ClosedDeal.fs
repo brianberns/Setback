@@ -1,5 +1,7 @@
 ﻿namespace Setback
 
+open PlayingCards
+
 /// A deal is a round of play within a game. A closed deal is the
 /// "public" view of a deal, so it contains no information about
 /// how unplayed cards are distributed among the players.
@@ -67,3 +69,33 @@ module ClosedDeal =
                 | Some playout -> Playout.addPlay card playout
                 | None -> failwith "No playout"
         { deal with PlayoutOpt = Some playout }
+
+    /// Gets the number of deal points (High, Low, Jack, and Game)
+    /// taken by each team in the given deal, adjusted to include
+    /// a setback penalty, if applicable.
+    let getDealScore deal =
+        assert(isComplete deal)
+        match deal.Auction.HighBid, deal.PlayoutOpt with
+
+                // all pass
+            | Bid.Pass, None -> Score.zero
+
+                // auction had a high bidder
+            | highBid, Some playout ->
+
+                    // determine amount bid by auction-winning team
+                let nBid = int highBid
+                assert(nBid > 0)
+
+                    // apply penalty?
+                let dealScore = Playout.getRawDealScore playout
+                let highBidderTeam = Team.ofSeat playout.Bidder
+                if dealScore[highBidderTeam] < nBid then
+                    Score.ofPoints [|
+                        for team in Enum.getValues<Team> do
+                            if team = highBidderTeam then -nBid
+                            else dealScore[team]
+                    |]
+                else dealScore
+
+            | _ -> failwith "Unexpected"
