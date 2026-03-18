@@ -29,13 +29,16 @@ module Deal =
                 |> Map
 
             // create views for bids already made
-        let playerBids =
-            persState.Game.Deal.ClosedDeal.Auction
-                |> Auction.playerBids
+        let auction = persState.Game.Deal.ClosedDeal.Auction
+        let playerBids = Auction.playerBids auction
         for seat, bid in playerBids do
             if seat = Seat.User then
                 chooser.Element.remove()   // won't need this
-            AuctionView.createBidView surface seat bid trumpOpt
+            let seatTrumpOpt =
+                if Some seat = auction.HighBidderOpt then
+                    trumpOpt
+                else None
+            AuctionView.createBidView surface seat bid seatTrumpOpt
                 |> ignore
 
             // run the auction
