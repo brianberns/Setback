@@ -34,29 +34,27 @@ module Game =
         |] |> Array.map (~~)
 
     /// Displays the number of games won by all teams.
-    let private displayGamesWon (gamesWon : AbstractScore) =
-        for iTeam = 0 to Setback.numTeams - 1 do
-            let gamesWonElem = gamesWonElems[iTeam]
-            gamesWonElem.text(string gamesWon[iTeam])
+    let private displayGamesWon (gamesWon : Score) =
+        for team in Enum.getValues<Team> do
+            let gamesWonElem = gamesWonElems[int team]
+            gamesWonElem.text(string gamesWon[team])
 
     /// Increments the number of games won by the given team.
-    let private incrGamesWon iTeam persState =
+    let private incrGamesWon team persState =
 
             // increment count
         let gamesWon =
-            persState.GamesWon + AbstractScore.forTeam iTeam 1
+            persState.GamesWon + Score.create team 1
 
             // update persistent state
-        { persState with
-            GamesWon = gamesWon
-            GameScore = AbstractScore.zero }
+        { persState with GamesWon = gamesWon }
 
     /// Handles the end of a game.
-    let private gameOver (surface : JQueryElement) iTeam gamesWon =
+    let private gameOver (surface : JQueryElement) (team : Team) gamesWon =
 
             // display banner
         let banner =
-            let text = $"{teamNames[iTeam]} win the game!"
+            let text = $"{teamNames[int team]} win the game!"
             console.log(text)
             ~~HTMLDivElement.Create(innerText = text)
         banner.addClass("banner")
@@ -73,65 +71,55 @@ module Game =
     let run surface persState =
 
         /// Runs one deal.
-        let rec loop persState nDeals =
+        let rec loop persState =
             async {
                     // display current score of the game
-                let dealer = persState.Dealer
-                for iTeam = 0 to Setback.numTeams - 1 do
-                    scoreElems[iTeam].text(
-                        string persState.GameScore[iTeam])
+                for team in Enum.getValues<Team> do
+                    scoreElems[int team].text(
+                        string persState.Game.Score[team])
 
                     // run a deal
                 let! persState = Deal.run surface persState
 
                     // determine score of this deal
                 let dealScore =
-                    persState.Deal
-                        |> AbstractOpenDeal.dealScore
-                        |> Game.absoluteScore dealer
+                    persState.Game.Deal.ClosedDeal.PlayoutOpt
+                        |> Option.map Playout.getDealScore
+                        |> Option.defaultValue Score.zero
                 do
-                    console.log($"E+W make {dealScore[0]} point(s)")
-                    console.log($"N+S make {dealScore[1]} point(s)")
+                    console.log($"E+W make {dealScore[Team.EastWest]} point(s)")
+                    console.log($"N+S make {dealScore[Team.NorthSouth]} point(s)")
 
                     // update game score
-                let gameScore = persState.GameScore + dealScore
-                for iTeam = 0 to Setback.numTeams - 1 do
-                    scoreElems[iTeam].text(string gameScore[iTeam])
+                let gameScore = persState.Game.Score + dealScore
+                for team in Enum.getValues<Team> do
+                    scoreElems[int team].text(string gameScore[team])
                 do
-                    console.log($"E+W have {gameScore[0]} point(s)")
-                    console.log($"N+S have {gameScore[1]} point(s)")
+                    console.log($"E+W have {gameScore[Team.EastWest]} point(s)")
+                    console.log($"N+S have {gameScore[Team.NorthSouth]} point(s)")
 
                     // is the game over?
-                let winningTeamIdxOpt =
-                    BootstrapGameState.winningTeamOpt gameScore
-                let persState' =
-                    { persState with
-                        GameScore = gameScore
-                        Dealer = dealer.Next
-                        DealOpt = None }
-                let nDeals' = nDeals + 1
-                match winningTeamIdxOpt with
-
-                        // game is over
-                    | Some iTeam ->
-
-                            // increment games won
-                        let persState'' =
-                            incrGamesWon iTeam persState'
-                        PersistentState.save persState''
-
-                            // display game result
-                        do! gameOver surface iTeam persState''.GamesWon
-                            |> Async.AwaitPromise
-
-                        return persState'', nDeals'
+                match persState.Game.Current with
 
                         // run another deal in this game
-                    | None ->
-                        PersistentState.save persState'
-                        return! loop persState' nDeals'
+                    | Choice1Of2 _ ->
+                        PersistentState.save persState
+                        return! loop persState
+
+                        // game is over
+                    | Choice2Of2 team ->
+
+                            // increment games won
+                        let persState = incrGamesWon team persState
+                        PersistentState.save persState
+
+                            // display game result
+                        do! gameOver surface team persState.GamesWon
+                            |> Async.AwaitPromise
+
+                        return persState
             }
 
             // start a new game
         displayGamesWon persState.GamesWon
-        loop persState 0
+        loop persState
