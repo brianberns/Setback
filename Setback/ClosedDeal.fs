@@ -15,6 +15,13 @@ type ClosedDeal =
     /// Player who dealt this hand.
     member this.Dealer = this.Auction.Dealer
 
+    /// Trump suit, if it's been established.
+    member deal.TrumpOpt =
+        option {
+            let! playout = deal.PlayoutOpt
+            return! playout.TrumpOpt
+        }
+
 module ClosedDeal =
 
     /// Creates a new deal.

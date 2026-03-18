@@ -47,11 +47,10 @@ module DealView =
             |> ClosedHandView.ofCardViews
 
     /// Creates an open hand view of the user's cards.
-    let private openView dealer deal =
+    let private openView deal =
         promise {
-            let iUser = Seat.getIndex Seat.User dealer
             let! handView =
-                deal.UnplayedCards[iUser]
+                deal.UnplayedCardMap[Seat.User]
                     |> OpenHandView.ofHand
             deal.ClosedDeal.TrumpOpt
                 |> Option.iter (fun trump ->
@@ -74,7 +73,7 @@ module DealView =
 
                 // create open hand view for user
             let iUser = Seat.getIndex Seat.User dealer
-            let! openHandView = openView dealer deal
+            let! openHandView = openView deal
 
                 // deal animation
             let anim =
@@ -131,9 +130,8 @@ module DealView =
         let closedViewPair seat =
             promise {
                 let! handView =
-                    let iSeat = Seat.getIndex seat dealer
                     Array.init
-                        deal.UnplayedCards[iSeat].Count
+                        deal.UnplayedCardMap[seat].Count
                         (fun _ -> CardView.ofBack ())
                         |> Promise.all
                         |> Promise.map ResizeArray
@@ -150,7 +148,7 @@ module DealView =
                     |> Promise.all
 
                 // create open hand view for user
-            let! openHandView = openView dealer deal
+            let! openHandView = openView deal
             setPositions Seat.South openHandView
 
             return [|
@@ -161,7 +159,7 @@ module DealView =
 
     /// Creates hand views for the given deal.
     let start surface dealer deal =
-        if deal.ClosedDeal.Auction.NumBids = 0 then
+        if deal.ClosedDeal.Auction.Bids.IsEmpty then
             animate surface dealer deal
         else
             createHandViews surface dealer deal   // no animation
