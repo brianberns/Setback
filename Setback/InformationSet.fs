@@ -6,6 +6,18 @@ open PlayingCards
 /// (during playout).
 type Action = Choice<Bid, Card>
 
+module Action =
+
+    /// Extracts bid from the given action.
+    let toBid = function
+        | Choice1Of2 bid -> bid
+        | Choice2Of2 _ -> failwith "Unexpected"
+
+    /// Extracts play from the given action.
+    let toPlay = function
+        | Choice1Of2 _ -> failwith "Unexpected"
+        | Choice2Of2 card -> card
+
 /// All information known to a player about a deal, including
 /// information known only to that player.
 type InformationSet =

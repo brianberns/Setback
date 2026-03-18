@@ -23,7 +23,8 @@ module Auction =
 
                 // write to log
             do
-                let seat = OpenDeal.currentPlayer context.Game.Deal
+                let seat =
+                    context.Game.Deal |> OpenDeal.currentPlayer
                 console.log($"{Seat.toString seat} bids {Bid.toString bid}")
 
                 // animate the bid
@@ -68,10 +69,7 @@ module Auction =
         async {
                 // determine bid to make
             let! action = WebPlayer.takeAction context.Game
-            let bid =
-                match action with
-                    | Choice1Of2 bid -> bid
-                    | Choice2Of2 _ -> failwith "Unexpected"
+            let bid = Action.toBid action
 
                 // move to next player
             return! makeBid context bid
