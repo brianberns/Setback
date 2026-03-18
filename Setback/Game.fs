@@ -60,7 +60,7 @@ module Game =
         match apply Setback.winThreshold score with
             | Some team -> Some team
             | None ->   // mercy rule
-                let loseThreshold = -4
+                let loseThreshold = -6
                 let teamOpt =
                     score.Points
                         |> Array.map ((*) -1)
