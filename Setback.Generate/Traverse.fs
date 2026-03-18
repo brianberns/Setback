@@ -114,9 +114,7 @@ module Traverse =
                 addLoop game depth legalActions[0]                    // forced action
             else
                     // get utility of current player's strategy
-                let rnd =
-                    lock game.Random (fun () ->                       // lock RNG to allow multi-threaded batch inference
-                        game.Random.NextDouble())
+                let rnd = Random.Shared.NextDouble()                  // thread-safety needed
                 let threshold =
                     settings.SampleBranchRate
                         / (settings.SampleBranchRate + float depth)   // nodes near the root have a greater chance of being expanded
@@ -128,7 +126,7 @@ module Traverse =
 
         /// Adds the given action to the given deal and loops.
         and addLoop game depth action =
-            let game = Game.addAction action game
+            let game = Game.addAction Random.Shared action game       // thread-safety needed
             loop game depth
 
         /// Gets the full utility of the given info set.
@@ -169,8 +167,7 @@ module Traverse =
         /// sampling a single action.
         and getOneUtility infoSet game depth strategy =
             let result =
-                lock game.Random (fun () ->   // lock RNG to allow multi-threaded batch inference
-                    Vector.sample game.Random strategy)
+                Vector.sample Random.Shared strategy   // thread-safety needed
                     |> Array.get infoSet.LegalActions
                     |> addLoop game (depth+1)
             Node.getUtility

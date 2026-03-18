@@ -24,6 +24,6 @@ module Tournament =
                     seat, player)
                 |> Map
         Game.playGames inParallel numGames (
-            Game.playGame playerMap)
+            Game.playGame Random.Shared playerMap)   // thread-safety needed
             |> Seq.where ((=) challengerTeam)
             |> Seq.length

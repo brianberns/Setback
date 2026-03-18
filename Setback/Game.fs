@@ -6,9 +6,6 @@ open PlayingCards
 /// A game of Setback.
 type Game =
     {
-        /// RNG used to create new deals.
-        Random : Random
-
         /// Current deal, or winning team (if the game is over).
         Current : Choice<OpenDeal, Team>
 
@@ -31,11 +28,9 @@ module Game =
             |> OpenDeal.fromDeck dealer
 
     /// Creates a new game.
-    let create dealer =
-        let rng = Random()
+    let create rng dealer =
         let deal = createDeal rng dealer
         {
-            Random = rng
             Current = Choice1Of2 deal
             Score = Score.zero
         }
@@ -63,7 +58,7 @@ module Game =
     /// Takes the given action in the given game's current deal.
     /// At the end of each deal, the score is updated, and, if
     /// the game is not over, a new deal is created.
-    let addAction action (game : Game) =
+    let addAction rng action (game : Game) =
 
             // update the current deal
         let deal = OpenDeal.addAction action game.Deal
@@ -90,13 +85,13 @@ module Game =
                 | None ->
                     let dealer =
                         Seat.incr 1 deal.ClosedDeal.Dealer
-                    let deal = createDeal game.Random dealer
+                    let deal = createDeal rng dealer
                     { game with Current = Choice1Of2 deal }
 
         else { game with Current = Choice1Of2 deal }
 
     /// Plays the given game to completion.
-    let playGame (playerMap : Map<_, _>) game =
+    let playGame rng (playerMap : Map<_, _>) game =
 
         let rec loop game =
 
@@ -105,7 +100,7 @@ module Game =
                 match Seq.tryExactlyOne infoSet.LegalActions with
                     | Some action -> action
                     | None -> playerMap[infoSet.Player].Act infoSet
-            let game = addAction action game
+            let game = addAction rng action game
             match game.Current with
                 | Choice1Of2 _ -> loop game
                 | Choice2Of2 team -> team   // game is over
@@ -113,18 +108,18 @@ module Game =
         loop game
 
     /// Generates an infinite sequence of games.
-    let generate () =
+    let generate rng =
         Seq.initInfinite (fun iGame ->
             iGame % Seat.numSeats
                 |> enum<Seat>
-                |> create)
+                |> create rng)
 
     /// Plays the given number of games.
     let playGames inParallel numGames playFun =
         let map =
             if inParallel then Array.Parallel.map
             else Array.map
-        generate ()
+        generate Random.Shared
             |> Seq.take numGames
             |> Seq.toArray
             |> map playFun
