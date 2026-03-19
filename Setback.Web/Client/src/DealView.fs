@@ -192,7 +192,7 @@ module DealView =
         |] |> Array.map (~~)
 
     /// Displays deal status (e.g. high, low, jack, and game).
-    let displayStatus dealer deal =
+    let displayStatus deal =
 
         let displayCard (elems : JQueryElement[]) playoutFunc =
 

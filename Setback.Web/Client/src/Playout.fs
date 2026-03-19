@@ -45,15 +45,6 @@ module Playout =
                 return! Trick.highPlayerOpt trick
         }
 
-    /// Has trump just been established?
-    let private tryTrumpJustEstablished deal =
-        option {
-            let! playout = deal.ClosedDeal.PlayoutOpt
-            if Playout.numCardsPlayed playout = 1 then
-                assert(playout.TrumpOpt.IsSome)
-                return! playout.TrumpOpt
-        }
-
     /// Plays the given card in the given game and then continues
     /// the rest of the game.
     let private playCard context cardView card =
@@ -61,23 +52,20 @@ module Playout =
         promise {
 
                 // write to log
-            let seat =
-                context.Game.Deal |> OpenDeal.currentPlayer
+            let deal = context.Game.Deal
+            let seat = OpenDeal.currentPlayer deal
             console.log($"{Seat.toString seat} plays {card}")
 
-                // add the card to the game
-            let game =
-                context.Game
-                    |> Game.addAction Random.Shared (Choice2Of2 card)
-
                 // animate if setting trump
-            match tryTrumpJustEstablished game.Deal with
-                | Some trump ->
-                    do! context.AnimEstablishTrump seat trump
+            match deal.ClosedDeal.PlayoutOpt with
+                | Some playout when Playout.numCardsPlayed playout = 0 ->
+                    do! context.AnimEstablishTrump seat card.Suit
                         |> Animation.run
-                | None -> ()
+                | Some _ -> ()
+                | None -> failwith "Unexpected"
 
-                // play the card
+                // play the card on the deal
+            let deal = deal |> OpenDeal.addPlay card
             do! context.AnimCardPlay cardView
                 |> Animation.run
 
@@ -86,15 +74,13 @@ module Playout =
                 | Some winner ->
 
                         // track game points won
-                    DealView.displayStatus
-                        game.Deal.ClosedDeal.Dealer
-                        game.Deal
+                    DealView.displayStatus deal
 
                         // animate
                     let animate () =
                         context.AnimTrickFinish winner
                             |> Animation.run
-                    let dealComplete = game.Deal |> OpenDeal.isComplete
+                    let dealComplete = deal |> OpenDeal.isComplete
                     if winner.IsUser && not dealComplete then
                         animate () |> ignore   // don't force user to wait for animation to finish
                     else
@@ -102,7 +88,9 @@ module Playout =
 
                 | None -> ()
 
-            return game
+            return
+                context.Game
+                    |> Game.addAction Random.Shared (Choice2Of2 card)   // can cause a new deal to start
         }
 
     /// Allows user to play a card.

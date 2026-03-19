@@ -127,7 +127,7 @@ module Deal =
                 console.log("Finishing deal in progress")
 
                 // animate dealing the cards
-            DealView.displayStatus dealer deal
+            DealView.displayStatus deal
             let! seatViews =
                 DealView.start surface dealer deal
                     |> Async.AwaitPromise
