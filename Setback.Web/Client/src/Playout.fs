@@ -88,9 +88,8 @@ module Playout =
 
                 | None -> ()
 
-            return
-                context.Game
-                    |> Game.addAction Random.Shared (Choice2Of2 card)   // can cause a new deal to start
+            return context.Game
+                |> Game.addAction Random.Shared (Choice2Of2 card)   // can cause a new deal to start
         }
 
     /// Allows user to play a card.
@@ -196,11 +195,11 @@ module Playout =
                     let persState' =
                         { persState with Game = game }
                     let save =   // save at trick boundary
-                        option {
+                                option {
                             let! playout = game.Deal.ClosedDeal.PlayoutOpt
-                            let! trick = playout.CurrentTrickOpt
-                            return trick.Cards.Length % Seat.numSeats = 0
-                        } |> Option.defaultValue true
+                                    let! trick = playout.CurrentTrickOpt
+                                    return trick.Cards.Length % Seat.numSeats = 0
+                                } |> Option.defaultValue true
                     if save then
                         PersistentState.save persState'
                     return! loop persState'
