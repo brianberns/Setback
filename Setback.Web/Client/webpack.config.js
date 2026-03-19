@@ -2,6 +2,7 @@ var path = require("path");
 
 module.exports = {
     mode: "development",
+    devtool: "eval-source-map",
     entry: "./src/App.fs.js",
     output: {
         path: path.join(__dirname, "./public"),
@@ -20,11 +21,16 @@ module.exports = {
     },
     resolve: {
         alias: {
-            jquery: "jquery/src/jquery"   // important - can't import jQuery from dist folder
+            jquery: "jquery/src/jquery"
         }
     },
     module: {
         rules: [
+            {
+                test: /\.js$/,
+                enforce: "pre",
+                use: ["source-map-loader"],
+            },
             {
                 test: /\.css$/i,
                 use: ['style-loader', 'css-loader'],
