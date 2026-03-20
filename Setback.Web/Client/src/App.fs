@@ -9,10 +9,10 @@ module Session =
     /// Runs a new session.
     let run surface persState =
 
-        /// Plays deals forever.
+        /// Plays games forever.
         let rec loop persState =
             async {
-                let! persState = Deal.run surface persState
+                let! persState = Game.run surface persState
                 do! loop persState
             }
 

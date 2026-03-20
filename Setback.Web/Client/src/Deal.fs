@@ -89,7 +89,7 @@ module Deal =
         }
 
     /// Handles the end of a deal.
-    let private dealOver (surface : JQueryElement) dealer deal =
+    let private dealOver (surface : JQueryElement) deal =
 
             // determine deal outcome
         let dealScore =
@@ -147,7 +147,7 @@ module Deal =
                 // run the playout
             else
                 let! persState = playout surface persState seatViews
-                do! dealOver surface dealer persState.Game.Deal
+                do! dealOver surface persState.Game.Deal
                     |> Async.AwaitPromise
                 return persState
         }

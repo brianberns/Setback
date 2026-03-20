@@ -117,7 +117,7 @@ module DealView =
         }
 
     /// Creates and positions hand views for the given deal.
-    let private createHandViews (surface : JQueryElement) dealer deal =
+    let private createHandViews (surface : JQueryElement) deal =
 
         /// Sets positions of cards in the given hand.
         let setPositions seat handView =
@@ -161,7 +161,7 @@ module DealView =
         if deal.ClosedDeal.Auction.Bids.IsEmpty then
             animate surface dealer deal
         else
-            createHandViews surface dealer deal   // no animation
+            createHandViews surface deal   // no animation
 
     /// Elements tracking high trump taken.
     let private highElems =
