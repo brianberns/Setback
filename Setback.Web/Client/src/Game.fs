@@ -67,7 +67,7 @@ module Game =
                 displayGamesWon gamesWon
                 resolve ()))
 
-    /// Runs one new game.
+    /// Runs the given game.
     let run surface persState =
 
         /// Runs one deal.
@@ -113,9 +113,14 @@ module Game =
 
                         return persState
 
-                        // run another deal in this game
                     | None ->
-                        PersistentState.save persState
+
+                            // continue current game with new deal
+                        let game =
+                            Game.startNextDeal Random.Shared persState.Game
+                        console.log($"Dealer is {Seat.toString game.Deal.ClosedDeal.Auction.Dealer}")
+                        let persState = { persState with Game = game }.Save()
+
                         return! loop persState
             }
 

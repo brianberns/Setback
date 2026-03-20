@@ -1,7 +1,5 @@
 namespace Setback.Web.Client
 
-open Browser
-
 open Fable.Core
 
 open PlayingCards
@@ -115,18 +113,12 @@ module Deal =
                 banner.remove()
                 resolve ()))
 
-    /// Runs one deal.
+    /// Runs the given deal.
     let run surface persState =
         async {
-                // new deal starting?
+                // animate dealing the cards
             let deal = persState.Game.Deal
             let dealer = deal.ClosedDeal.Auction.Dealer
-            if deal.ClosedDeal.Auction.Bids.IsEmpty then
-                console.log($"Dealer is {Seat.toString dealer}")
-            else
-                console.log("Finishing deal in progress")
-
-                // animate dealing the cards
             DealView.displayStatus deal
             let! seatViews =
                 DealView.start surface dealer deal
