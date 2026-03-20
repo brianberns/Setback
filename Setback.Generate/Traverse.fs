@@ -4,6 +4,7 @@ open System
 
 open MathNet.Numerics.LinearAlgebra
 
+open PlayingCards
 open Setback
 open Setback.Learn
 open Setback.Model
@@ -83,28 +84,30 @@ module Node =
 
 module Traverse =
 
+    /// Gets payoff for the given winning team.
+    let private getPayoff winningTeam =
+        let payoffs =
+            [|
+                for team in Enum.getValues<Team> do
+                    if team = winningTeam then 1f
+                    else -1f
+            |]
+        Node.complete payoffs None Array.empty
+
     /// Evaluates the utility of the given game.
     let traverse settings iter game =
 
         /// Top-level loop.
-        let rec loop game depth =
-            match game.Current with
-
-                    // game is not over
-                | Choice1Of2 _ ->
-                    loopNonTerminal game depth
-
-                    // game is over
-                | Choice2Of2 team ->
-                    let payoff =
-                        match int team with
-                            | 0 -> [|  1f; -1f |]
-                            | 1 -> [| -1f;  1f |]
-                            | _ -> failwith "Unexpected"
-                    Node.complete
-                        payoff
-                        None
-                        Array.empty
+        let rec loop (game : Game) depth =
+            if OpenDeal.isComplete game.Deal then
+                match Game.tryGetWinningTeam game with
+                    | Some team ->   // game is over
+                        getPayoff team
+                    | None ->        // continue current game with new deal
+                        let game =
+                            Game.startNextDeal Random.Shared game   // thread-safety needed
+                        loopNonTerminal game depth
+            else loopNonTerminal game depth   // continue current deal
 
         /// Recurses for non-terminal game state.
         and loopNonTerminal game depth =
@@ -126,7 +129,7 @@ module Traverse =
 
         /// Adds the given action to the given deal and loops.
         and addLoop game depth action =
-            let game = Game.addAction Random.Shared action game       // thread-safety needed
+            let game = Game.addAction action game
             loop game depth
 
         /// Gets the full utility of the given info set.

@@ -6,19 +6,12 @@ open PlayingCards
 /// A game of Setback.
 type Game =
     {
-        /// Current deal, or winning team (if the game is over).
-        Current : Choice<OpenDeal, Team>
+        /// Current (or just completed) deal.
+        Deal : OpenDeal
 
-        /// Game score at the start of the current deal. Not updated
-        /// during play.
+        /// Game score, updated after every deal is complete..
         Score : Score
     }
-
-    /// Current deal, assuming game is not over.
-    member game.Deal =
-        match game.Current with
-            | Choice1Of2 deal -> deal
-            | Choice2Of2 _ -> failwith "Unexpected"
 
 module Game =
 
@@ -29,9 +22,8 @@ module Game =
 
     /// Creates a new game.
     let create rng dealer =
-        let deal = createDeal rng dealer
         {
-            Current = Choice1Of2 deal
+            Deal = createDeal rng dealer
             Score = Score.zero
         }
 
@@ -43,8 +35,8 @@ module Game =
         InformationSet.create
             player hand deal.ClosedDeal game.Score
 
-    /// Which team (if any) won the game with the given score.
-    let private tryGetWinningTeam score =
+    /// Which team (if any) won the given game.
+    let tryGetWinningTeam game =
 
         let apply threshold score =
             let maxPoint = Array.max score.Points
@@ -57,12 +49,12 @@ module Game =
                     |> Seq.tryExactlyOne
             else None
 
-        match apply Setback.winThreshold score with
+        match apply Setback.winThreshold game.Score with
             | Some team -> Some team
             | None ->   // mercy rule
                 let loseThreshold = -6
                 let teamOpt =
-                    score.Points
+                    game.Score.Points
                         |> Array.map ((*) -1)
                         |> Score.ofPoints
                         |> apply -loseThreshold
@@ -75,46 +67,47 @@ module Game =
     /// Takes the given action in the given game's current deal.
     /// At the end of each deal, the score is updated, and, if
     /// the game is not over, a new deal is created.
-    let addAction rng action (game : Game) =
+    let addAction action (game : Game) =
 
             // update the current deal
         let deal = OpenDeal.addAction action game.Deal
+        let game = { game with Deal = deal }
 
-            // end-of-deal bookkeeping
+            // update score at end of deal
         if OpenDeal.isComplete deal then
+            let dealScore =
+                ClosedDeal.getDealScore deal.ClosedDeal
+            { game with Score = game.Score + dealScore }
+        else game
 
-                // update score
-            let game =
-                let dealScore =
-                    ClosedDeal.getDealScore deal.ClosedDeal
-                { game with Score = game.Score + dealScore }
-
-                // game is over?
-            match tryGetWinningTeam game.Score with
-                | Some team ->
-                    { game with Current = Choice2Of2 team }
-                | None ->
-                    let dealer =
-                        Seat.incr 1 deal.ClosedDeal.Dealer
-                    let deal = createDeal rng dealer
-                    { game with Current = Choice1Of2 deal }
-
-        else { game with Current = Choice1Of2 deal }
+    /// Starts a new deal in the given game.
+    let startNextDeal rng game =
+        assert(OpenDeal.isComplete game.Deal)
+        assert(tryGetWinningTeam game |> Option.isNone)
+        let dealer =
+            Seat.incr 1 game.Deal.ClosedDeal.Dealer
+        let deal = createDeal rng dealer
+        { game with Deal = deal }
 
     /// Plays the given game to completion.
     let playGame rng (playerMap : Map<_, _>) game =
 
         let rec loop game =
 
+                // make one play
             let infoSet = currentInfoSet game
             let action =
                 match Seq.tryExactlyOne infoSet.LegalActions with
                     | Some action -> action
                     | None -> playerMap[infoSet.Player].Act infoSet
-            let game = addAction rng action game
-            match game.Current with
-                | Choice1Of2 _ -> loop game
-                | Choice2Of2 team -> team   // game is over
+            let game = addAction action game
+
+                // start another deal?
+            if OpenDeal.isComplete game.Deal then
+                match tryGetWinningTeam game with
+                    | Some team -> team   // game is over
+                    | None -> loop (startNextDeal rng game)
+            else loop game
 
         loop game
 

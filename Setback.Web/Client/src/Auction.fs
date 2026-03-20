@@ -32,7 +32,7 @@ module Auction =
 
                 // add bid to deal
             return context.Game
-                |> Game.addAction Random.Shared (Choice1Of2 bid)
+                |> Game.addAction (Choice1Of2 bid)
         }
 
     /// Allows user to make a bid.

@@ -98,15 +98,10 @@ module Game =
                     console.log($"N+S have {gameScore[Team.NorthSouth]} point(s)")
 
                     // is the game over?
-                match persState.Game.Current with
-
-                        // run another deal in this game
-                    | Choice1Of2 _ ->
-                        PersistentState.save persState
-                        return! loop persState
+                match Game.tryGetWinningTeam persState.Game with
 
                         // game is over
-                    | Choice2Of2 team ->
+                    | Some team ->
 
                             // increment games won
                         let persState = incrGamesWon team persState
@@ -117,6 +112,11 @@ module Game =
                             |> Async.AwaitPromise
 
                         return persState
+
+                        // run another deal in this game
+                    | None ->
+                        PersistentState.save persState
+                        return! loop persState
             }
 
             // start a new game

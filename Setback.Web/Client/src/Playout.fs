@@ -89,7 +89,7 @@ module Playout =
                 | None -> ()
 
             return context.Game
-                |> Game.addAction Random.Shared (Choice2Of2 card)   // can cause a new deal to start
+                |> Game.addAction (Choice2Of2 card)
         }
 
     /// Allows user to play a card.
