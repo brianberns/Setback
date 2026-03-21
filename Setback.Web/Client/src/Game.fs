@@ -124,6 +124,5 @@ module Game =
                         return! loop persState
             }
 
-            // start a new game
         displayGamesWon persState.GamesWon
         loop persState
