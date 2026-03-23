@@ -56,7 +56,7 @@ module Settings =
             NumGamesPerIteration = 20_000
 #endif
             GameBatchSize = 25
-            InferenceBatchSize = 50_000
+            InferenceBatchSize = 25_000
             SampleBranchRate = 0.7
             HiddenSize = Encoding.encodedLength * 2
             NumHiddenLayers = 4
