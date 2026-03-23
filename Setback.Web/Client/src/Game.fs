@@ -58,6 +58,7 @@ module Game =
             console.log(text)
             ~~HTMLDivElement.Create(innerText = text)
         banner.addClass("banner")
+        banner.addClass("winner")
         surface.append(banner)
 
             // wait for user to click banner

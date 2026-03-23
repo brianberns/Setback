@@ -1,6 +1,11 @@
 ﻿body {
-    background-color: lightblue;
+    background-color: #4a8468;
+    color: #f5f0e4;
     font-family: sans-serif;
     width: 800px;
     margin-left: 30px;
+}
+
+a {
+    color: white;
 }
