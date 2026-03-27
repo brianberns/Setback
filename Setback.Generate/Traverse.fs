@@ -84,37 +84,47 @@ module Node =
 
 module Traverse =
 
-    /// Gets payoff for the given winning team.
-    let private getPayoff winningTeam =
+    /// Gets payoffs for the given deal score.
+    let private getPayoffs (dealScore : Score) =
+        assert(Team.numTeams = 2)
+        let nsScore =
+            float32 (
+                dealScore[Team.NorthSouth]
+                    - dealScore[Team.EastWest])
         let payoffs =
             [|
                 for team in Enum.getValues<Team> do
-                    if team = winningTeam then 1f
-                    else -1f
+                    match team with
+                        | Team.NorthSouth -> nsScore
+                        | Team.EastWest -> -nsScore
+                        | _ -> failwith "Unexpected"
             |]
         Node.complete payoffs None Array.empty
 
-    /// Evaluates the utility of the given game.
-    let traverse settings iter game =
+    /// Answers the current player's information set.
+    let private currentInfoSet deal =
+        let player = OpenDeal.currentPlayer deal
+        let hand = deal.UnplayedCardMap[player]
+        InformationSet.create
+            player hand deal.ClosedDeal Score.zero   // assume 0-0 score
+
+    /// Evaluates the utility of the given deal.
+    let traverse settings iter deal =
 
         /// Top-level loop.
-        let rec loop (game : Game) depth =
-            if OpenDeal.isComplete game.Deal then
-                match Game.tryGetWinningTeam game with
-                    | Some team ->   // game is over
-                        getPayoff team
-                    | None ->        // continue current game with new deal
-                        let game =
-                            Game.startNextDeal Random.Shared game   // thread-safety needed
-                        loopNonTerminal game depth
-            else loopNonTerminal game depth   // continue current deal
+        let rec loop (deal : OpenDeal) depth =
+            if OpenDeal.isComplete deal then
+                deal.ClosedDeal
+                    |> ClosedDeal.getDealScore 
+                    |> getPayoffs
+            else loopNonTerminal deal depth   // continue current deal
 
-        /// Recurses for non-terminal game state.
-        and loopNonTerminal game depth =
-            let infoSet = Game.currentInfoSet game
+        /// Recurses for non-terminal deal state.
+        and loopNonTerminal deal depth =
+            let infoSet = currentInfoSet deal
             let legalActions = infoSet.LegalActions
             if legalActions.Length = 1 then
-                addLoop game depth legalActions[0]                    // forced action
+                addLoop deal depth legalActions[0]                    // forced action
             else
                     // get utility of current player's strategy
                 let rnd = Random.Shared.NextDouble()                  // thread-safety needed
@@ -124,20 +134,20 @@ module Traverse =
                 let getUtility =
                     if rnd <= threshold then getFullUtility
                     else getOneUtility
-                let cont = getUtility infoSet game depth
+                let cont = getUtility infoSet deal depth
                 Node.getStrategy infoSet cont
 
         /// Adds the given action to the given deal and loops.
-        and addLoop game depth action =
-            let game = Game.addAction action game
-            loop game depth
+        and addLoop deal depth action =
+            let deal = OpenDeal.addAction action deal
+            loop deal depth
 
         /// Gets the full utility of the given info set.
-        and getFullUtility infoSet game depth strategy =
+        and getFullUtility infoSet deal depth strategy =
             let legalActions = infoSet.LegalActions
             let results =
                 legalActions
-                    |> Array.map (addLoop game (depth+1))
+                    |> Array.map (addLoop deal (depth+1))
 
             let cont children =
 
@@ -166,16 +176,16 @@ module Traverse =
 
             Node.getUtility infoSet results cont
 
-        /// Gets the utility of the given info set by
-        /// sampling a single action.
-        and getOneUtility infoSet game depth strategy =
+        /// Gets the utility of the given info set by sampling
+        /// a single action.
+        and getOneUtility infoSet deal depth strategy =
             let result =
                 Vector.sample Random.Shared strategy   // thread-safety needed
                     |> Array.get infoSet.LegalActions
-                    |> addLoop game (depth+1)
+                    |> addLoop deal (depth+1)
             Node.getUtility
                 infoSet
                 [| result |]
                 (Array.exactlyOne >> Complete)
 
-        loop game 0
+        loop deal 0

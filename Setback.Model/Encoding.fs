@@ -146,6 +146,7 @@ module Encoding =
             yield! encodeVoids player voids
         |]
 
+    (*
     /// Encoded length of game points for one team.
     let encodedGamePointLength = Setback.winThreshold - 1
 
@@ -172,6 +173,7 @@ module Encoding =
                 let count = gameScore[team] - minPoint
                 assert(count <= length)
                 Array.init length (fun i -> i < count))
+    *)
 
     /// Total encoded length of an info set.
     let encodedLength =
@@ -181,7 +183,9 @@ module Encoding =
             + Seat.numSeats * Card.numCards            // cards previously played by each player
             + (Seat.numSeats - 1) * Card.numCards      // current trick
             + (Seat.numSeats - 1) * Suit.numSuits      // voids
+            (*
             + Team.numTeams * encodedGamePointLength   // game score
+            *)
 
     /// Encodes the given info set as a vector.
     let encode infoSet : Encoding =
@@ -192,8 +196,10 @@ module Encoding =
                     infoSet.Player infoSet.Deal.Auction
                 yield! encodePlayout
                     infoSet.Player infoSet.Deal.PlayoutOpt
+                (*
                 yield! encodeGameScore
                     infoSet.Player infoSet.GameScore
+                *)
             |]
         assert(flags.Length = encodedLength)
         flags
