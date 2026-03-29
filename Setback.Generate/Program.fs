@@ -16,9 +16,13 @@ module Program =
     let private playGames numDeals playFun =
         OpenDeal.playDeals Random.Shared true numDeals
             (fun deal ->
-                let score = Score.zero
-                let game = { Deal = deal; Score = score }
-                playFun game)
+                let points =
+                    Array.init Team.numTeams (fun _ ->
+                        Random.Shared.Next(6, 11))
+                playFun {
+                    Deal = deal
+                    Score = { Points = points }
+                })
 
     /// Generates training data for the given iteration.
     let private generateSamples settings iteration state =
