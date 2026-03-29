@@ -12,6 +12,14 @@ open Setback.Model
 
 module Program =
 
+    /// Plays fake games consiting of a single deal each.
+    let private playGames numDeals playFun =
+        OpenDeal.playDeals Random.Shared true numDeals
+            (fun deal ->
+                let score = Score.zero
+                let game = { Deal = deal; Score = score }
+                playFun game)
+
     /// Generates training data for the given iteration.
     let private generateSamples settings iteration state =
 
@@ -27,18 +35,18 @@ module Program =
             // divide games for this iteration into batches,
             // including possible runt batch at the end
         let batchSizes =
-            Seq.replicate settings.NumGamesPerIteration ()
-                |> Seq.chunkBySize settings.GameBatchSize
+            Seq.replicate settings.NumDealsPerIteration ()
+                |> Seq.chunkBySize settings.DealBatchSize
                 |> Seq.map _.Length
 
             // generate samples for each batch
         Array.sum [|
-            for iBatch, numGames in Seq.indexed batchSizes do
-                assert(numGames <= settings.GameBatchSize)
+            for iBatch, numDeals in Seq.indexed batchSizes do
+                assert(numDeals <= settings.DealBatchSize)
 
                     // generate samples
                 let samples =
-                    OpenDeal.playDeals Random.Shared true numGames
+                    playGames numDeals
                         (Traverse.traverse settings iteration)
                         |> Inference.complete
                             settings.InferenceBatchSize
@@ -48,8 +56,8 @@ module Program =
                 AdvantageSampleStore.appendSamples
                     samples state.SampleStore
                 log
-                    (float32 samples.Length / float32 numGames)    // average number of generated samples per game in this batch
-                    (iBatch * settings.GameBatchSize + numGames)   // total number of games so far
+                    (float32 samples.Length / float32 numDeals)    // average number of generated samples per game in this batch
+                    (iBatch * settings.DealBatchSize + numDeals)   // total number of games so far
 
                 samples.Length
         |]
@@ -80,8 +88,8 @@ module Program =
             printfn "Settings:"
             printfn $"   Server garbage collection: {GCSettings.IsServerGC}"
             printfn $"   Iteration: {iteration}"
-            printfn $"   # games to generate: {settings.NumGamesPerIteration}"
-            printfn $"   Game batch size: {settings.GameBatchSize}"
+            printfn $"   # games to generate: {settings.NumDealsPerIteration}"
+            printfn $"   Game batch size: {settings.DealBatchSize}"
             printfn $"   Inference batch size: {settings.InferenceBatchSize}"
             printfn $"   Sample branch rate: {settings.SampleBranchRate}"
             printfn $"   Hidden size: {settings.HiddenSize}"

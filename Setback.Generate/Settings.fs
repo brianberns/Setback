@@ -7,14 +7,14 @@ open Setback.Model
 /// Hyperparameters.
 type Settings =
     {
-        /// Total number of games to create when generating sample
+        /// Total number of deals to create when generating sample
         /// data at the start of each iteration.
-        NumGamesPerIteration : int
+        NumDealsPerIteration : int
 
-        /// Number of games to create per batch when generating
+        /// Number of deals to create per batch when generating
         /// sample data at the start of each iteration. E.g. 8000
-        /// games at 200 games/batch is 40 batches.
-        GameBatchSize : int
+        /// deals at 200 deals/batch is 40 batches.
+        DealBatchSize : int
 
         /// Number of information sets in an inference batch.
         InferenceBatchSize : int
@@ -51,11 +51,11 @@ module Settings =
     let create writer =
         {
 #if DEBUG
-            NumGamesPerIteration = 50
+            NumDealsPerIteration = 50
 #else
-            NumGamesPerIteration = 20_000
+            NumDealsPerIteration = 20_000
 #endif
-            GameBatchSize = 25
+            DealBatchSize = 25
             InferenceBatchSize = 25_000
             SampleBranchRate = 1.5
             HiddenSize = Encoding.encodedLength * 2
@@ -70,11 +70,11 @@ module Settings =
     let write settings =
         let writer = settings.Writer
         writer.add_text(
-            $"settings/NumGamesPerIteration",
-            string settings.NumGamesPerIteration, 0)
+            $"settings/NumDealsPerIteration",
+            string settings.NumDealsPerIteration, 0)
         writer.add_text(
-            $"settings/GameBatchSize",
-            string settings.GameBatchSize, 0)
+            $"settings/DealBatchSize",
+            string settings.DealBatchSize, 0)
         writer.add_text(
             $"settings/InferenceBatchSize",
             string settings.InferenceBatchSize, 0)
