@@ -10,6 +10,7 @@ module LookupPlayer =
     let init databasePath =
 
         let lookup =
+            printfn "Loading CFR lookup..."
             use conn =
                 let connStr = $"DataSource={databasePath};Version=3;"
                 let conn = new SQLiteConnection(connStr)
@@ -21,10 +22,13 @@ module LookupPlayer =
                     from Strategy",
                     conn)
             use rdr = cmd.ExecuteReader()
-            Map [
-                while (rdr.Read()) do
-                    rdr.GetString(0), rdr.GetInt32(1)
-            ]
+            let lookup =
+                Map [
+                    while (rdr.Read()) do
+                        rdr.GetString(0), rdr.GetInt32(1)
+                ]
+            printfn "Done"
+            lookup
 
         /// Finds the action index for the given key, if any.
         let getActionIndex (key : string) =
