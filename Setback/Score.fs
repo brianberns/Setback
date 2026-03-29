@@ -46,3 +46,15 @@ module Score =
             |> Seq.indexed
             |> Seq.map (fun (iTeam, points) ->
                 enum<Team> iTeam, points)
+
+    /// Which team (if any) won the game with the given score
+    let tryGetWinningTeam score =
+        let maxPoint = Array.max score.Points
+        if maxPoint >= Setback.winThreshold then
+            score.Points
+                |> Seq.indexed
+                |> Seq.where (fun (_, pt) ->
+                    pt = maxPoint)
+                |> Seq.map (fst >> enum<Team>)
+                |> Seq.tryExactlyOne
+        else None

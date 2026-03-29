@@ -37,32 +37,7 @@ module Game =
 
     /// Which team (if any) won the given game.
     let tryGetWinningTeam game =
-
-        let apply threshold score =
-            let maxPoint = Array.max score.Points
-            if maxPoint >= threshold then
-                score.Points
-                    |> Seq.indexed
-                    |> Seq.where (fun (_, pt) ->
-                        pt = maxPoint)
-                    |> Seq.map (fst >> enum<Team>)
-                    |> Seq.tryExactlyOne
-            else None
-
-        match apply Setback.winThreshold game.Score with
-            | Some team -> Some team
-            | None ->   // mercy rule
-                let loseThreshold = -6
-                let teamOpt =
-                    game.Score.Points
-                        |> Array.map ((*) -1)
-                        |> Score.ofPoints
-                        |> apply -loseThreshold
-                match teamOpt with
-                    | Some Team.NorthSouth -> Some Team.EastWest
-                    | Some Team.EastWest -> Some Team.NorthSouth
-                    | None -> None
-                    | _ -> failwith "Unexpected"
+        Score.tryGetWinningTeam game.Score
 
     /// Takes the given action in the given game's current deal.
     /// At the end of each deal, the score is updated, and, if

@@ -14,6 +14,7 @@
   <Project Path="Setback.Generate/Setback.Generate.fsproj" Id="1c1061dd-ad4b-4bd5-b111-2cc99a419553" />
   <Project Path="Setback.Learn/Setback.Learn.fsproj" Id="ecee59f5-f6d2-4ada-bea7-4a3cd6ceb642" />
   <Project Path="Setback.Model/Setback.Model.fsproj" Id="32ba2174-6a1d-486d-a052-a089548d7c9f" />
+  <Project Path="Setback.PlayKiller/Setback.PlayKiller.fsproj" Id="1840b25d-c6c6-47c0-86ca-4a74897a9703" />
   <Project Path="Setback.PlayModel/Setback.PlayModel.fsproj" Id="18de2486-8e3e-4102-af6c-5ce99da6e4da" />
   <Project Path="Setback.Train/Setback.Train.fsproj" Id="6a6e175e-a3c5-424d-b070-7749a5577274" />
   <Project Path="Setback.Web/Client/src/Setback.Web.Client.fsproj" />
