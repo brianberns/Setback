@@ -124,7 +124,7 @@ module Message =
 
     let private deepCfrPlayer =
         let settings = Settings.create ()
-        use model =
+        let model =
             new AdvantageModel(
                 settings.HiddenSize,
                 settings.NumHiddenLayers,
@@ -189,7 +189,7 @@ module Message =
                                 Playout.currentPlayer playout))
                     assert(
                         message.Values[1]
-                            = playout.CompletedTricks.Length)
+                            = playout.CompletedTricks.Length + 1)
                     respond message.Key 0
                     model
                 | None -> failwith "Unexpected"
@@ -235,10 +235,8 @@ module Message =
                 match playing.Deal.ClosedDeal.PlayoutOpt with
                     | Some playout ->
                         match playout.CurrentTrickOpt with
-                            | Some trick ->
-                                Playout.isComplete playout
-                                    || trick.Cards.IsEmpty
-                            | None -> false
+                            | Some trick -> trick.Cards.IsEmpty
+                            | None -> Playout.isComplete playout
                     | None -> false)
             respond message.Key 0
             model
