@@ -146,23 +146,16 @@ module Encoding =
             yield! encodeVoids player voids
         |]
 
-    (*
-    /// Encoded length of game points for one team.
-    let encodedGamePointLength = Setback.winThreshold - 1
+    /// Encoded length of game points for one team:
+    ///    * 1111 -> team is 1 point from winning (e.g. has 10 points, or tied 11-11, etc.)
+    ///    * 1110 -> team is 2 points from winning
+    ///    * 1100 -> team is 3 points from winning
+    ///    * 1000 -> team is 4 points from winning
+    ///    * 0000 -> team if 5+ points form winning
+    let encodedGamePointLength = Setback.numDealPoints
 
     /// Encodes the given game score as thermometers.
-    let encodeGameScore player gameScore =
-       
-            // find point range (e.g. 0-10, 1-11 for a tie at 11, etc.)
-        let length = encodedGamePointLength
-        let maxPoint =
-            seq {
-                yield! gameScore.Points
-                yield length
-            } |> Seq.max
-        let minPoint = maxPoint - length
-
-            // encode as thermometers
+    let encodeGameScore player (gameScore : Score) =
         assert(Setback.numTeams = 2)
         let usTeam = Team.ofSeat player
         let themTeam = 
@@ -170,10 +163,15 @@ module Encoding =
             else Team.NorthSouth
         [| usTeam; themTeam |]
             |> Array.collect (fun team ->
-                let count = gameScore[team] - minPoint
-                assert(count <= length)
-                Array.init length (fun i -> i < count))
-    *)
+                let count =
+                    match gameScore[team] with
+                        | pt when pt >= 10 -> 4
+                        | 9 -> 3
+                        | 8 -> 2
+                        | 7 -> 1
+                        | _ -> 0
+                assert(count <= encodedGamePointLength)
+                Array.init encodedGamePointLength (fun i -> i < count))
 
     /// Total encoded length of an info set.
     let encodedLength =
@@ -183,9 +181,7 @@ module Encoding =
             + Seat.numSeats * Card.numCards            // cards previously played by each player
             + (Seat.numSeats - 1) * Card.numCards      // current trick
             + (Seat.numSeats - 1) * Suit.numSuits      // voids
-            (*
             + Team.numTeams * encodedGamePointLength   // game score
-            *)
 
     /// Encodes the given info set as a vector.
     let encode infoSet : Encoding =
@@ -196,10 +192,8 @@ module Encoding =
                     infoSet.Player infoSet.Deal.Auction
                 yield! encodePlayout
                     infoSet.Player infoSet.Deal.PlayoutOpt
-                (*
                 yield! encodeGameScore
                     infoSet.Player infoSet.GameScore
-                *)
             |]
         assert(flags.Length = encodedLength)
         flags
