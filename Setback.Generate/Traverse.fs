@@ -84,21 +84,30 @@ module Node =
 
 module Traverse =
 
-    /// Gets payoffs for the given deal score.
-    let private getPayoffs (dealScore : Score) =
+    /// Gets payoffs for the given scores.
+    let private getPayoffs (gameScore : Score) (dealScore : Score) =
         assert(Team.numTeams = 2)
-        let nsScore =
-            float32 (
-                dealScore[Team.NorthSouth]
-                    - dealScore[Team.EastWest])
         let payoffs =
-            [|
-                for team in Enum.getValues<Team> do
-                    match team with
-                        | Team.NorthSouth -> nsScore
-                        | Team.EastWest -> -nsScore
-                        | _ -> failwith "Unexpected"
-            |]
+            match Score.tryGetWinningTeam (gameScore + dealScore) with
+                | Some winningTeam ->
+                    let reward = 5.5f   // value determined empirically
+                    [|
+                        for team in Enum.getValues<Team> do
+                            if team = winningTeam then reward
+                            else -reward
+                    |]
+                | None ->
+                    let nsScore =
+                        float32 (
+                            dealScore[Team.NorthSouth]
+                                - dealScore[Team.EastWest])
+                    [|
+                        for team in Enum.getValues<Team> do
+                            match team with
+                                | Team.NorthSouth -> nsScore
+                                | Team.EastWest -> -nsScore
+                                | _ -> failwith "Unexpected"
+                    |]
         Node.complete payoffs None Array.empty
 
     /// Evaluates the utility of the given game.
@@ -109,7 +118,7 @@ module Traverse =
             if OpenDeal.isComplete game.Deal then
                 game.Deal.ClosedDeal
                     |> ClosedDeal.getDealScore 
-                    |> getPayoffs
+                    |> getPayoffs game.Score
             else loopNonTerminal game depth   // continue current deal
 
         /// Recurses for non-terminal deal state.
