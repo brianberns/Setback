@@ -25,7 +25,8 @@ module Program =
 
     /// CFR champion.
     let private champion =
-        Cfrm.PlaySelf.Program.getPlayer "Champion.db"
+        Cfrm.DatabasePlayer.player "Champion.db"
+            |> Cfrm.PlaySelf.Program.getPlayer
 
     let run paths =
 

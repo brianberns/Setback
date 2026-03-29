@@ -68,8 +68,7 @@ module Program =
             TotalGamePoints = 0
         }
 
-    let getPlayer path =
-        let cfrmPlayer = DatabasePlayer.player path
+    let getPlayer cfrmPlayer =
         let act infoSet =
             let absOpenDeal =
                 toAbstractOpenDeal infoSet.Hand infoSet.Deal
@@ -95,8 +94,8 @@ module Program =
         Console.OutputEncoding <- Encoding.UTF8
         printfn $"Server garbage collection: {GCSettings.IsServerGC}"
 
-        let champion = getPlayer "Champion.db"
-        let challenger = getPlayer "Challenger.db"
+        let champion = DatabasePlayer.player "Champion.db" |> getPlayer
+        let challenger = DatabasePlayer.player "Challenger.db" |> getPlayer
         Tournament.run true 10000 champion challenger
             |> printfn "%A"
 

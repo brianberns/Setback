@@ -1,34 +1,34 @@
-﻿namespace Setback.Cfrm
+namespace Setback.Cfrm
 
 open System.Data.SQLite
 open Setback
 
-/// Load and run player from database.
-module DatabasePlayer =
+/// Load and run lookup player.
+module LookupPlayer =
 
     /// Prepares to get the action index for any given key.
     let init databasePath =
 
-        /// Database connection.
-        let conn = 
-            let connStr = $"DataSource={databasePath};Version=3;"
-            let conn = new SQLiteConnection(connStr)
-            conn.Open()
-            conn
+        let lookup =
+            use conn =
+                let connStr = $"DataSource={databasePath};Version=3;"
+                let conn = new SQLiteConnection(connStr)
+                conn.Open()
+                conn
+            use cmd =
+                new SQLiteCommand(
+                    "select Key, ActionIndex \
+                    from Strategy",
+                    conn)
+            use rdr = cmd.ExecuteReader()
+            Map [
+                while (rdr.Read()) do
+                    rdr.GetString(0), rdr.GetInt32(1)
+            ]
 
         /// Finds the action index for the given key, if any.
         let getActionIndex (key : string) =
-            use cmd =   // each invocation has its own command to support multithreading
-                new SQLiteCommand(
-                    "select ActionIndex \
-                    from Strategy \
-                    where Key = @Key",
-                    conn)
-            cmd.Parameters.AddWithValue("Key", key)
-                |> ignore
-            let value = cmd.ExecuteScalar()
-            if isNull value then None
-            else value :?> int64 |> int |> Some
+            Map.tryFind key lookup
 
         getActionIndex
 

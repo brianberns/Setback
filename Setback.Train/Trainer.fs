@@ -10,7 +10,8 @@ module Trainer =
 
     /// CFR champion.
     let private champion =
-        Cfrm.PlaySelf.Program.getPlayer "Champion.db"
+        Cfrm.DatabasePlayer.player "Champion.db"
+            |> Cfrm.PlaySelf.Program.getPlayer
 
     /// Evaluates the given model by playing it against a
     /// standard.

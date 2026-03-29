@@ -1,6 +1,7 @@
 ﻿namespace Setback.Generate
 
 open MathNet.Numerics.LinearAlgebra
+
 open Setback.Model
 
 module Array =
@@ -20,7 +21,8 @@ module Inference =
 
     /// CFR champion.
     let private champion =
-        Setback.Cfrm.PlaySelf.Program.getPlayer "Champion.db"
+        Setback.Cfrm.LookupPlayer.player "Champion.db"
+            |> Setback.Cfrm.PlaySelf.Program.getPlayer
 
     /// Gets strategies for the given batch of info sets.
     let private getStrategies chunkSize infoSets modelOpt =
