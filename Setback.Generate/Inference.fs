@@ -1,7 +1,5 @@
 ﻿namespace Setback.Generate
 
-open MathNet.Numerics.LinearAlgebra
-
 open Setback.Model
 
 module Array =
@@ -19,10 +17,12 @@ module Array =
 /// nodes together with continuations.
 module Inference =
 
+(*
     /// CFR champion.
     let private champion =
         Setback.Cfrm.LookupPlayer.player "Champion.db"
             |> Setback.Cfrm.PlaySelf.Program.getPlayer
+*)
 
     /// Gets strategies for the given batch of info sets.
     let private getStrategies chunkSize infoSets modelOpt =
@@ -34,13 +34,12 @@ module Inference =
                     |> Array.chunkBySize chunkSize
                     |> Array.collect (
                         Strategy.getFromAdvantage model)
-(*
                 // no model yet, random strategies
             | None ->
                 infoSets
                     |> Array.map (fun infoSet ->
                         Strategy.random infoSet.LegalActions.Length)
-*)
+(*
                 // no model yet, use CFR champion
             | None ->
                 infoSets
@@ -51,6 +50,8 @@ module Inference =
                                 if la = action then 1f
                                 else 0f
                         |])
+*)
+
     /// Replaces items in the given arrays.
     let private replace chooser fromItems (toItems : _[]) =
         let result, n =
