@@ -84,11 +84,11 @@ module Node =
 
 module Traverse =
 
-    /// Gets payoffs for the given scores.
-    let private getPayoffs (gameScore : Score) (dealScore : Score) =
+    /// Gets payoffs for the given game.
+    let private getPayoffs (game : Game) =
         assert(Team.numTeams = 2)
         let payoffs =
-            match Score.tryGetWinningTeam (gameScore + dealScore) with
+            match Game.tryGetWinningTeam game with
                 | Some winningTeam ->
                     let reward = 5.5f   // value determined empirically
                     [|
@@ -98,9 +98,11 @@ module Traverse =
                     |]
                 | None ->
                     let nsScore =
+                        let score =
+                            ClosedDeal.getDealScore game.Deal.ClosedDeal
                         float32 (
-                            dealScore[Team.NorthSouth]
-                                - dealScore[Team.EastWest])
+                            score[Team.NorthSouth]
+                                - score[Team.EastWest])
                     [|
                         for team in Enum.getValues<Team> do
                             match team with
@@ -116,9 +118,7 @@ module Traverse =
         /// Top-level loop plays one deal in a game.
         let rec loop (game : Game) depth =
             if OpenDeal.isComplete game.Deal then
-                game.Deal.ClosedDeal
-                    |> ClosedDeal.getDealScore 
-                    |> getPayoffs game.Score
+                getPayoffs game
             else loopNonTerminal game depth   // continue current deal
 
         /// Recurses for non-terminal deal state.
