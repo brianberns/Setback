@@ -43,31 +43,55 @@ module Encoding =
             flags[index] <- true   // use mutation for speed
         flags
 
-    /// Encodes cards played in the given tricks as multi-hot
-    /// vectors for each player, relative to the given player.
-    let encodePlays player tricks =
-        let seatPlayMap =
-            Array.init Seat.numSeats (fun _ ->
-                ResizeArray(Setback.numCardsPerHand))
-        for trick in tricks do        
-            for seat, card in Trick.plays trick do
-                seatPlayMap[int seat].Add(card)
+    /// Encodes the given seat as a one-hot vector in the number
+    /// of seats, relative to the given player, or zero-hot if
+    /// none.
+    let encodeSeat player seatOpt =
         [|
             for seat in Seat.cycle player do
-                yield! encodeCards seatPlayMap[int seat]
+                Some seat = seatOpt
         |]
 
-    /// Encodes each card in the given current trick as
-    /// a one-hot vector in the deck size and concatenates
-    /// those vectors.
-    let encodeTrick trickOpt =
-        let cards =
-            trickOpt
-                |> Option.map (_.Cards >> Seq.toArray)
-                |> Option.defaultValue Array.empty
-        assert(cards.Length < Seat.numSeats)
+    /// Encodes the given bid as a one-hot vector in the number
+    /// of bids, or zero-hot if none.
+    let encodeBid bidOpt =
         [|
-            for iCard = 0 to Seat.numSeats - 2 do
+            for bid in Enum.getValues<Bid> do
+                Some bid = bidOpt
+        |]
+
+    /// Encodes the given auction (which might be in progress or
+    /// have completed), relative to the given player.
+    let encodeAuction player auction =
+        [|
+                // dealer
+            yield! encodeSeat player (Some auction.Dealer)
+
+                // each player's bid in chronological order
+            let bids = Seq.toArray auction.Bids
+            for iBid = 0 to Seat.numSeats - 1 do
+                yield!
+                    if iBid < bids.Length then
+                        Some bids[bids.Length - 1 - iBid]   // unreverse into chronological order
+                    else None
+                    |> encodeBid
+        |]
+
+    /// Encodes the given trick (which might be in progress, or
+    /// have completed, or have not started), relative to the
+    /// given player
+    let encodeTrick player trickOpt =
+        [|
+                // trick leader
+            yield! encodeSeat player
+                (Option.map _.Leader trickOpt)
+
+                // each player's card in chronological order
+            let cards =
+                trickOpt
+                    |> Option.map (_.Cards >> Seq.toArray)
+                    |> Option.defaultValue Array.empty
+            for iCard = 0 to Seat.numSeats - 1 do
                 yield!
                     if iCard < cards.Length then
                         Some cards[cards.Length - 1 - iCard]   // unreverse into chronological order
@@ -75,6 +99,11 @@ module Encoding =
                     |> Option.toArray
                     |> encodeCards
         |]
+
+    /// Encoded length of a trick.
+    let encodedTrickLength =
+        Seat.numSeats                         // trick leader
+            + Seat.numSeats * Card.numCards   // each card in trick
 
     /// Encodes the given voids as a multi-hot vector in the
     /// number of suits times the number of other seats,
@@ -91,54 +120,22 @@ module Encoding =
                 flags[suitOffset + seatOffset] <- true   // use mutation for speed
         flags
 
-    /// Encodes the given seat as a one-hot vector in the number
-    /// of seats, relative to the given player.
-    let encodeSeat player seat =
-        [|
-            for st in Seat.cycle player do
-                st = seat
-        |]
-
-    /// Encodes the given bid as a one-hot vector in the number
-    /// of bids, or zero-hot if none.
-    let encodeBid bidOpt =
-        [|
-            for bid in Enum.getValues<Bid> do
-                Some bid = bidOpt
-        |]
-
-    /// Encodes the given auction, relative to the given player.
-    let encodeAuction player auction =
-        [|
-                // dealer
-            yield! encodeSeat player auction.Dealer
-
-                // each player's bid in chronological order
-            let bids = Seq.toArray auction.Bids
-            for iBid = 0 to Seat.numSeats - 1 do
-                yield!
-                    if iBid < bids.Length then
-                        Some bids[bids.Length - 1 - iBid]   // unreverse into chronological order
-                    else None
-                    |> encodeBid
-        |]
-
     /// Encodes the given playout (which might not have started),
     /// relative to the given player.
     let encodePlayout player playoutOpt =
         [|
-                // cards previously played by each player
+                // tricks
             let tricks =
                 playoutOpt
-                    |> Option.map _.CompletedTricks
-                    |> Option.defaultValue List.empty
-            yield! encodePlays player tricks
-
-                // current trick
-            let trickOpt =
-                playoutOpt
-                    |> Option.bind _.CurrentTrickOpt
-            yield! encodeTrick trickOpt
+                    |> Option.map (Playout.tricks >> Seq.toArray)
+                    |> Option.defaultValue Array.empty
+            assert(tricks.Length < Setback.numCardsPerHand)   // no need to encode last trick
+            for iTrick = 0 to Setback.numCardsPerHand - 2 do
+                yield!
+                    if iTrick < tricks.Length then
+                        Some tricks[iTrick]   // already in chronological order
+                    else None
+                    |> encodeTrick player
 
                 // voids
             let voids =
@@ -181,8 +178,8 @@ module Encoding =
         Card.numCards                                  // current player's hand
             + Seat.numSeats                            // dealer
             + Seat.numSeats * Bid.numBids              // each player's bid
-            + Seat.numSeats * Card.numCards            // cards previously played by each player
-            + (Seat.numSeats - 1) * Card.numCards      // current trick
+            + (Setback.numCardsPerHand - 1)            // past, present, and future tricks
+                * encodedTrickLength
             + (Seat.numSeats - 1) * Suit.numSuits      // voids
             + Team.numTeams * encodedGamePointLength   // game score
 
