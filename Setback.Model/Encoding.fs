@@ -35,16 +35,16 @@ type Encoding = bool[]
 
 module Encoding =
 
-    /// Encodes the given cards as a multi-hot vector
-    /// in the deck size.
+    /// Encodes the given cards as a multi-hot vector in the
+    /// deck size.
     let encodeCards cards =
         let flags = Array.zeroCreate Card.numCards
         for index in Seq.map Card.toIndex cards do
             flags[index] <- true   // use mutation for speed
         flags
 
-    /// Encodes cards played in the given tricks as multi-
-    /// hot vectors for each player.
+    /// Encodes cards played in the given tricks as multi-hot
+    /// vectors for each player, relative to the given player.
     let encodePlays player tricks =
         let seatPlayMap =
             Array.init Seat.numSeats (fun _ ->
@@ -77,7 +77,8 @@ module Encoding =
         |]
 
     /// Encodes the given voids as a multi-hot vector in the
-    /// number of suits times the number of other seats.
+    /// number of suits times the number of other seats,
+    /// relative to the given player.
     let encodeVoids player voids =
         let flags =
             Array.zeroCreate ((Seat.numSeats - 1) * Suit.numSuits)
@@ -91,7 +92,7 @@ module Encoding =
         flags
 
     /// Encodes the given seat as a one-hot vector in the number
-    /// of seats.
+    /// of seats, relative to the given player.
     let encodeSeat player seat =
         [|
             for st in Seat.cycle player do
@@ -106,7 +107,7 @@ module Encoding =
                 Some bid = bidOpt
         |]
 
-    /// Encodes the given auction.
+    /// Encodes the given auction, relative to the given player.
     let encodeAuction player auction =
         [|
                 // dealer
@@ -122,7 +123,8 @@ module Encoding =
                     |> encodeBid
         |]
 
-    /// Encodes the given playout, which might not have started.
+    /// Encodes the given playout (which might not have started),
+    /// relative to the given player.
     let encodePlayout player playoutOpt =
         [|
                 // cards previously played by each player
@@ -154,7 +156,8 @@ module Encoding =
     ///    * 0000 -> team if 5+ points form winning
     let encodedGamePointLength = Setback.numDealPoints
 
-    /// Encodes the given game score as thermometers.
+    /// Encodes the given game score as thermometers, relative to
+    /// the given player.
     let encodeGameScore player (gameScore : Score) =
         assert(Setback.numTeams = 2)
         let usTeam = Team.ofSeat player
