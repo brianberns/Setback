@@ -5,6 +5,7 @@ open System.IO
 
 open Microsoft.Win32.SafeHandles
 
+/// Data store header type.
 type StoreHeaderType =
     {
         /// File format identifier.
@@ -15,9 +16,10 @@ module StoreHeaderType =
 
     /// Number of bytes in a packed header.
     let getPackedSize headerType =
-        (headerType.Magic.Length * sizeof<byte>)
-            + sizeof<int32>
+        (headerType.Magic.Length * sizeof<byte>)   // file format ID
+            + sizeof<int32>                        // iteration #
 
+/// Data store header.
 type StoreHeader =
     {
         /// Header type.

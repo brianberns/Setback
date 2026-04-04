@@ -13,6 +13,7 @@
     <Compile Include="StoreRegrets.fs" />
     <Compile Include="Store.fs" />
     <Compile Include="StoreGroup.fs" />
+    <Compile Include="ShuffledStore.fs" />
   </ItemGroup>
 
   <ItemGroup>
