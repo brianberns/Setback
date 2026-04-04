@@ -270,6 +270,7 @@ type AdvantageSampleStore with
 /// A group of sample stores.
 type AdvantageSampleStoreGroup =
     {
+        /// Stores in this group.
         Stores : AdvantageSampleStore[]
     }
 
@@ -281,7 +282,7 @@ type AdvantageSampleStoreGroup =
     member this.Item(iStore) =
         this.Stores[iStore]
 
-    /// Iteration represented by this group.
+    /// Highest iteration represented by this group.
     member this.Iteration =
         this.Stores
             |> Seq.map _.Iteration
