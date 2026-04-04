@@ -4,6 +4,7 @@ namespace Setback.PlayModel
 
 open System
 open System.IO
+open System.Runtime
 open System.Text
 
 open Microsoft.Extensions.FileSystemGlobbing
@@ -36,13 +37,13 @@ module Program =
             |]
 
             // randomize samples
-        let indexPairIndexes =
-            Array.randomShuffle [| 0 .. indexPairs.Length - 1 |]
-        seq {
-            for iPair in indexPairIndexes do
-                let struct (iStore, iSample) = indexPairs[iPair]
-                group[int iStore][iSample]
-        }
+        let chunkSize = 1024
+        Array.randomShuffle [| 0 .. indexPairs.Length - 1 |]
+            |> Seq.chunkBySize chunkSize
+            |> Seq.collect (
+                Array.Parallel.map (fun iPair ->
+                    let struct (iStore, iSample) = indexPairs[iPair]
+                    group[int iStore][iSample]))
 
     let run paths =
 
@@ -57,6 +58,7 @@ module Program =
         let group = { Stores = sampleStores }
 
             // shuffle samples
+        printfn $"Server garbage collection: {GCSettings.IsServerGC}"
         let samples = shuffle group
 
             // write to output
