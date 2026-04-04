@@ -5,10 +5,6 @@ open System.IO
 
 open Microsoft.Win32.SafeHandles
 
-open MathNet.Numerics.LinearAlgebra
-
-open Setback.Model
-
 /// Persistent store for advantage samples.
 type AdvantageSampleStore =
     {
@@ -35,140 +31,16 @@ module AdvantageSampleStore =
 
     module private Header =
 
-        /// File format identifier.
-        let private magic = "Stbk"B
+        /// Store header type.
+        let headerType = { Magic = "Stbk"B }
 
         /// Number of bytes in a packed header.
         let packedSize =
-            (magic.Length * sizeof<byte>)
-                + sizeof<int32>
-
-        /// Writes a header to the given file.
-        let write handle (iteration : int32) =
-            assert(RandomAccess.GetLength(handle) = 0L)
-
-                // write magic string
-            RandomAccess.Write(handle, magic, 0L)
-
-                // write iteration number
-            assert(iteration >= 0)
-            let buf = BitConverter.GetBytes(iteration)
-            RandomAccess.Write(handle, buf, int64 magic.Length)
-
-        /// Reads a header from the given file.
-        let read (handle : SafeFileHandle) =
-
-                // read magic string
-            let magic' = Array.zeroCreate<byte> magic.Length
-            let nBytesRead = RandomAccess.Read(handle, magic', 0L)
-            assert(nBytesRead = magic.Length)
-            if magic' <> magic then
-                failwith $"Invalid magic bytes: {magic'}"
-
-                // read iteration number
-            let buf = Array.zeroCreate<byte> sizeof<int32>
-            let nBytesRead =
-                RandomAccess.Read(handle, buf, int64 magic.Length)
-            assert(nBytesRead = sizeof<int32>)
-            let iter = BitConverter.ToInt32(buf, 0)
-            assert(iter >= 0)
-            iter
-
-    module private Encoding =
-
-        /// Number of bytes in a packed encoding.
-        let packedSize =
-            (Model.inputSize + 7) / 8   // round up
-
-        /// Writes the given encoding to the given file.
-        let write handle fileOffset (encoding : Encoding) =
-            assert(encoding.Length = Model.inputSize)
-            let buf =
-                [|
-                    for chunk in Array.chunkBySize 8 encoding do   // 8 bits/byte
-                        (0uy, Array.indexed chunk)
-                            ||> Array.fold (fun byte (i, flag) ->
-                                if flag then byte ||| (1uy <<< i)
-                                else byte)
-                |]
-            RandomAccess.Write(handle, buf, fileOffset)
-
-        /// Reads an encoding from the given file.
-        let read handle fileOffset : Encoding =
-            let buf = Array.zeroCreate<byte> packedSize
-            let nBytesRead =
-                RandomAccess.Read(handle, buf, fileOffset)
-            assert(nBytesRead = packedSize)
-            buf
-                |> Array.collect (fun byte ->
-                    Array.init 8 (fun i ->      // 8 bits/byte
-                        (byte &&& (1uy <<< i)) <> 0uy))
-                |> Array.take Model.inputSize   // trim padding
-
-    module private Regrets =
-
-        /// Maximum possible number of actions available in an info
-        /// set.
-        let private maxActionCount =
-            Setback.Setback.numCardsPerHand
-
-        /// Size of one regret entry.
-        let private entrySize = sizeof<byte> + sizeof<float32>
-
-        /// Number of bytes in packed regrets.
-        let packedSize =
-            maxActionCount * entrySize
-
-        /// Writes the given regrets to the given file.
-        let write handle fileOffset (regrets : Vector<float32>) =
-
-                // get non-zero value pairs
-            let pairs =
-                [|
-                    for i, regret in Seq.indexed regrets do
-                        if regret <> 0f then
-                            i, regret
-                |]
-            assert(pairs.Length <= maxActionCount)
-
-                // write value pairs with padding
-            let buf =
-                [|
-                        // write value pairs
-                    for i, regret in pairs do
-                        assert(i < int Byte.MaxValue)
-                        byte i
-                        yield! BitConverter.GetBytes(regret)
-
-                        // write padding
-                    for _ = pairs.Length to maxActionCount - 1 do
-                        Byte.MaxValue
-                        yield! BitConverter.GetBytes(0f)
-                |]
-            RandomAccess.Write(handle, buf, fileOffset)
-
-        /// Reads regrets from the given file.
-        let read (handle : SafeFileHandle) (fileOffset : int64) =
-            let buf = Array.zeroCreate<byte> packedSize
-            let nBytesRead =
-                RandomAccess.Read(handle, buf, fileOffset)
-            assert(nBytesRead = packedSize)
-            seq {
-                for j = 0 to maxActionCount - 1 do
-                    let pos = j * entrySize
-                    let i = buf[pos]
-                    let regret = BitConverter.ToSingle(buf, pos + 1)
-                    if regret = 0f then
-                        assert(i = Byte.MaxValue)
-                    else
-                        int i, regret
-            }
-                |> SparseVector.ofSeqi Model.outputSize
-                |> CreateVector.DenseOfVector
+            StoreHeaderType.getPackedSize headerType
 
     /// Number of bytes in a serialized sample.
     let private packedSampleSize =
-        Encoding.packedSize + Regrets.packedSize
+        StoreEncoding.packedSize + StoreRegrets.packedSize
 
     /// Is the given store in a valid state?
     let private isValid store =
@@ -194,7 +66,8 @@ module AdvantageSampleStore =
                 Path = path
                 Iteration = iteration
             }
-        Header.write handle iteration
+        StoreHeader.create Header.headerType iteration
+            |> StoreHeader.write handle
         assert(isValid store)
         store
 
@@ -209,11 +82,13 @@ module AdvantageSampleStore =
                 FileAccess.Read)
 
             // build store
+        let header =
+            StoreHeader.read handle Header.headerType
         let store =
             {
                 Handle = handle
                 Path = path
-                Iteration = Header.read handle
+                Iteration = header.Iteration
             }
         assert(isValid store)
         store
@@ -235,10 +110,10 @@ module AdvantageSampleStore =
             int64 Header.packedSize
                 + idx * int64 packedSampleSize
         let encoding =
-            Encoding.read store.Handle fileOffset
+            StoreEncoding.read store.Handle fileOffset
         let regrets =
-            Regrets.read store.Handle
-                (fileOffset + int64 Encoding.packedSize)
+            StoreRegrets.read store.Handle
+                (fileOffset + int64 StoreEncoding.packedSize)
         AdvantageSample.create encoding regrets store.Iteration
 
     /// Appends the given samples to the end of the given store.
@@ -249,9 +124,9 @@ module AdvantageSampleStore =
         for i, sample in Seq.indexed samples do
             let fileOffset =
                 baseOffset + int64 i * int64 packedSampleSize
-            Encoding.write store.Handle fileOffset sample.Encoding
-            Regrets.write store.Handle
-                (fileOffset + int64 Encoding.packedSize)
+            StoreEncoding.write store.Handle fileOffset sample.Encoding
+            StoreRegrets.write store.Handle
+                (fileOffset + int64 StoreEncoding.packedSize)
                 sample.Regrets
 
         assert(isValid store)
@@ -266,29 +141,3 @@ type AdvantageSampleStore with
     member store.Item
         with get(idx) =
             AdvantageSampleStore.readSample idx store
-
-/// A group of sample stores.
-type AdvantageSampleStoreGroup =
-    {
-        /// Stores in this group.
-        Stores : AdvantageSampleStore[]
-    }
-
-    /// Number of stores in this group.
-    member this.Count =
-        this.Stores.Length
-
-    /// Store indexer.
-    member this.Item(iStore) =
-        this.Stores[iStore]
-
-    /// Highest iteration represented by this group.
-    member this.Iteration =
-        this.Stores
-            |> Seq.map _.Iteration
-            |> Seq.max
-
-    /// Number of samples in this group.
-    member this.NumSamples =
-        this.Stores
-            |> Seq.sumBy _.Count

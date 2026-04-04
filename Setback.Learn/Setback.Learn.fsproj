@@ -8,7 +8,11 @@
   <ItemGroup>
     <Compile Include="TensorBoard.fs" />
     <Compile Include="Sample.fs" />
+    <Compile Include="StoreHeader.fs" />
+    <Compile Include="StoreEncoding.fs" />
+    <Compile Include="StoreRegrets.fs" />
     <Compile Include="Store.fs" />
+    <Compile Include="StoreGroup.fs" />
   </ItemGroup>
 
   <ItemGroup>
