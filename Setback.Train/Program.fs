@@ -10,7 +10,7 @@ open Setback.Model
 
 module Program =
 
-    let run () =
+    let run path =
 
             // get settings
         let settings =
@@ -34,18 +34,17 @@ module Program =
             printfn $"   Model output size: {Model.outputSize}"
 
             // get training data
-        let sampleStores =
-            DirectoryInfo(settings.ModelDirPath)
-                .GetFiles("*.bin")
-                |> Array.map (
-                    _.FullName >> AdvantageSampleStore.openRead)
+        let store = AdvantageSampleShuffledStore.openRead path
         if settings.Verbose then
-            printfn "Sample stores:"
-            for store in sampleStores do
-                printfn $"   {Path.GetFileName(store.Path)}: {store.Count} samples"
+            printfn "Sample store:"
+            printfn $"   {Path.GetFileName(store.Path)}: {store.Count} samples"
 
             // train model
-        Trainer.trainModel settings { Stores = sampleStores }
+        Trainer.trainModel settings store
 
-    Console.OutputEncoding <- Encoding.UTF8
-    run ()
+    [<EntryPoint>]
+    let main argv =
+        Console.OutputEncoding <- Encoding.UTF8
+        if argv.Length <> 1 then failwith "Invalid arguments"
+        else run argv[1]
+        0

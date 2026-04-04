@@ -32,7 +32,7 @@ module Trainer =
             $"advantage tournament", payoff, iteration)
 
     /// Uses stored samples to train a new model.
-    let trainModel settings (sampleStores : AdvantageSampleStoreGroup) =
+    let trainModel settings store =
 
             // train new model
         let stopwatch = Stopwatch.StartNew()
@@ -42,13 +42,13 @@ module Trainer =
                 settings.NumHiddenLayers,
                 settings.DropoutRate,
                 settings.Device)
-        AdvantageModel.train settings sampleStores model
+        AdvantageModel.train settings store model
         stopwatch.Stop()
 
            // save the model
         if settings.Verbose then
-            printfn $"Trained model on {sampleStores.NumSamples} samples in {stopwatch.Elapsed} \
-                (%.2f{float stopwatch.ElapsedMilliseconds / float sampleStores.NumSamples} ms/sample)"
+            printfn $"Trained model on {store.Count} samples in {stopwatch.Elapsed} \
+                (%.2f{float stopwatch.ElapsedMilliseconds / float store.Count} ms/sample)"
 
             // evaluate model
-        evaluate settings sampleStores.Iteration model
+        evaluate settings store.Iteration model

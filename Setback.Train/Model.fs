@@ -70,44 +70,12 @@ module AdvantageModel =
 
     /// Breaks the given samples into randomized batches.
     let private createBatches
-        batchSize subBatchSize (sampleStores : AdvantageSampleStoreGroup) =
-
-            // get every sample's index pair (optimized for space)
-        let indexPairs =
-            [|
-                let storeCount = sampleStores.Count
-                assert(storeCount <= int32 Int16.MaxValue)
-
-                for iStore = 0s to int16 storeCount - 1s do
-
-                    let sampleCount = sampleStores[int iStore].Count
-                    assert(sampleCount <= int64 Int32.MaxValue)
-
-                    for iSample = 0 to int sampleCount - 1 do
-                        struct (iStore, iSample)
-            |]
-
-            // randomize index pairs into batches and sub-batches
-        let indexBatches =
-            [| 0 .. indexPairs.Length - 1 |]
-                |> Array.randomShuffle
+        batchSize subBatchSize (store : AdvantageSampleShuffledStore) =
+        assert(store.Count < Int32.MaxValue)
+        Seq.init (int store.Count) (fun iSample ->
+            store[iSample])
                 |> Seq.chunkBySize subBatchSize                 // e.g. sub-batches of 10,000 rows each
                 |> Seq.chunkBySize (batchSize / subBatchSize)   // e.g. each batch contains 500,000 / 10,000 = 50 sub-batches
-
-            // stream samples
-        seq {
-            for indexBatch in indexBatches do
-                let stopwatch = Stopwatch.StartNew()
-                let batch : Batch =
-                    seq {
-                        for indexSubBatch in indexBatch do
-                            indexSubBatch
-                                |> Array.Parallel.map (fun iPair ->
-                                    let struct (iStore, iSample) = indexPairs[iPair]
-                                    sampleStores[int iStore][iSample])
-                    }
-                batch, stopwatch
-        }
 
     /// Trains the given model on the given sub-batch of
     /// data.
@@ -166,7 +134,7 @@ module AdvantageModel =
     /// Trains the given model using the given samples.
     let train
         settings
-        (sampleStores : AdvantageSampleStoreGroup)
+        (store : AdvantageSampleShuffledStore)
         (model : AdvantageModel) =
 
             // prepare training data
@@ -174,7 +142,7 @@ module AdvantageModel =
             createBatches
                 settings.TrainingBatchSize
                 settings.TrainingSubBatchSize
-                sampleStores
+                store
 
             // train model
         use optimizer =
@@ -188,24 +156,25 @@ module AdvantageModel =
                 // train epoch
             let loss =
                 Array.last [|
-                    for iBatch, (batch, stopwatch) in Seq.indexed batches do
+                    for iBatch, batch in Seq.indexed batches do
+                        let stopwatch = Stopwatch.StartNew()
                         trainBatch
                             settings model batch criterion optimizer
                         let seconds =
                             float32 stopwatch.ElapsedMilliseconds / 1000f
                         settings.Writer.add_scalar(
-                            $"advantage loss/iter%03d{sampleStores.Iteration}/epoch%03d{epoch}",
+                            $"advantage loss/iter%03d{store.Iteration}/epoch%03d{epoch}",
                             seconds, iBatch)
                 |]
             settings.Writer.add_scalar(
-                $"advantage loss/iter%03d{sampleStores.Iteration}",
+                $"advantage loss/iter%03d{store.Iteration}",
                 loss, epoch)
 
                 // save model
             let path =
                 Path.Combine(
                     settings.ModelDirPath,
-                    $"AdvantageModel-i%03d{sampleStores.Iteration}-e%03d{epoch}.pt")
+                    $"AdvantageModel-i%03d{store.Iteration}-e%03d{epoch}.pt")
             model.save(path) |> ignore
 
         model.eval()
