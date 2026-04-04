@@ -46,5 +46,5 @@ module Program =
     let main argv =
         Console.OutputEncoding <- Encoding.UTF8
         if argv.Length <> 1 then failwith "Invalid arguments"
-        else run argv[1]
+        else run argv[0]
         0
