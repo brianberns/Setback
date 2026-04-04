@@ -34,6 +34,7 @@ module Inference =
                     |> Array.chunkBySize chunkSize
                     |> Array.collect (
                         Strategy.getFromAdvantage model)
+
                 // no model yet, random strategies
             | None ->
                 infoSets
