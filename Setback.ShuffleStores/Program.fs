@@ -26,10 +26,10 @@ module Program =
                     $"AdvantageSamples-i%03d{group.Iteration}-temp%02d{iTempStore}.sbin")
         for inputStore in group.Stores do
             assert(inputStore.Count < Int32.MaxValue)
-            for iSample = 0 to int inputStore.Count - 1 do
-                let sample = inputStore[iSample]
-                let tempStore = Array.randomChoiceWith rng tempStores
-                AdvantageSampleShuffledStore.appendSamples [sample] tempStore
+            for sample in AdvantageSampleStore.readSamples inputStore do
+                tempStores
+                    |> Array.randomChoiceWith rng
+                    |> AdvantageSampleShuffledStore.writeSamples [sample]
         tempStores
 
     let collect (rng : Random) (tempStores : AdvantageSampleShuffledStore[]) =
@@ -37,10 +37,8 @@ module Program =
             for tempStore in tempStores do
                 assert(tempStore.Count < Int32.MaxValue)
                 let samples =
-                    [|
-                        for iSample = 0 to int tempStore.Count - 1 do
-                            tempStore[iSample]
-                    |]
+                    AdvantageSampleShuffledStore.readSamples tempStore
+                        |> Seq.toArray
                 tempStore.Dispose()
                 File.Delete(tempStore.Path)
                 Array.randomShuffleInPlaceWith rng samples
@@ -77,7 +75,7 @@ module Program =
             AdvantageSampleShuffledStore.create
                 group.Iteration
                 path
-        AdvantageSampleShuffledStore.appendSamples
+        AdvantageSampleShuffledStore.writeSamples
             samples shuffledStore
 
     [<EntryPoint>]
