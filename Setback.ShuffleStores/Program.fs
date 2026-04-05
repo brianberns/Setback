@@ -41,19 +41,16 @@ module Program =
             cleanup tempStores
             reraise ()
 
-    let collect (rng : Random) (tempStores : AdvantageSampleShuffledStore[]) =
-        try
-            seq {
-                for tempStore in tempStores do
-                    assert(tempStore.Count < Int32.MaxValue)
-                    let samples =
-                        AdvantageSampleShuffledStore.readSamples tempStore
-                            |> Seq.toArray
-                    Array.randomShuffleInPlaceWith rng samples
-                    yield! samples
-            }
-        finally
-            cleanup tempStores
+    let collect rng (tempStores : AdvantageSampleShuffledStore[]) =
+        seq {
+            for tempStore in tempStores do
+                assert(tempStore.Count < Int32.MaxValue)
+                let samples =
+                    AdvantageSampleShuffledStore.readSamples tempStore
+                        |> Seq.toArray
+                Array.randomShuffleInPlaceWith rng samples
+                yield! samples
+        }
 
     let run paths =
 
@@ -68,25 +65,26 @@ module Program =
         let group = { Stores = sampleStores }
 
             // shuffle samples
-        let samples = 
-            let rng = Random()
-            group
-                |> distribute rng
-                |> collect rng
+        let rng = Random()
+        let tempStores = distribute rng group
+        let samples = collect rng tempStores
 
             // write to output
-        use shuffledStore =
-            let path =
-                let unique =
-                    let timespan = DateTime.Now - DateTime.Today
-                    int timespan.TotalSeconds
-                $"AdvantageSamples-i%03d{group.Iteration}-%05d{unique}.sbin"
-            printfn $"Creating shuffled sample store: {path}"
-            AdvantageSampleShuffledStore.create
-                group.Iteration
-                path
-        AdvantageSampleShuffledStore.writeSamples
-            samples shuffledStore
+        try
+            use shuffledStore =
+                let path =
+                    let unique =
+                        let timespan = DateTime.Now - DateTime.Today
+                        int timespan.TotalSeconds
+                    $"AdvantageSamples-i%03d{group.Iteration}-%05d{unique}.sbin"
+                printfn $"Creating shuffled sample store: {path}"
+                AdvantageSampleShuffledStore.create
+                    group.Iteration
+                    path
+            AdvantageSampleShuffledStore.writeSamples
+                samples shuffledStore
+        finally
+            cleanup tempStores
 
     [<EntryPoint>]
     let main argv =
