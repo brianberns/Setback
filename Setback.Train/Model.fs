@@ -128,6 +128,18 @@ module AdvantageModel =
 
         loss
 
+    /// Instruments the given sequence for timing.
+    let private timed (source : seq<_>) =
+        seq {
+            use e = source.GetEnumerator()
+            let mutable hasNext = true
+            while hasNext do
+                let sw = System.Diagnostics.Stopwatch.StartNew()
+                hasNext <- e.MoveNext()
+                if hasNext then
+                    yield e.Current, sw
+        }
+
     /// Trains the given model using the given samples.
     let train
         settings
@@ -154,9 +166,9 @@ module AdvantageModel =
 
                 // train epoch
             let loss =
+                let tuples = Seq.indexed (timed batches)
                 Array.last [|
-                    for iBatch, batch in Seq.indexed batches do
-                        let stopwatch = Stopwatch.StartNew()
+                    for iBatch, (batch, stopwatch) in tuples do
                         trainBatch
                             settings model batch criterion optimizer
                         let seconds =
