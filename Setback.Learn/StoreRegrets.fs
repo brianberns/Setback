@@ -23,8 +23,8 @@ module StoreRegrets =
     let packedSize =
         maxActionCount * entrySize
 
-    /// Writes the given regrets to the given file.
-    let write handle fileOffset (regrets : Vector<float32>) =
+    /// Writes the given regrets to the given stream.
+    let write (wtr : BinaryWriter) (regrets : Vector<float32>) =
 
             // get non-zero value pairs
         let pairs =
@@ -36,7 +36,7 @@ module StoreRegrets =
         assert(pairs.Length <= maxActionCount)
 
             // write value pairs with padding
-        let buf =
+        let bytes =
             [|
                     // write value pairs
                 for i, regret in pairs do
@@ -49,19 +49,17 @@ module StoreRegrets =
                     Byte.MaxValue
                     yield! BitConverter.GetBytes(0f)
             |]
-        RandomAccess.Write(handle, buf, fileOffset)
+        wtr.Write(bytes)
 
-    /// Reads regrets from the given file.
-    let read (handle : SafeFileHandle) (fileOffset : int64) =
-        let buf = Array.zeroCreate<byte> packedSize
-        let nBytesRead =
-            RandomAccess.Read(handle, buf, fileOffset)
-        assert(nBytesRead = packedSize)
+    /// Reads regrets from the given stream.
+    let read (rdr : BinaryReader) =
+        let bytes = rdr.ReadBytes(packedSize)
+        assert(bytes.Length = packedSize)
         seq {
             for j = 0 to maxActionCount - 1 do
                 let pos = j * entrySize
-                let i = buf[pos]
-                let regret = BitConverter.ToSingle(buf, pos + 1)
+                let i = bytes[pos]
+                let regret = BitConverter.ToSingle(bytes, pos + 1)
                 if regret = 0f then
                     assert(i = Byte.MaxValue)
                 else

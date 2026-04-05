@@ -8,19 +8,20 @@ open Microsoft.Win32.SafeHandles
 /// Persistent store for suffled advantage samples.
 type AdvantageSampleShuffledStore =
     {
-        /// Underlying file handle.
-        Handle : SafeFileHandle
-
-        /// Path of the underlying file.
-        Path : string
+        /// Underlying file stream.
+        Stream : FileStream
 
         /// Maximum iteration of samples in this store.
         Iteration : int
     }
 
+    /// Path of the underlying file.
+    member this.Path =
+        this.Stream.Name
+
     /// Cleanup.
     member this.Dispose() =
-        this.Handle.Dispose()
+        this.Stream.Dispose()
 
     /// Cleanup.
     interface IDisposable with
@@ -46,30 +47,43 @@ module AdvantageSampleShuffledStore =
 
     /// Is the given store in a valid state?
     let private isValid store =
-        (RandomAccess.GetLength(store.Handle)
-            - int64 Header.packedSize)
-                % int64 packedSampleSize = 0L
+        (store.Stream.Length - int64 Header.packedSize)
+            % int64 packedSampleSize = 0L
+
+    /// Creates a writer for the given stream.
+    let private createWriter stream =
+        new BinaryWriter(
+            stream,
+            Text.Encoding.Default,
+            leaveOpen = true)
+
+    /// Creates a reader for the given stream.
+    let private createReader stream =
+        new BinaryReader(
+            stream,
+            Text.Encoding.Default,
+            leaveOpen = true)
 
     /// Creates a new shuffled store at the given location.
     let create iteration path =
 
-            // open handle
-        let handle =
-            File.OpenHandle(
+            // open stream
+        let stream =
+            new FileStream(
                 path,
                 FileMode.CreateNew,
                 FileAccess.Write,
                 FileShare.Read)
 
-            // build store
+            // write header
         let store =
             {
-                Handle = handle
-                Path = path
+                Stream = stream
                 Iteration = iteration
             }
+        use wtr = createWriter store.Stream
         StoreHeader.create Header.headerType iteration
-            |> StoreHeader.write handle
+            |> StoreHeader.write wtr
         assert(isValid store)
         store
 
@@ -77,19 +91,19 @@ module AdvantageSampleShuffledStore =
     let openRead path =
 
             // open handle
-        let handle =
-            File.OpenHandle(
+        let stream =
+            new FileStream(
                 path,
                 FileMode.Open,
                 FileAccess.Read)
 
-            // build store
+            // read header
+        use rdr = createReader stream
         let header =
-            StoreHeader.read handle Header.headerType
+            StoreHeader.read rdr Header.headerType
         let store =
             {
-                Handle = handle
-                Path = path
+                Stream = stream
                 Iteration = header.Iteration
             }
         assert(isValid store)
@@ -98,9 +112,8 @@ module AdvantageSampleShuffledStore =
     /// Gets the number of samples in the given store.
     let getSampleCount store =
         assert(isValid store)
-        (RandomAccess.GetLength(store.Handle)
-            - int64 Header.packedSize)
-                / int64 packedSampleSize
+        (store.Stream.Length - int64 Header.packedSize)
+            / int64 packedSampleSize
 
     /// Writes an iteration number.
     let writeIteration handle fileOffset (iteration : int32) =
