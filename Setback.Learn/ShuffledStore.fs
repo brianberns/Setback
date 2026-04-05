@@ -3,13 +3,14 @@ namespace Setback.Learn
 open System
 open System.IO
 
-open Microsoft.Win32.SafeHandles
-
 /// Persistent store for suffled advantage samples.
 type AdvantageSampleShuffledStore =
     {
         /// Underlying file stream.
         Stream : FileStream
+
+        /// Buffered access to file stream.
+        Access : Choice<BinaryWriter, BinaryReader>
 
         /// Maximum iteration of samples in this store.
         Iteration : int
@@ -21,6 +22,9 @@ type AdvantageSampleShuffledStore =
 
     /// Cleanup.
     member this.Dispose() =
+        match this.Access with
+            | Choice1Of2 wtr -> wtr.Dispose()
+            | Choice2Of2 rdr -> rdr.Dispose()
         this.Stream.Dispose()
 
     /// Cleanup.
@@ -50,20 +54,6 @@ module AdvantageSampleShuffledStore =
         (store.Stream.Length - int64 Header.packedSize)
             % int64 packedSampleSize = 0L
 
-    /// Creates a writer for the given stream.
-    let private createWriter stream =
-        new BinaryWriter(
-            stream,
-            Text.Encoding.Default,
-            leaveOpen = true)
-
-    /// Creates a reader for the given stream.
-    let private createReader stream =
-        new BinaryReader(
-            stream,
-            Text.Encoding.Default,
-            leaveOpen = true)
-
     /// Creates a new shuffled store at the given location.
     let create iteration path =
 
@@ -73,37 +63,49 @@ module AdvantageSampleShuffledStore =
                 path,
                 FileMode.CreateNew,
                 FileAccess.Write,
-                FileShare.Read)
+                FileShare.Read,
+                bufferSize = (1 <<< 20),   // 1 MB
+                options = FileOptions.None)
+        let wtr = new BinaryWriter(stream)
 
-            // write header
+            // create store
         let store =
             {
                 Stream = stream
+                Access = Choice1Of2 wtr
                 Iteration = iteration
             }
-        use wtr = createWriter store.Stream
+
+            // write header
         StoreHeader.create Header.headerType iteration
             |> StoreHeader.write wtr
         assert(isValid store)
+
         store
 
     /// Opens an existing sample store at the given location.
     let openRead path =
 
-            // open handle
+            // open stream
         let stream =
             new FileStream(
                 path,
                 FileMode.Open,
-                FileAccess.Read)
+                FileAccess.Read,
+                FileShare.Read,
+                bufferSize = (1 <<< 20),   // 1 MB
+                options = FileOptions.SequentialScan)
+        let rdr = new BinaryReader(stream)
 
             // read header
-        use rdr = createReader stream
         let header =
             StoreHeader.read rdr Header.headerType
+
+            // create store
         let store =
             {
                 Stream = stream
+                Access = Choice2Of2 rdr
                 Iteration = header.Iteration
             }
         assert(isValid store)
@@ -126,30 +128,33 @@ module AdvantageSampleShuffledStore =
         assert(iteration > 0)
         iteration
 
-    /// Reads all samples in the given store.
-    let readSamples store =
-        assert(isValid store)
-        let rdr = createReader store.Stream
-        seq {
-            assert(store.Stream.Position <= store.Stream.Length)
-            while store.Stream.Position < store.Stream.Length do
-                let encoding = StoreEncoding.read rdr
-                let regrets = StoreRegrets.read rdr
-                let iteration = readIteration rdr
-                assert(iteration <= store.Iteration)
-                AdvantageSample.create encoding regrets iteration
-            rdr.Dispose()
-        }
-
     /// Writes the given samples to the given store.
     let writeSamples samples store =
         assert(isValid store)
-        use wtr = createWriter store.Stream
-        for sample in samples do
-            StoreEncoding.write wtr sample.Encoding
-            StoreRegrets.write wtr sample.Regrets
-            writeIteration wtr sample.Iteration
+        match store.Access with
+            | Choice1Of2 wtr ->
+                for sample in samples do
+                    StoreEncoding.write wtr sample.Encoding
+                    StoreRegrets.write wtr sample.Regrets
+                    writeIteration wtr sample.Iteration
+                assert(isValid store)
+            | _ -> failwith "Invalid access"
+
+    /// Reads all samples in the given store.
+    let readSamples store =
         assert(isValid store)
+        match store.Access with
+            | Choice2Of2 rdr ->
+                seq {
+                    assert(store.Stream.Position <= store.Stream.Length)
+                    while store.Stream.Position < store.Stream.Length do
+                        let encoding = StoreEncoding.read rdr
+                        let regrets = StoreRegrets.read rdr
+                        let iteration = readIteration rdr
+                        assert(iteration <= store.Iteration)
+                        AdvantageSample.create encoding regrets iteration
+                }
+            | _ -> failwith "Invalid access"
 
 type AdvantageSampleShuffledStore with
 
