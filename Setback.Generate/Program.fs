@@ -57,7 +57,7 @@ module Program =
                             state.ModelOpt
 
                     // save samples
-                AdvantageSampleStore.appendSamples
+                AdvantageSampleStore.writeSamples
                     samples state.SampleStore
                 log
                     (float32 samples.Length / float32 numDeals)    // average number of generated samples per game in this batch

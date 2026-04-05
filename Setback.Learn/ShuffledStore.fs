@@ -116,62 +116,38 @@ module AdvantageSampleShuffledStore =
             / int64 packedSampleSize
 
     /// Writes an iteration number.
-    let writeIteration handle fileOffset (iteration : int32) =
+    let private writeIteration (wtr : BinaryWriter) (iteration : int32) =
         assert(iteration > 0)
-        let buf = BitConverter.GetBytes(iteration)
-        RandomAccess.Write(handle, buf, fileOffset)
+        wtr.Write(iteration)
 
     /// Reads an iteration number.
-    let readIteration (handle : SafeFileHandle) (fileOffset : int64) =
-        let buf = Array.zeroCreate<byte> sizeof<int32>
-        let nBytesRead =
-            RandomAccess.Read(handle, buf, fileOffset)
-        assert(nBytesRead = sizeof<int32>)
-        let iteration = BitConverter.ToInt32(buf)
+    let private readIteration (rdr : BinaryReader) =
+        let iteration = rdr.ReadInt32()
         assert(iteration > 0)
         iteration
 
-    /// Reads the sample at the given index in the given store.
-    let readSample (idx : int64) store =
+    /// Reads all samples in the given store.
+    let readSamples store =
         assert(isValid store)
-        assert(idx >= 0)
-        assert(idx < getSampleCount store)
+        use rdr = createReader store.Stream
+        seq {
+            assert(store.Stream.Position <= store.Stream.Length)
+            while store.Stream.Position < store.Stream.Length do
+                let encoding = StoreEncoding.read rdr
+                let regrets = StoreRegrets.read rdr
+                let iteration = readIteration rdr
+                assert(iteration <= store.Iteration)
+                AdvantageSample.create encoding regrets iteration
+        }
 
-        let fileOffset =
-            int64 Header.packedSize
-                + idx * int64 packedSampleSize
-        let encoding =
-            StoreEncoding.read store.Handle fileOffset
-        let regrets =
-            StoreRegrets.read store.Handle
-                (fileOffset + int64 StoreEncoding.packedSize)
-        let iteration =
-            readIteration store.Handle
-                (fileOffset
-                    + int64 StoreEncoding.packedSize
-                    + int64 StoreRegrets.packedSize)
-        assert(iteration <= store.Iteration)
-        AdvantageSample.create encoding regrets iteration
-
-    /// Appends the given samples to the end of the given store.
-    let appendSamples samples store =
+    /// Writes the given samples to the given store.
+    let writeSamples samples store =
         assert(isValid store)
-
-        let baseOffset = RandomAccess.GetLength(store.Handle)
-        for i, sample in Seq.indexed samples do
-            let fileOffset =
-                baseOffset + int64 i * int64 packedSampleSize
-            StoreEncoding.write store.Handle fileOffset sample.Encoding
-            StoreRegrets.write store.Handle
-                (fileOffset + int64 StoreEncoding.packedSize)
-                sample.Regrets
-            assert(sample.Iteration <= store.Iteration)
-            writeIteration store.Handle
-                (fileOffset
-                    + int64 StoreEncoding.packedSize
-                    + int64 StoreRegrets.packedSize)
-                sample.Iteration
-
+        use wtr = createWriter store.Stream
+        for sample in samples do
+            StoreEncoding.write wtr sample.Encoding
+            StoreRegrets.write wtr sample.Regrets
+            writeIteration wtr sample.Iteration
         assert(isValid store)
 
 type AdvantageSampleShuffledStore with
@@ -179,8 +155,3 @@ type AdvantageSampleShuffledStore with
     /// The number of samples in this store.
     member store.Count =
         AdvantageSampleShuffledStore.getSampleCount store
-
-    /// Gets the sample at the given index in this store.
-    member store.Item
-        with get(idx) =
-            AdvantageSampleShuffledStore.readSample idx store

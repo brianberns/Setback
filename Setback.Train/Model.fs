@@ -69,13 +69,10 @@ module AdvantageModel =
     type private Batch = seq<SubBatch>
 
     /// Breaks the given samples into randomized batches.
-    let private createBatches
-        batchSize subBatchSize (store : AdvantageSampleShuffledStore) =
-        assert(store.Count < Int32.MaxValue)
-        Seq.init (int store.Count) (fun iSample ->
-            store[iSample])
-                |> Seq.chunkBySize subBatchSize                 // e.g. sub-batches of 10,000 rows each
-                |> Seq.chunkBySize (batchSize / subBatchSize)   // e.g. each batch contains 500,000 / 10,000 = 50 sub-batches
+    let private createBatches batchSize subBatchSize store =
+        AdvantageSampleShuffledStore.readSamples store
+            |> Seq.chunkBySize subBatchSize                 // e.g. sub-batches of 10,000 rows each
+            |> Seq.chunkBySize (batchSize / subBatchSize)   // e.g. each batch contains 500,000 / 10,000 = 50 sub-batches
 
     /// Trains the given model on the given sub-batch of
     /// data.

@@ -4,7 +4,6 @@ namespace Setback.PlayModel
 
 open System
 open System.IO
-open System.Runtime
 open System.Text
 
 open Microsoft.Extensions.FileSystemGlobbing
@@ -19,31 +18,34 @@ module Program =
             matcher.AddInclude(arg) |> ignore
         matcher.GetResultsInFullPath(".")
 
-    let shuffle (group : AdvantageSampleStoreGroup) =
+    let distribute (rng : Random) (group : AdvantageSampleStoreGroup) =
+        let tempStores =
+            Array.init group.Count (fun iTempStore ->
+                AdvantageSampleShuffledStore.create
+                    group.Iteration
+                    $"AdvantageSamples-i%03d{group.Iteration}-temp%02d{iTempStore}.sbin")
+        for inputStore in group.Stores do
+            assert(inputStore.Count < Int32.MaxValue)
+            for iSample = 0 to int inputStore.Count - 1 do
+                let sample = inputStore[iSample]
+                let tempStore = Array.randomChoiceWith rng tempStores
+                AdvantageSampleShuffledStore.appendSamples [sample] tempStore
+        tempStores
 
-            // get every sample's index pair (optimized for space)
-        let indexPairs =
-            [|
-                let storeCount = group.Count
-                assert(storeCount <= int32 Int16.MaxValue)
-
-                for iStore = 0s to int16 storeCount - 1s do
-
-                    let sampleCount = group[int iStore].Count
-                    assert(sampleCount <= int64 Int32.MaxValue)
-
-                    for iSample = 0 to int sampleCount - 1 do
-                        struct (iStore, iSample)
-            |]
-
-            // randomize samples
-        let chunkSize = 1024
-        Array.randomShuffle [| 0 .. indexPairs.Length - 1 |]
-            |> Seq.chunkBySize chunkSize
-            |> Seq.collect (
-                Array.Parallel.map (fun iPair ->
-                    let struct (iStore, iSample) = indexPairs[iPair]
-                    group[int iStore][iSample]))
+    let collect (rng : Random) (tempStores : AdvantageSampleShuffledStore[]) =
+        seq {
+            for tempStore in tempStores do
+                assert(tempStore.Count < Int32.MaxValue)
+                let samples =
+                    [|
+                        for iSample = 0 to int tempStore.Count - 1 do
+                            tempStore[iSample]
+                    |]
+                tempStore.Dispose()
+                File.Delete(tempStore.Path)
+                Array.randomShuffleInPlaceWith rng samples
+                yield! samples
+        }
 
     let run paths =
 
@@ -58,8 +60,11 @@ module Program =
         let group = { Stores = sampleStores }
 
             // shuffle samples
-        printfn $"Server garbage collection: {GCSettings.IsServerGC}"
-        let samples = shuffle group
+        let samples = 
+            let rng = Random()
+            group
+                |> distribute rng
+                |> collect rng
 
             // write to output
         use shuffledStore =
