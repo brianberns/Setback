@@ -66,10 +66,10 @@ module AdvantageModel =
 
     /// A logical batch of training data that might be too
     /// large to fit on the GPU or in memory.
-    type private Batch = seq<SubBatch>
+    type private Batch = SubBatch[]
 
     /// Breaks the given samples into randomized batches.
-    let private createBatches batchSize subBatchSize store =
+    let private createBatches batchSize subBatchSize store : seq<Batch> =
         AdvantageSampleShuffledStore.readSamples store
             |> Seq.chunkBySize subBatchSize                 // e.g. sub-batches of 10,000 rows each
             |> Seq.chunkBySize (batchSize / subBatchSize)   // e.g. each batch contains 500,000 / 10,000 = 50 sub-batches
