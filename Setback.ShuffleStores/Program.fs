@@ -20,8 +20,9 @@ module Program =
 
     let cleanup tempStores =
         for (tempStore : AdvantageSampleShuffledStore) in tempStores do
+            let path = tempStore.Path
             tempStore.Dispose()
-            File.Delete(tempStore.Path)
+            File.Delete(path)
 
     let distribute (rng : Random) (group : AdvantageSampleStoreGroup) =
         let tempStores =
@@ -30,13 +31,21 @@ module Program =
                     group.Iteration
                     $"AdvantageSamples-i%03d{group.Iteration}-temp%02d{iTempStore}.sbin")
         try
+
             for inputStore in group.Stores do
                 assert(inputStore.Count < Int32.MaxValue)
                 for sample in AdvantageSampleStore.readSamples inputStore do
                     tempStores
                         |> Array.randomChoiceWith rng
                         |> AdvantageSampleShuffledStore.writeSamples [sample]
-            tempStores
+
+            [|
+                for tempStore in tempStores do
+                    let path = tempStore.Path
+                    tempStore.Dispose()
+                    AdvantageSampleShuffledStore.openRead path   // re-open for read
+            |]
+
         with _ ->
             cleanup tempStores
             reraise ()
