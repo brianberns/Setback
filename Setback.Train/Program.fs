@@ -34,7 +34,7 @@ module Program =
             printfn $"   Model output size: {Model.outputSize}"
 
             // get training data
-        let store = AdvantageSampleShuffledStore.openRead path
+        let store = AdvantageSampleStore.openRead path
         if settings.Verbose then
             printfn "Sample store:"
             printfn $"   {Path.GetFileName(store.Path)}: {store.Count} samples"

@@ -70,7 +70,7 @@ module AdvantageModel =
 
     /// Breaks the given samples into randomized batches.
     let private createBatches batchSize subBatchSize store : seq<Batch> =
-        AdvantageSampleShuffledStore.readSamples store
+        AdvantageSampleStore.readSamples store
             |> Seq.chunkBySize subBatchSize                 // e.g. sub-batches of 10,000 rows each
             |> Seq.chunkBySize (batchSize / subBatchSize)   // e.g. each batch contains 500,000 / 10,000 = 50 sub-batches
 
@@ -149,7 +149,7 @@ module AdvantageModel =
     /// Trains the given model using the given samples.
     let train
         settings
-        (store : AdvantageSampleShuffledStore)
+        (store : AdvantageSampleStore)
         (model : AdvantageModel) =
 
             // train model
@@ -164,7 +164,7 @@ module AdvantageModel =
                 // prepare training data
             let batches =
                 let store =   // reset for each epoch
-                    AdvantageSampleShuffledStore.openRead store.Path
+                    AdvantageSampleStore.openRead store.Path
                 createBatches
                     settings.TrainingBatchSize
                     settings.TrainingSubBatchSize

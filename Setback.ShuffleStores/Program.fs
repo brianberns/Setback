@@ -19,7 +19,7 @@ module Program =
         matcher.GetResultsInFullPath(".")
 
     let cleanup tempStores =
-        for (tempStore : AdvantageSampleShuffledStore) in tempStores do
+        for (tempStore : AdvantageSampleStore) in tempStores do
             let path = tempStore.Path
             tempStore.Dispose()
             File.Delete(path)
@@ -28,9 +28,9 @@ module Program =
         let tempStores =
             let nTempStores = 64
             Array.init nTempStores (fun iTempStore ->
-                AdvantageSampleShuffledStore.create
+                AdvantageSampleStore.create
                     group.Iteration
-                    $"AdvantageSamples-i%03d{group.Iteration}-temp%02d{iTempStore}.sbin")
+                    $"AdvantageSamples-i%03d{group.Iteration}-temp%02d{iTempStore}.bin")
         try
 
             for inputStore in group.Stores do
@@ -38,25 +38,25 @@ module Program =
                 for sample in AdvantageSampleStore.readSamples inputStore do
                     tempStores
                         |> Array.randomChoiceWith rng
-                        |> AdvantageSampleShuffledStore.writeSamples [sample]
+                        |> AdvantageSampleStore.writeSamples [sample]
 
             [|
                 for tempStore in tempStores do
                     let path = tempStore.Path
                     tempStore.Dispose()
-                    AdvantageSampleShuffledStore.openRead path   // re-open for read
+                    AdvantageSampleStore.openRead path   // re-open for read
             |]
 
         with _ ->
             cleanup tempStores
             reraise ()
 
-    let collect rng (tempStores : AdvantageSampleShuffledStore[]) =
+    let collect rng (tempStores : AdvantageSampleStore[]) =
         seq {
             for tempStore in tempStores do
                 assert(tempStore.Count < Int32.MaxValue)
                 let samples =
-                    AdvantageSampleShuffledStore.readSamples tempStore
+                    AdvantageSampleStore.readSamples tempStore
                         |> Seq.toArray
                 Array.randomShuffleInPlaceWith rng samples
                 yield! samples
@@ -86,12 +86,12 @@ module Program =
                     let unique =
                         let timespan = DateTime.Now - DateTime.Today
                         int timespan.TotalSeconds
-                    $"AdvantageSamples-i%03d{group.Iteration}-%05d{unique}.sbin"
+                    $"AdvantageSamples-i%03d{group.Iteration}-%05d{unique}-shuffled.bin"
                 printfn $"Creating shuffled sample store: {path}"
-                AdvantageSampleShuffledStore.create
+                AdvantageSampleStore.create
                     group.Iteration
                     path
-            AdvantageSampleShuffledStore.writeSamples
+            AdvantageSampleStore.writeSamples
                 samples shuffledStore
         finally
             cleanup tempStores

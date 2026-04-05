@@ -3,8 +3,6 @@ namespace Setback.Learn
 open System
 open System.IO
 
-open Microsoft.Win32.SafeHandles
-
 /// Persistent store for advantage samples.
 type AdvantageSampleStore =
     {
@@ -14,7 +12,7 @@ type AdvantageSampleStore =
         /// Buffered access to file stream.
         Access : Choice<BinaryWriter, BinaryReader>
 
-        /// Iteration for all samples in this store.
+        /// Maximum iteration of samples in this store.
         Iteration : int
     }
 
@@ -47,7 +45,9 @@ module AdvantageSampleStore =
 
     /// Number of bytes in a serialized sample.
     let private packedSampleSize =
-        StoreEncoding.packedSize + StoreRegrets.packedSize
+        StoreEncoding.packedSize        // encoding
+            + StoreRegrets.packedSize   // regrets
+            + sizeof<int32>             // iteration
 
     /// Is the given store in a valid state?
     let private isValid store =
@@ -117,6 +117,17 @@ module AdvantageSampleStore =
         (store.Stream.Length - int64 Header.packedSize)
             / int64 packedSampleSize
 
+    /// Writes an iteration number.
+    let private writeIteration (wtr : BinaryWriter) (iteration : int32) =
+        assert(iteration > 0)
+        wtr.Write(iteration)
+
+    /// Reads an iteration number.
+    let private readIteration (rdr : BinaryReader) =
+        let iteration = rdr.ReadInt32()
+        assert(iteration > 0)
+        iteration
+
     /// Writes the given samples to the given store.
     let writeSamples samples store =
         assert(isValid store)
@@ -125,6 +136,7 @@ module AdvantageSampleStore =
                 for sample in samples do
                     StoreEncoding.write wtr sample.Encoding
                     StoreRegrets.write wtr sample.Regrets
+                    writeIteration wtr sample.Iteration
                 assert(isValid store)
             | _ -> failwith "Invalid access"
 
@@ -138,7 +150,9 @@ module AdvantageSampleStore =
                     while store.Stream.Position < store.Stream.Length do
                         let encoding = StoreEncoding.read rdr
                         let regrets = StoreRegrets.read rdr
-                        AdvantageSample.create encoding regrets store.Iteration
+                        let iteration = readIteration rdr
+                        assert(iteration <= store.Iteration)
+                        AdvantageSample.create encoding regrets iteration
                 }
             | _ -> failwith "Invalid access"
 
