@@ -134,13 +134,6 @@ module AdvantageModel =
         (store : AdvantageSampleShuffledStore)
         (model : AdvantageModel) =
 
-            // prepare training data
-        let batches =
-            createBatches
-                settings.TrainingBatchSize
-                settings.TrainingSubBatchSize
-                store
-
             // train model
         use optimizer =
             Adam(
@@ -149,6 +142,15 @@ module AdvantageModel =
         use criterion = MSELoss()
         model.train()
         for epoch = 1 to settings.NumTrainingEpochs do
+
+                // prepare training data
+            let batches =
+                let store =   // reset for each epoch
+                    AdvantageSampleShuffledStore.openRead store.Path
+                createBatches
+                    settings.TrainingBatchSize
+                    settings.TrainingSubBatchSize
+                    store
 
                 // train epoch
             let loss =
