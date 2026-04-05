@@ -76,7 +76,7 @@ module AdvantageModel =
 
     /// Trains the given model on the given sub-batch of
     /// data.
-    let private trainSubBatch settings model samples
+    let private trainSubBatch settings needLoss model samples
         (criterion : Loss<Tensor, Tensor, Tensor>) =
 
             // move to GPU
@@ -105,7 +105,10 @@ module AdvantageModel =
             // backward pass
         loss.backward()
 
-        loss.item<float32>()
+            // need loss value?
+        if needLoss then
+            Some (loss.item<float32>())
+        else None
 
     /// Trains the given model on the given batch of data
     /// using gradient accumulation.
@@ -119,9 +122,12 @@ module AdvantageModel =
             // train sub-batches
         let loss =
             Array.last [|
-                for samples in batch do
-                    trainSubBatch settings model samples criterion
-            |]
+                for iBatch = 0 to batch.Length - 1 do
+                    let samples = batch[iBatch]
+                    let needLoss = (iBatch = batch.Length - 1)
+                    trainSubBatch
+                        settings needLoss model samples criterion
+            |] |> Option.get
 
             // optimize
         use _ = optimizer.step()
