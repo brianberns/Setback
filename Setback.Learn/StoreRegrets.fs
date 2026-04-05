@@ -3,8 +3,6 @@ namespace Setback.Learn
 open System
 open System.IO
 
-open Microsoft.Win32.SafeHandles
-
 open MathNet.Numerics.LinearAlgebra
 
 open Setback.Model
@@ -23,33 +21,26 @@ module StoreRegrets =
     let packedSize =
         maxActionCount * entrySize
 
-    /// Writes the given regrets to the given stream.
+    /// Writes the given regrets to the given stream. Each entry is a
+    /// (byte index, float32 regret) pair; unused slots are padded with
+    /// (Byte.MaxValue, 0f) so every record has a fixed size.
     let write (wtr : BinaryWriter) (regrets : Vector<float32>) =
 
-            // get non-zero value pairs
-        let pairs =
-            [|
-                for i, regret in Seq.indexed regrets do
-                    if regret <> 0f then
-                        i, regret
-            |]
-        assert(pairs.Length <= maxActionCount)
+            // write non-zero value pairs directly to the writer
+        let mutable nWritten = 0
+        for i = 0 to regrets.Count - 1 do
+            let regret = regrets[i]
+            if regret <> 0f then
+                assert(i < int Byte.MaxValue)
+                assert(nWritten < maxActionCount)
+                wtr.Write(byte i)
+                wtr.Write(regret)
+                nWritten <- nWritten + 1
 
-            // write value pairs with padding
-        let bytes =
-            [|
-                    // write value pairs
-                for i, regret in pairs do
-                    assert(i < int Byte.MaxValue)
-                    byte i
-                    yield! BitConverter.GetBytes(regret)
-
-                    // write padding
-                for _ = pairs.Length to maxActionCount - 1 do
-                    Byte.MaxValue
-                    yield! BitConverter.GetBytes(0f)
-            |]
-        wtr.Write(bytes)
+            // write padding for unused slots
+        for _ = nWritten to maxActionCount - 1 do
+            wtr.Write(Byte.MaxValue)
+            wtr.Write(0f)
 
     /// Reads regrets from the given stream.
     let read (rdr : BinaryReader) =
