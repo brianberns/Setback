@@ -2,6 +2,19 @@ namespace Setback.Learn
 
 open System.IO
 
+module StoreIteration =
+
+    /// Writes an iteration number.
+    let write (wtr : BinaryWriter) (iteration : int32) =
+        assert(iteration > 0)
+        wtr.Write(iteration)
+
+    /// Reads an iteration number.
+    let read (rdr : BinaryReader) =
+        let iteration = rdr.ReadInt32()
+        assert(iteration > 0)
+        iteration
+
 /// Data store header.
 type StoreHeader =
     {
@@ -28,25 +41,17 @@ module StoreHeader =
     /// Writes a header to the given stream.
     let write (wtr : BinaryWriter) header =
         assert(wtr.BaseStream.Length = 0L)
-
-            // write magic string
         wtr.Write(magic)
-
-            // write iteration number
-        assert(header.Iteration >= 0)
-        wtr.Write(header.Iteration)
+        StoreIteration.write wtr header.Iteration
 
     /// Reads a header from the given stream.
     let read (rdr : BinaryReader) =
 
-            // read magic string
+            // read and validate format
         let magic' = rdr.ReadBytes(magic.Length)
         assert(magic'.Length = magic.Length)
         if magic' <> magic then
-            failwith $"Invalid magic bytes: {magic'}"
+            failwith $"Invalid file format: {magic'}"
 
-            // read iteration number
-        let iter = rdr.ReadInt32()
-        assert(iter >= 0)
-
+        let iter = StoreIteration.read rdr
         create iter

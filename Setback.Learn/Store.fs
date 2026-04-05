@@ -107,17 +107,6 @@ module AdvantageSampleStore =
         (store.Stream.Length - int64 StoreHeader.packedSize)
             / int64 packedSampleSize
 
-    /// Writes an iteration number.
-    let private writeIteration (wtr : BinaryWriter) (iteration : int32) =
-        assert(iteration > 0)
-        wtr.Write(iteration)
-
-    /// Reads an iteration number.
-    let private readIteration (rdr : BinaryReader) =
-        let iteration = rdr.ReadInt32()
-        assert(iteration > 0)
-        iteration
-
     /// Writes the given samples to the given store.
     let writeSamples samples store =
         assert(isValid store)
@@ -126,7 +115,7 @@ module AdvantageSampleStore =
                 for sample in samples do
                     StoreEncoding.write wtr sample.Encoding
                     StoreRegrets.write wtr sample.Regrets
-                    writeIteration wtr sample.Iteration
+                    StoreIteration.write wtr sample.Iteration
                 assert(isValid store)
             | _ -> failwith "Invalid access"
 
@@ -140,7 +129,7 @@ module AdvantageSampleStore =
                     while store.Stream.Position < store.Stream.Length do
                         let encoding = StoreEncoding.read rdr
                         let regrets = StoreRegrets.read rdr
-                        let iteration = readIteration rdr
+                        let iteration = StoreIteration.read rdr
                         assert(iteration <= store.Iteration)
                         AdvantageSample.create encoding regrets iteration
                 }
