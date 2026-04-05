@@ -116,13 +116,14 @@ module AdvantageSampleStore =
     /// Reads all samples in the given store.
     let readSamples store =
         assert(isValid store)
-        use rdr = createReader store.Stream
+        let rdr = createReader store.Stream
         seq {
             assert(store.Stream.Position <= store.Stream.Length)
             while store.Stream.Position < store.Stream.Length do
                 let encoding = StoreEncoding.read rdr
                 let regrets = StoreRegrets.read rdr
                 AdvantageSample.create encoding regrets store.Iteration
+            rdr.Dispose()
         }
 
     /// Writes the given samples to the given store.

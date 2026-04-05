@@ -129,7 +129,7 @@ module AdvantageSampleShuffledStore =
     /// Reads all samples in the given store.
     let readSamples store =
         assert(isValid store)
-        use rdr = createReader store.Stream
+        let rdr = createReader store.Stream
         seq {
             assert(store.Stream.Position <= store.Stream.Length)
             while store.Stream.Position < store.Stream.Length do
@@ -138,6 +138,7 @@ module AdvantageSampleShuffledStore =
                 let iteration = readIteration rdr
                 assert(iteration <= store.Iteration)
                 AdvantageSample.create encoding regrets iteration
+            rdr.Dispose()
         }
 
     /// Writes the given samples to the given store.
