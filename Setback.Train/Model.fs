@@ -162,8 +162,6 @@ module AdvantageModel =
                             settings model batch criterion optimizer
                         let seconds =
                             float32 stopwatch.ElapsedMilliseconds / 1000f
-                        if settings.Verbose then
-                            printfn $"Trained epoch {epoch} in {seconds} seconds"
                         settings.Writer.add_scalar(
                             $"advantage loss/iter%03d{store.Iteration}/epoch%03d{epoch}",
                             seconds, iBatch)
