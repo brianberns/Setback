@@ -18,32 +18,42 @@ module Program =
             matcher.AddInclude(arg) |> ignore
         matcher.GetResultsInFullPath(".")
 
+    let cleanup tempStores =
+        for (tempStore : AdvantageSampleShuffledStore) in tempStores do
+            tempStore.Dispose()
+            File.Delete(tempStore.Path)
+
     let distribute (rng : Random) (group : AdvantageSampleStoreGroup) =
         let tempStores =
             Array.init group.Count (fun iTempStore ->
                 AdvantageSampleShuffledStore.create
                     group.Iteration
                     $"AdvantageSamples-i%03d{group.Iteration}-temp%02d{iTempStore}.sbin")
-        for inputStore in group.Stores do
-            assert(inputStore.Count < Int32.MaxValue)
-            for sample in AdvantageSampleStore.readSamples inputStore do
-                tempStores
-                    |> Array.randomChoiceWith rng
-                    |> AdvantageSampleShuffledStore.writeSamples [sample]
-        tempStores
+        try
+            for inputStore in group.Stores do
+                assert(inputStore.Count < Int32.MaxValue)
+                for sample in AdvantageSampleStore.readSamples inputStore do
+                    tempStores
+                        |> Array.randomChoiceWith rng
+                        |> AdvantageSampleShuffledStore.writeSamples [sample]
+            tempStores
+        with _ ->
+            cleanup tempStores
+            reraise ()
 
     let collect (rng : Random) (tempStores : AdvantageSampleShuffledStore[]) =
-        seq {
-            for tempStore in tempStores do
-                assert(tempStore.Count < Int32.MaxValue)
-                let samples =
-                    AdvantageSampleShuffledStore.readSamples tempStore
-                        |> Seq.toArray
-                tempStore.Dispose()
-                File.Delete(tempStore.Path)
-                Array.randomShuffleInPlaceWith rng samples
-                yield! samples
-        }
+        try
+            seq {
+                for tempStore in tempStores do
+                    assert(tempStore.Count < Int32.MaxValue)
+                    let samples =
+                        AdvantageSampleShuffledStore.readSamples tempStore
+                            |> Seq.toArray
+                    Array.randomShuffleInPlaceWith rng samples
+                    yield! samples
+            }
+        finally
+            cleanup tempStores
 
     let run paths =
 
