@@ -34,15 +34,6 @@ type AdvantageSampleStore =
 
 module AdvantageSampleStore =
 
-    module private Header =
-
-        /// Store header type.
-        let headerType = { Magic = "Stbk"B }
-
-        /// Number of bytes in a packed header.
-        let packedSize =
-            StoreHeaderType.getPackedSize headerType
-
     /// Number of bytes in a serialized sample.
     let private packedSampleSize =
         StoreEncoding.packedSize        // encoding
@@ -51,7 +42,7 @@ module AdvantageSampleStore =
 
     /// Is the given store in a valid state?
     let private isValid store =
-        (store.Stream.Length - int64 Header.packedSize)
+        (store.Stream.Length - int64 StoreHeader.packedSize)
             % int64 packedSampleSize = 0L
 
     /// Creates a new sample store at the given location.
@@ -77,7 +68,7 @@ module AdvantageSampleStore =
             }
 
             // write header
-        StoreHeader.create Header.headerType iteration
+        StoreHeader.create iteration
             |> StoreHeader.write wtr
         assert(isValid store)
 
@@ -98,8 +89,7 @@ module AdvantageSampleStore =
         let rdr = new BinaryReader(stream)
 
             // read header
-        let header =
-            StoreHeader.read rdr Header.headerType
+        let header = StoreHeader.read rdr
 
             // create store
         let store =
@@ -114,7 +104,7 @@ module AdvantageSampleStore =
     /// Gets the number of samples in the given store.
     let getSampleCount store =
         assert(isValid store)
-        (store.Stream.Length - int64 Header.packedSize)
+        (store.Stream.Length - int64 StoreHeader.packedSize)
             / int64 packedSampleSize
 
     /// Writes an iteration number.
