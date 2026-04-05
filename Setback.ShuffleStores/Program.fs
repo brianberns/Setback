@@ -26,7 +26,8 @@ module Program =
 
     let distribute (rng : Random) (group : AdvantageSampleStoreGroup) =
         let tempStores =
-            Array.init group.Count (fun iTempStore ->
+            let nTempStores = 64
+            Array.init nTempStores (fun iTempStore ->
                 AdvantageSampleShuffledStore.create
                     group.Iteration
                     $"AdvantageSamples-i%03d{group.Iteration}-temp%02d{iTempStore}.sbin")
