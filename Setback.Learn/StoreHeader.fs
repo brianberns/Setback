@@ -51,7 +51,7 @@ module StoreHeader =
         let magic' = rdr.ReadBytes(magic.Length)
         assert(magic'.Length = magic.Length)
         if magic' <> magic then
-            failwith $"Invalid file format: {magic'}"
+            failwith $"Invalid file format: Expected %A{magic} but read %A{magic'}"
 
         let iter = StoreIteration.read rdr
         create iter
