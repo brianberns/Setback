@@ -37,8 +37,6 @@ module Program =
 
         printfn $"Server garbage collection: {GCSettings.IsServerGC}"
 
-        let numGames = 4000
-
         use model =
             new AdvantageModel(
                 settings.HiddenSize,
@@ -51,7 +49,7 @@ module Program =
             model.eval()
             let player = Strategy.createPlayer model
             let nGames =
-                Tournament.run true numGames champion player
+                Tournament.run true settings.NumEvaluationGames champion player
             let payoff =
                 float nGames / float settings.NumEvaluationGames
             printfn $"{Path.GetFileName(path)}: {payoff}"
