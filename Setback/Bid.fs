@@ -12,9 +12,11 @@ type Bid =
 
 module Bid =
 
+    /// All bids.
+    let allBids = Enum.getValues<Bid>
+
     /// Total number of bids.
-    let numBids =
-        Enum.getValues<Bid>.Length
+    let numBids = allBids.Length
 
 #if FABLE_COMPILER
     /// Display name.

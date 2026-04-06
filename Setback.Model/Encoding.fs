@@ -78,13 +78,28 @@ module Encoding =
         assert(decodeSeat player flags = seatOpt)
         flags
 
+    /// Decodes an optional bid from the given flags.
+    let decodeBid flags =
+        assert(Array.length flags = Bid.allBids.Length)
+        let bids =
+            [|
+                for iFlag = 0 to flags.Length - 1 do
+                    if flags[iFlag] then
+                        Bid.allBids[iFlag]
+            |]
+        assert(bids.Length <= 1)
+        Array.tryExactlyOne bids
+
     /// Encodes the given bid as a one-hot vector in the number
     /// of bids, or zero-hot if none.
     let encodeBid bidOpt =
-        [|
-            for bid in Enum.getValues<Bid> do
-                Some bid = bidOpt
-        |]
+        let flags =
+            [|
+                for bid in Bid.allBids do
+                    Some bid = bidOpt
+            |]
+        assert(decodeBid flags = bidOpt)
+        flags
 
     /// Encodes the given auction (which might be in progress or
     /// have completed), relative to the given player.
