@@ -115,9 +115,16 @@ module Encoding =
                 let flagChunks =
                     flags[Seat.numSeats .. ]
                         |> Array.chunkBySize Bid.numBids
-                (auction, flagChunks)
-                    ||> Seq.fold (fun auction flags ->
-                        decodeBid flags
+                let bidOpts = Array.map decodeBid flagChunks
+                assert(
+                    Array.tryFindIndex Option.isNone bidOpts
+                        |> Option.map (fun iBid ->
+                            Array.forall
+                                Option.isNone bidOpts[iBid ..])
+                        |> Option.defaultValue true)
+                (auction, bidOpts)
+                    ||> Seq.fold (fun auction bidOpt ->
+                        bidOpt
                             |> Option.map (fun bid ->
                                 Auction.addBid bid auction)
                             |> Option.defaultValue auction)
