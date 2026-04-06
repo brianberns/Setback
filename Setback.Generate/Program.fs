@@ -18,7 +18,9 @@ module Program =
             (fun deal ->
                 let points =
                     Array.init Team.numTeams (fun _ ->
-                        Random.Shared.Next(-3, Setback.winThreshold))   // typical score range
+                        Random.Shared.Next(   // 6-10: range of meaningful encoded scores
+                            Setback.winThreshold - Setback.numDealPoints - 1,
+                            Setback.winThreshold))
                 playFun {
                     Deal = deal
                     Score = { Points = points }
