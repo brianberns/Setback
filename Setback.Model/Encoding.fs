@@ -35,22 +35,48 @@ type Encoding = bool[]
 
 module Encoding =
 
+    /// Decodes cards from the given flags.
+    let decodeCards flags =
+        assert(Array.length flags = Card.numCards)
+        seq {
+            for iFlag = 0 to flags.Length - 1 do
+                if flags[iFlag] then
+                    Card.allCards[iFlag]
+        }
+
     /// Encodes the given cards as a multi-hot vector in the
     /// deck size.
     let encodeCards cards =
         let flags = Array.zeroCreate Card.numCards
         for index in Seq.map Card.toIndex cards do
             flags[index] <- true   // use mutation for speed
+        assert(set (decodeCards flags) = set cards)
         flags
+
+    /// Decodes an optional seat from the given flags.
+    let decodeSeat player flags =
+        assert(Array.length flags = Seat.numSeats)
+        let allSeats = Seat.cycle player |> Seq.toArray
+        let seats =
+            [|
+                for iFlag = 0 to flags.Length - 1 do
+                    if flags[iFlag] then
+                        allSeats[iFlag]
+            |]
+        assert(seats.Length <= 1)
+        Array.tryExactlyOne seats
 
     /// Encodes the given seat as a one-hot vector in the number
     /// of seats, relative to the given player, or zero-hot if
     /// none.
     let encodeSeat player seatOpt =
-        [|
-            for seat in Seat.cycle player do
-                Some seat = seatOpt
-        |]
+        let flags =
+            [|
+                for seat in Seat.cycle player do
+                    Some seat = seatOpt
+            |]
+        assert(decodeSeat player flags = seatOpt)
+        flags
 
     /// Encodes the given bid as a one-hot vector in the number
     /// of bids, or zero-hot if none.
