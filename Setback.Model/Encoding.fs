@@ -112,10 +112,10 @@ module Encoding =
         match decodeSeat player flags[0 .. Seat.numSeats - 1] with
             | Some dealer ->
                 let auction = Auction.create dealer
-                let flagChunks =
+                let bidOpts =
                     flags[Seat.numSeats .. ]
                         |> Array.chunkBySize Bid.numBids
-                let bidOpts = Array.map decodeBid flagChunks
+                        |> Array.map decodeBid
                 assert(
                     Array.tryFindIndex Option.isNone bidOpts
                         |> Option.map (fun iBid ->
