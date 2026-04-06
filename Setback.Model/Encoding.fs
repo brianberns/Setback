@@ -80,7 +80,7 @@ module Encoding =
 
     /// Decodes an optional bid from the given flags.
     let decodeBid flags =
-        assert(Array.length flags = Bid.allBids.Length)
+        assert(Array.length flags = Bid.numBids)
         let bids =
             [|
                 for iFlag = 0 to flags.Length - 1 do
@@ -101,22 +101,47 @@ module Encoding =
         assert(decodeBid flags = bidOpt)
         flags
 
+    /// Encoded auction length.
+    let encodedAuctionLength =
+        Seat.numSeats                       // dealer
+            + Seat.numSeats * Bid.numBids   // each player's bid
+
+    /// Decodes an auction from the given flags.
+    let decodeAuction player flags =
+        assert(Array.length flags = encodedAuctionLength)
+        match decodeSeat player flags[0 .. Seat.numSeats - 1] with
+            | Some dealer ->
+                let auction = Auction.create dealer
+                let flagChunks =
+                    flags[Seat.numSeats .. ]
+                        |> Array.chunkBySize Bid.numBids
+                (auction, flagChunks)
+                    ||> Seq.fold (fun auction flags ->
+                        decodeBid flags
+                            |> Option.map (fun bid ->
+                                Auction.addBid bid auction)
+                            |> Option.defaultValue auction)
+            | None -> failwith "Invalid encoding"
+
     /// Encodes the given auction (which might be in progress or
     /// have completed), relative to the given player.
     let encodeAuction player auction =
-        [|
-                // dealer
-            yield! encodeSeat player (Some auction.Dealer)
+        let flags =
+            [|
+                    // dealer
+                yield! encodeSeat player (Some auction.Dealer)
 
-                // each player's bid in chronological order
-            let bids = Seq.toArray auction.Bids
-            for iBid = 0 to Seat.numSeats - 1 do
-                yield!
-                    if iBid < bids.Length then
-                        Some bids[bids.Length - 1 - iBid]   // unreverse into chronological order
-                    else None
-                    |> encodeBid
-        |]
+                    // each player's bid in chronological order
+                let bids = Seq.toArray auction.Bids
+                for iBid = 0 to Seat.numSeats - 1 do
+                    yield!
+                        if iBid < bids.Length then
+                            Some bids[bids.Length - 1 - iBid]   // unreverse into chronological order
+                        else None
+                        |> encodeBid
+            |]
+        assert(decodeAuction player flags = auction)
+        flags
 
     /// Encodes the given trick (which might be in progress, or
     /// have completed, or have not started), relative to the
@@ -217,8 +242,7 @@ module Encoding =
     /// Total encoded length of an info set.
     let encodedLength =
         Card.numCards                                  // current player's hand
-            + Seat.numSeats                            // dealer
-            + Seat.numSeats * Bid.numBids              // each player's bid
+            + encodedAuctionLength                     // auction
             + (Setback.numCardsPerHand - 1)            // past, present, and future tricks
                 * encodedTrickLength
             + (Seat.numSeats - 1) * Suit.numSuits      // voids
