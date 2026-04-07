@@ -150,33 +150,61 @@ module Encoding =
         assert(decodeAuction player flags = auction)
         flags
 
-    /// Encodes the given trick (which might be in progress, or
-    /// have completed, or have not started), relative to the
-    /// given player
-    let encodeTrick player trickOpt =
-        [|
-                // trick leader
-            yield! encodeSeat player
-                (Option.map _.Leader trickOpt)
-
-                // each player's card in chronological order
-            let cards =
-                trickOpt
-                    |> Option.map (_.Cards >> Seq.toArray)
-                    |> Option.defaultValue Array.empty
-            for iCard = 0 to Seat.numSeats - 1 do
-                yield!
-                    if iCard < cards.Length then
-                        Some cards[cards.Length - 1 - iCard]   // unreverse into chronological order
-                    else None
-                    |> Option.toArray
-                    |> encodeCards
-        |]
-
     /// Encoded length of a trick.
     let encodedTrickLength =
         Seat.numSeats                         // trick leader
             + Seat.numSeats * Card.numCards   // each card in trick
+
+    /// Decodes an optional trick from the given flags.
+    let decodeTrick player trumpOpt flags =
+        assert(Array.length flags = encodedTrickLength)
+        (decodeSeat player flags[0 .. Seat.numSeats - 1])
+            |> Option.map (fun leader ->
+                let trick = Trick.create leader
+                let cardOpts =
+                    flags[Seat.numSeats .. ]
+                        |> Array.chunkBySize Card.numCards
+                        |> Array.map (decodeCards >> Seq.tryExactlyOne)
+                assert(
+                    Array.tryFindIndex Option.isNone cardOpts
+                        |> Option.map (fun iCard ->
+                            Array.forall
+                                Option.isNone cardOpts[iCard ..])
+                        |> Option.defaultValue true)
+                (trick, cardOpts)
+                    ||> Seq.fold (fun trick cardOpt ->
+                        cardOpt
+                            |> Option.map (fun card ->
+                                let trump =
+                                    Option.defaultValue card.Suit trumpOpt
+                                Trick.addPlay trump card trick)
+                            |> Option.defaultValue trick))
+
+    /// Encodes the given trick (which might be in progress, or
+    /// have completed, or have not started), relative to the
+    /// given player
+    let encodeTrick player trumpOpt trickOpt =
+        let flags =
+            [|
+                    // trick leader
+                yield! encodeSeat player
+                    (Option.map _.Leader trickOpt)
+
+                    // each player's card in chronological order
+                let cards =
+                    trickOpt
+                        |> Option.map (_.Cards >> Seq.toArray)
+                        |> Option.defaultValue Array.empty
+                for iCard = 0 to Seat.numSeats - 1 do
+                    yield!
+                        if iCard < cards.Length then
+                            Some cards[cards.Length - 1 - iCard]   // unreverse into chronological order
+                        else None
+                        |> Option.toArray
+                        |> encodeCards
+            |]
+        assert(decodeTrick player trumpOpt flags = trickOpt)
+        flags
 
     /// Encodes the given voids as a multi-hot vector in the
     /// number of suits times the number of other seats,
@@ -198,6 +226,9 @@ module Encoding =
     let encodePlayout player playoutOpt =
         [|
                 // tricks
+            let trumpOpt =
+                playoutOpt
+                    |> Option.bind _.TrumpOpt
             let tricks =
                 playoutOpt
                     |> Option.map (Playout.tricks >> Seq.toArray)
@@ -208,7 +239,7 @@ module Encoding =
                     if iTrick < tricks.Length then
                         Some tricks[iTrick]   // already in chronological order
                     else None
-                    |> encodeTrick player
+                    |> encodeTrick player trumpOpt
 
                 // voids
             let voids =
