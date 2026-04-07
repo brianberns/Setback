@@ -245,33 +245,41 @@ module Encoding =
                     voids)
         flags
 
+    /// Encoded playout length.
+    let encodedPlayoutLength =
+        (Setback.numCardsPerHand - 1) * encodedTrickLength   // past, present, and future tricks
+            + encodedVoidsLength                             // voids
+
     /// Encodes the given playout (which might not have started),
     /// relative to the given player.
     let encodePlayout player playoutOpt =
-        [|
-                // tricks
-            let trumpOpt =
-                playoutOpt
-                    |> Option.bind _.TrumpOpt
-            let tricks =
-                playoutOpt
-                    |> Option.map (Playout.tricks >> Seq.toArray)
-                    |> Option.defaultValue Array.empty
-            assert(tricks.Length < Setback.numCardsPerHand)   // no need to encode last trick
-            for iTrick = 0 to Setback.numCardsPerHand - 2 do
-                yield!
-                    if iTrick < tricks.Length then
-                        Some tricks[iTrick]   // already in chronological order
-                    else None
-                    |> encodeTrick player trumpOpt
+        let flags =
+            [|
+                    // tricks
+                let trumpOpt =
+                    playoutOpt
+                        |> Option.bind _.TrumpOpt
+                let tricks =
+                    playoutOpt
+                        |> Option.map (Playout.tricks >> Seq.toArray)
+                        |> Option.defaultValue Array.empty
+                assert(tricks.Length < Setback.numCardsPerHand)   // no need to encode last trick
+                for iTrick = 0 to Setback.numCardsPerHand - 2 do
+                    yield!
+                        if iTrick < tricks.Length then
+                            Some tricks[iTrick]   // already in chronological order
+                        else None
+                        |> encodeTrick player trumpOpt
 
-                // voids
-            let voids =
-                playoutOpt
-                    |> Option.map _.Voids
-                    |> Option.defaultValue Set.empty
-            yield! encodeVoids player voids
-        |]
+                    // voids
+                let voids =
+                    playoutOpt
+                        |> Option.map _.Voids
+                        |> Option.defaultValue Set.empty
+                yield! encodeVoids player voids
+            |]
+        assert(flags.Length = encodedPlayoutLength)
+        flags
 
     /// Encoded length of game points for one team:
     ///    * 1111 -> team is 1 point from winning (e.g. has 10 points, or tied 11-11, etc.)
@@ -305,9 +313,7 @@ module Encoding =
     let encodedLength =
         Card.numCards                                  // current player's hand
             + encodedAuctionLength                     // auction
-            + (Setback.numCardsPerHand - 1)            // past, present, and future tricks
-                * encodedTrickLength
-            + encodedVoidsLength      // voids
+            + encodedPlayoutLength                     // playout
             + Team.numTeams * encodedGamePointLength   // game score
 
     /// Encodes the given info set as a vector.
