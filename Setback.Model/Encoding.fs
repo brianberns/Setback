@@ -291,6 +291,13 @@ module Encoding =
 
     /// Encodes the given game score as thermometers, relative to
     /// the given player.
+    (*
+     * 10+ -> 4
+     *  9  -> 3
+     *  8  -> 2
+     *  7  -> 1
+     *  6- -> 0
+     *)
     let encodeGameScore player (gameScore : Score) =
         assert(Setback.numTeams = 2)
         let usTeam = Team.ofSeat player
@@ -300,12 +307,10 @@ module Encoding =
         [| usTeam; themTeam |]
             |> Array.collect (fun team ->
                 let count =
-                    match gameScore[team] with
-                        | pt when pt >= 10 -> 4
-                        | 9 -> 3
-                        | 8 -> 2
-                        | 7 -> 1
-                        | _ -> 0
+                    gameScore[team]
+                        - (Setback.winThreshold - Setback.numDealPoints - 1)
+                        |> max 0
+                        |> min Setback.numDealPoints
                 assert(count <= encodedGamePointLength)
                 Array.init encodedGamePointLength (fun i -> i < count))
 
