@@ -175,9 +175,10 @@ module Encoding =
                     ||> Seq.fold (fun trick cardOpt ->
                         cardOpt
                             |> Option.map (fun card ->
-                                let trump =
-                                    Option.defaultValue card.Suit trumpOpt
-                                Trick.addPlay trump card trick)
+                                match trumpOpt with
+                                    | Some trump ->
+                                        Trick.addPlay trump card trick
+                                    | None -> failwith "No trump")
                             |> Option.defaultValue trick))
 
     /// Encodes the given trick (which might be in progress, or
