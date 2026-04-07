@@ -207,19 +207,42 @@ module Encoding =
         assert(decodeTrick player trumpOpt flags = trickOpt)
         flags
 
+    /// Encoded voids length.
+    let encodedVoidsLength =
+        (Seat.numSeats - 1) * Suit.numSuits
+
+    /// Decodes voids (except the given player's) from the given flags.
+    let decodeVoids player flags =
+        assert(Array.length flags = encodedVoidsLength)
+        set [
+            for iFlag = 0 to encodedVoidsLength - 1 do
+                if flags[iFlag] then
+                    let suit = enum<Suit> (iFlag / (Seat.numSeats - 1))
+                    let seat =
+                        Seat.incr
+                            ((iFlag % (Seat.numSeats - 1)) + 1)
+                            player
+                    seat, suit
+        ]
+
     /// Encodes the given voids as a multi-hot vector in the
     /// number of suits times the number of other seats,
     /// relative to the given player.
-    let encodeVoids player voids =
-        let flags =
-            Array.zeroCreate ((Seat.numSeats - 1) * Suit.numSuits)
+    let encodeVoids player (voids : Set<_>) =
+        let flags = Array.zeroCreate encodedVoidsLength
         for seat, suit in voids do
             if seat <> player then
                 let suitOffset = (Seat.numSeats - 1) * int suit
                 let seatOffset =
                     ((int seat - int player - 1) + Seat.numSeats)
                         % Seat.numSeats
+                assert(seatOffset >= 0)
                 flags[suitOffset + seatOffset] <- true   // use mutation for speed
+        assert(
+            decodeVoids player flags
+                = Set.filter
+                    (fun (seat, _) -> seat <> player)
+                    voids)
         flags
 
     /// Encodes the given playout (which might not have started),
@@ -284,7 +307,7 @@ module Encoding =
             + encodedAuctionLength                     // auction
             + (Setback.numCardsPerHand - 1)            // past, present, and future tricks
                 * encodedTrickLength
-            + (Seat.numSeats - 1) * Suit.numSuits      // voids
+            + encodedVoidsLength      // voids
             + Team.numTeams * encodedGamePointLength   // game score
 
     /// Encodes the given info set as a vector.
