@@ -53,14 +53,14 @@ module Settings =
             HiddenSize = Encoding.encodedLength
             NumHiddenLayers = 4
             NumTrainingEpochs = 100
-            TrainingBatchSize = 500_000
-            TrainingSubBatchSize = 50_000
-            DropoutRate = 0.15
+            TrainingBatchSize = 100_000
+            TrainingSubBatchSize = 25_000
+            DropoutRate = 0.3
             LearningRate = 1e-3
 #if DEBUG
             NumEvaluationGames = 40
 #else
-            NumEvaluationGames = 4000
+            NumEvaluationGames = 20000
 #endif
             Device = torch.CUDA
             ModelDirPath = Path.Combine(".", "Models")
