@@ -55,7 +55,7 @@ module Settings =
             NumTrainingEpochs = 100
             TrainingBatchSize = 100_000
             TrainingSubBatchSize = 25_000
-            DropoutRate = 0.3
+            DropoutRate = 0.15
             LearningRate = 1e-3
 #if DEBUG
             NumEvaluationGames = 40
