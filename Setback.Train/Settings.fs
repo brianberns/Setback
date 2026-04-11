@@ -2,6 +2,7 @@
 
 open System.IO
 open TorchSharp
+open Setback.Model
 
 /// Hyperparameters.
 type Settings =
