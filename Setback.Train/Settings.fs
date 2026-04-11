@@ -2,7 +2,6 @@
 
 open System.IO
 open TorchSharp
-open Setback.Model
 
 /// Hyperparameters.
 type Settings =
@@ -53,8 +52,8 @@ module Settings =
             HiddenSize = Encoding.encodedLength
             NumHiddenLayers = 4
             NumTrainingEpochs = 100
-            TrainingBatchSize = 100_000
-            TrainingSubBatchSize = 25_000
+            TrainingBatchSize = 500_000
+            TrainingSubBatchSize = 50_000
             DropoutRate = 0.15
             LearningRate = 1e-3
 #if DEBUG
