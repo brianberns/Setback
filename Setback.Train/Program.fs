@@ -40,7 +40,7 @@ module Program =
             printfn $"   {Path.GetFileName(store.Path)}: {store.Count} samples"
 
             // train model
-        Trainer.trainModel settings store
+        Trainer.train settings store
 
     [<EntryPoint>]
     let main argv =
