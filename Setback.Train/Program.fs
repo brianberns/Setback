@@ -45,7 +45,9 @@ module Program =
         let store = AdvantageSampleStore.openRead path
         if settings.Verbose then
             printfn "Sample store:"
-            printfn $"   {Path.GetFileName(store.Path)}: {store.Count} samples"
+            printfn $"   File name: {Path.GetFileName(store.Path)}"
+            printfn $"   Count: {store.Count:N0} samples"
+            printfn $"   Iteration: {store.Iteration}"
 
             // train model
         Trainer.train settings store

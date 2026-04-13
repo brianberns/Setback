@@ -71,7 +71,7 @@ module Program =
                 |> Seq.toArray
         printfn "Sample stores:"
         for store in sampleStores do
-            printfn $"   {Path.GetFileName(store.Path)}: {store.Count} samples"
+            printfn $"   {Path.GetFileName(store.Path)}: {store.Count:N0} samples"
         let group = { Stores = sampleStores }
 
             // shuffle samples
