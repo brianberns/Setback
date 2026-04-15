@@ -5,10 +5,18 @@ open System.IO
 open System.Runtime
 open System.Text
 
+open Microsoft.Extensions.FileSystemGlobbing
+
 open Setback.Learn
 open Setback.Model
 
 module Program =
+
+    let parse (argv : _[]) =
+        let matcher = Matcher()
+        for arg in argv do
+            matcher.AddInclude(arg) |> ignore
+        matcher.GetResultsInFullPath(".")
 
     let run path =
 
@@ -45,6 +53,7 @@ module Program =
     [<EntryPoint>]
     let main argv =
         Console.OutputEncoding <- Encoding.UTF8
-        if argv.Length <> 1 then failwith "Invalid arguments"
-        else run argv[0]
+        match Seq.tryExactlyOne (parse argv) with
+            | Some path -> run path
+            | None -> failwith "Invalid arguments"
         0
