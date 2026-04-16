@@ -42,8 +42,8 @@ module Trainer =
     let private evaluate settings iteration epoch model =
 
             // determine payoff
-        use _ = new ModelMover(model, CPU)   // avoid cross-thread TorchSharp GPU problems (memory leaks, toFloat crash)
         let nGames =
+            use _ = new ModelMover(model, CPU)   // avoid cross-thread TorchSharp GPU problems (memory leaks, toFloat crash)
             Tournament.run
                 settings.NumEvaluationGames
                 champion
