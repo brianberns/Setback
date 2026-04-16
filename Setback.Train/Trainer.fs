@@ -33,7 +33,7 @@ module Trainer =
             float32 nGames / float32 settings.NumEvaluationGames
 
         if settings.Verbose then
-            printfn $"Iteration {iteration}, epoch {epoch} tournament payoff: %0.5f{payoff}"
+            printfn $"Epoch {epoch} tournament payoff: %0.5f{payoff}"
         settings.Writer.add_scalar(
             $"advantage tournament/iter%03d{iteration}", payoff, epoch)
 
