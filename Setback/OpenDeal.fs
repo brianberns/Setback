@@ -98,11 +98,8 @@ module OpenDeal =
             fromDeck dealer deck)
 
     /// Plays the given number of deals.
-    let playDeals rng inParallel numDeals playFun =
-        let map =
-            if inParallel then Array.Parallel.map
-            else Array.map
+    let playDeals rng numDeals playFun =
         generate rng
             |> Seq.take numDeals
             |> Seq.toArray
-            |> map playFun
+            |> Array.Parallel.map playFun

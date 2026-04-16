@@ -94,11 +94,8 @@ module Game =
                 |> create rng)
 
     /// Plays the given number of games.
-    let playGames rng inParallel numGames playFun =
-        let map =
-            if inParallel then Array.Parallel.map
-            else Array.map
+    let playGames rng numGames playFun =
         generate rng
             |> Seq.take numGames
             |> Seq.toArray
-            |> map playFun
+            |> Array.Parallel.map playFun

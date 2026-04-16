@@ -49,7 +49,7 @@ module Program =
             model.eval()
             let player = Strategy.createPlayer model
             let nGames =
-                Tournament.run true settings.NumEvaluationGames champion player
+                Tournament.run settings.NumEvaluationGames champion player
             let payoff =
                 float nGames / float settings.NumEvaluationGames
             printfn $"{Path.GetFileName(path)}: {payoff}"

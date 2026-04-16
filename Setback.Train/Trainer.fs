@@ -1,5 +1,6 @@
 ﻿namespace Setback.Train
 
+open System
 open System.IO
 
 open TorchSharp
@@ -12,6 +13,23 @@ open Setback
 open Setback.Learn
 open Setback.Model
 
+/// Moves the given model to the given device temporarily.
+type ModelMover(model : AdvantageModel, toDevice : Device) =
+
+    /// Save original device.
+    let fromDevice = model.Device
+
+        // move model to destination device
+    do model.``to``(toDevice) |> ignore
+
+    /// Moves model back to original device.
+    member this.Dispose() =
+        model.``to``(fromDevice) |> ignore
+
+    /// Moves model back to original device.
+    interface IDisposable with
+        member this.Dispose() = this.Dispose()
+
 module Trainer =
 
     /// CFR champion.
@@ -23,15 +41,17 @@ module Trainer =
     /// standard.
     let private evaluate settings iteration epoch model =
 
+            // determine payoff
+        use _ = new ModelMover(model, CPU)   // avoid cross-thread TorchSharp GPU problems (memory leaks, toFloat crash)
         let nGames =
             Tournament.run
-                false             // avoid cross-thread TorchSharp problems (memory leaks, toFloat crash)
                 settings.NumEvaluationGames
                 champion
                 (Strategy.createPlayer model)
         let payoff =
             float32 nGames / float32 settings.NumEvaluationGames
 
+            // write payoff
         if settings.Verbose then
             printfn $"Epoch {epoch} tournament payoff: %0.5f{payoff}"
         settings.Writer.add_scalar(

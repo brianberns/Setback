@@ -96,7 +96,7 @@ module Program =
 
         let champion = DatabasePlayer.player "Champion.db" |> getPlayer
         let challenger = DatabasePlayer.player "Challenger.db" |> getPlayer
-        Tournament.run true 10000 champion challenger
+        Tournament.run 10000 champion challenger
             |> printfn "%A"
 
         0

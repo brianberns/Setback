@@ -13,7 +13,7 @@ module Tournament =
         Team.seats challengerTeam
 
     /// Runs a 2v2 tournament between two players.
-    let run inParallel numGames champion challenger =
+    let run numGames champion challenger =
         let playerMap =
             Enum.getValues<Seat>
                 |> Seq.map (fun seat ->
@@ -23,7 +23,7 @@ module Tournament =
                         else champion
                     seat, player)
                 |> Map
-        Game.playGames Random.Shared inParallel numGames (
+        Game.playGames Random.Shared numGames (
             Game.playGame Random.Shared playerMap)   // thread-safety needed
             |> Seq.where ((=) challengerTeam)
             |> Seq.length

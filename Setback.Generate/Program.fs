@@ -14,7 +14,7 @@ module Program =
 
     /// Plays fake games consiting of a single deal each.
     let private playGames numDeals playFun =
-        OpenDeal.playDeals Random.Shared true numDeals
+        OpenDeal.playDeals Random.Shared numDeals
             (fun deal ->
                 let points =
                     Array.init Team.numTeams (fun _ ->
