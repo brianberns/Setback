@@ -40,6 +40,7 @@ type AdvantageModel(
     /// Skip connection DSL support.
     let SkipConnection(inner) = new SkipConnection(inner)
 
+    /// Model layers.
     let sequential =
         Sequential [|
 
@@ -70,8 +71,10 @@ type AdvantageModel(
         this.RegisterComponents()
         this.``to``(device) |> ignore
 
+    /// Device on which this model resides.
     member _.Device = device
 
+    /// Runs the model on the given tensor.
     override _.forward(input) = 
         sequential.forward(input)
 
