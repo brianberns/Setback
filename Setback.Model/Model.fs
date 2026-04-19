@@ -71,11 +71,31 @@ type AdvantageModel(
         this.RegisterComponents()
         this.``to``(device) |> ignore
 
+    /// Copies the given model onto the given device.
+    static member Copy(source : AdvantageModel, device : torch.Device) =
+        let model =
+            new AdvantageModel(
+                source.HiddenSize,
+                source.NumHiddenLayers,
+                source.DropoutRate,
+                device)
+        model.load_state_dict(source.state_dict()) |> ignore
+        model
+
+    /// Hidden layer size.
+    member _.HiddenSize = hiddenSize
+
+    /// Number of hidden layers.
+    member _.NumHiddenLayers = numHiddenLayers
+
+    /// Dropout rate.
+    member _.DropoutRate = dropoutRate
+
     /// Device on which this model resides.
     member _.Device = device
 
     /// Runs the model on the given tensor.
-    override _.forward(input) = 
+    override _.forward(input) =
         sequential.forward(input)
 
 module AdvantageModel =

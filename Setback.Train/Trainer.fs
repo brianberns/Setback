@@ -13,23 +13,6 @@ open Setback
 open Setback.Learn
 open Setback.Model
 
-/// Moves the given model to the given device temporarily.
-type ModelMover(model : AdvantageModel, toDevice : Device) =
-
-    /// Save original device.
-    let fromDevice = model.Device
-
-        // move model to destination device
-    do model.``to``(toDevice) |> ignore
-
-    /// Moves model back to original device.
-    member this.Dispose() =
-        model.``to``(fromDevice) |> ignore
-
-    /// Moves model back to original device.
-    interface IDisposable with
-        member this.Dispose() = this.Dispose()
-
 module Trainer =
 
     /// CFR champion.
@@ -43,7 +26,8 @@ module Trainer =
 
             // determine payoff
         let nGames =
-            use _ = new ModelMover(model, CPU)   // avoid cross-thread TorchSharp GPU problems (memory leaks, toFloat crash)
+            use model = AdvantageModel.Copy(model, CPU)   // avoid cross-thread TorchSharp GPU problems (memory leaks, toFloat crash)
+            model.eval()
             Tournament.run
                 settings.NumEvaluationGames
                 champion
@@ -205,7 +189,6 @@ module Trainer =
                 model.parameters(),
                 settings.LearningRate)
         use criterion = MSELoss()
-        model.train()
         for epoch = 1 to settings.NumTrainingEpochs do
 
                 // prepare training data
@@ -242,8 +225,4 @@ module Trainer =
             model.save(path) |> ignore
 
                 // evaluate model
-            model.eval()
             evaluate settings store.Iteration epoch model
-            model.train()
-
-        model.eval()
