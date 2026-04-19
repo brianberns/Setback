@@ -1,7 +1,5 @@
 ﻿namespace Setback.ShuffleStores
 
-namespace Setback.PlayModel
-
 open System
 open System.IO
 open System.Text
