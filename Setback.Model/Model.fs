@@ -72,7 +72,7 @@ type AdvantageModel(
         this.``to``(device) |> ignore
 
     /// Copies the given model onto the given device.
-    static member Copy(source : AdvantageModel, device : torch.Device) =
+    static member Copy(source : AdvantageModel, device) =
         let model =
             new AdvantageModel(
                 source.HiddenSize,
