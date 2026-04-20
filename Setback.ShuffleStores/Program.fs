@@ -24,11 +24,11 @@ module Program =
 
     let distribute (rng : Random) (group : AdvantageSampleStoreGroup) =
         let tempStores =
-            let nTempStores = 64
+            let nTempStores = 128
             Array.init nTempStores (fun iTempStore ->
                 AdvantageSampleStore.create
                     group.Iteration
-                    $"AdvantageSamples-i%03d{group.Iteration}-temp%02d{iTempStore}.bin")
+                    $"AdvantageSamples-i%03d{group.Iteration}-temp%03d{iTempStore}.bin")
         try
 
             for inputStore in group.Stores do
