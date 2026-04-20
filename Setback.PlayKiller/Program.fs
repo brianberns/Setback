@@ -57,7 +57,7 @@ module Program =
 
     [<EntryPoint>]
     let main(args: string[]) =
-        // configureKSetback ()
+        configureKSetback ()
         AppBuilder
             .Configure<App>()
             .UsePlatformDetect()

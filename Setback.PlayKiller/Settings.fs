@@ -22,7 +22,7 @@ module Settings =
     /// Creates default settings.
     let create () =
         {
-            HiddenSize = Encoding.encodedLength * 2
+            HiddenSize = Encoding.encodedLength
             NumHiddenLayers = 4
             Device = torch.CPU
         }
