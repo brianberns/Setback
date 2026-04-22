@@ -4,7 +4,6 @@
 	<OutputType>WinExe</OutputType>
 	<TargetFramework>net10.0-windows</TargetFramework>
 	<UseWindowsForms>true</UseWindowsForms>
-	<Platforms>AnyCPU;x64</Platforms>
 	<AssemblyName>BernsriteSetback</AssemblyName>
   </PropertyGroup>
 
@@ -74,10 +73,8 @@
     <Compile Include="Program.fs" />
   </ItemGroup>
 
-  <ItemGroup />
-
   <ItemGroup>
-    <ProjectReference Include="..\PlayingCards\PlayingCards.fsproj" />
+    <ProjectReference Include="..\PlayingCards\PlayingCards\PlayingCards.fsproj" />
     <ProjectReference Include="..\Setback.Cfrm\Setback.Cfrm.fsproj" />
     <ProjectReference Include="..\Setback\Setback.fsproj" />
   </ItemGroup>

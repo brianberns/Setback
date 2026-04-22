@@ -21,7 +21,7 @@ type BidControl() as this =
     let buttonMap =
         let xCoord, yCoord = 10, 4
         let height = 27
-        PlayingCards.Enum.getValues<Bid>
+        Bid.allBids
             |> Seq.mapi (fun iButton bid ->
                 let button =
                     new RadioButton(

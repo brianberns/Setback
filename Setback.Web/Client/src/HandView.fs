@@ -2,7 +2,6 @@ namespace Setback.Web.Client
 
 open PlayingCards
 open Setback
-open Setback.Cfrm
 
 /// Represents a (mutable) hand of cards.
 type HandView = ResizeArray<CardView>

@@ -1,6 +1,12 @@
 ﻿namespace Setback.Web
 
+open Setback
+
 type ISetbackApi =
     {
-        GetActionIndex : string (*key*) -> Async<Option<int>> (*action index*)
+        /// Chooses an action for the given info set.
+        GetActionIndex : InformationSet -> Async<int> (*action index*)
+
+        /// Gets the strategy for the given info set.
+        GetStrategy : InformationSet -> Async<float[]> (*action probabilities*)
     }

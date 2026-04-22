@@ -3,7 +3,8 @@
 }
 
 main {
-    background-color: lightblue;
+    background-color: #4a8468;
+    color: #f5f0e4;
     font-size: min(2vw, 2vh);
     font-family: sans-serif;
     width: 100vw;
@@ -12,14 +13,37 @@ main {
 }
 
 a {
-    text-decoration: none;
+    color: white;
 }
+
+table {
+    border-collapse: collapse;
+}
+
+td, th {
+    border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+td {
+    background-color: transparent;
+}
+
+button {
+    color: inherit;
+}
+
+    button:disabled {
+        color: #a0a0a0;
+    }
 
 #score {
     position: absolute;
     left: 2%;
     top: 2%;
     text-align: end;
+    background-color: rgba(0, 0, 0, 0.35);
+    padding: min(0.8vw, 0.8vh);
+    border-radius: min(0.5vw, 0.5vh);
 }
 
     #score th {
@@ -30,7 +54,6 @@ a {
     #score td {
         padding-left: 5px;
         padding-right: 5px;
-        background-color: #9DC8D6;
     }
 
 #more {
@@ -54,11 +77,12 @@ a {
 
 .bid {
     width: min(8vw, 12vh);
+    height: min(4vw, 6vh);
     font-size: min(2vw, 2vh);
-    padding: min(1vw, 1vh);
-    background-color: whitesmoke;
+    background-color: rgba(0, 0, 0, 0.35);
     text-align: center;
-    border-radius: min(1vw, 1vh);
+    padding: min(0.4vw, 0.4vh) min(1vw, 1vh);
+    border-radius: min(0.5vw, 0.5vh);
 }
 
 .bid-clickable {
@@ -71,6 +95,34 @@ a {
     transform: translate(-50%, -50%);
 }
 
+.slider {
+    -webkit-appearance: none;
+    appearance: none;
+    height: min(0.8vw, 0.8vh);
+    border-radius: min(0.4vw, 0.4vh);
+    background-color: rgba(0, 0, 0, 0.35);
+    outline: none;
+}
+
+    .slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: min(1.6vw, 1.6vh);
+        height: min(1.6vw, 1.6vh);
+        border-radius: 50%;
+        background-color: #f5f0e4;
+        cursor: pointer;
+    }
+
+    .slider::-moz-range-thumb {
+        width: min(1.6vw, 1.6vh);
+        height: min(1.6vw, 1.6vh);
+        border-radius: 50%;
+        background-color: #f5f0e4;
+        cursor: pointer;
+        border: none;
+    }
+
 .♦ {
     color: red;
 }
@@ -80,11 +132,11 @@ a {
 }
 
 .♣ {
-    color: black;
+    color: white;
 }
 
 .♠ {
-    color: black;
+    color: white;
 }
 
 .card {
@@ -94,6 +146,7 @@ a {
     background-color: gray;
     border-radius: 10px;
     transform: translate(-50%, -50%);
+    box-shadow: 2px 4px 8px rgba(0,0,0,0.4);
 }
 
 .trump {
@@ -112,8 +165,9 @@ a {
 .play-chooser {
     display: none; /* hidden when created */
     font-size: min(2vw, 2vh);
-    padding: min(1vw, 1vh);
+    padding: min(1vw, 1vh) min(2vw, 2vh);
     background-color: lightcyan;
+    color: #2a3a30;
     text-align: center;
     border-radius: min(0.5vw, 0.5vh);
     /* https://www.w3schools.com/howto/howto_css_center-vertical.asp */
@@ -121,9 +175,18 @@ a {
     top: 70%;
     left: 50%;
     transform: translate(-50%, -50%);
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+@keyframes bannerEntrance {
+    0%   { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+    70%  { transform: translate(-50%, -50%) scale(1.05); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
 }
 
 .banner {
+    animation: bannerEntrance 0.4s ease-out;
     font-size: x-large;
     width: fit-content;
     height: fit-content;
@@ -131,9 +194,16 @@ a {
     cursor: pointer;
     color: white;
     background-color: darkred;
-    padding: 100px;
+    padding: min(5vw, 5vh) min(8vw, 8vh);
+    border-radius: min(1vw, 1vh);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
 }
+
+    .banner.winner {
+        background-color: #FFD700;
+        color: #3d2b00;
+    }

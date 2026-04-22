@@ -30,7 +30,7 @@ module User =
                 deal.ClosedDeal.Auction
                     |> AbstractAuction.legalBids
                     |> set
-            for bid in Enum.getValues<Bid> do
+            for bid in Bid.allBids do
                 let rb = bidControl.GetBidButton(bid)
                 rb.Checked <- false
                 rb.Enabled <- legalBids.Contains(bid)

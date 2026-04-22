@@ -2,7 +2,6 @@
 
 open PlayingCards
 open Setback
-open Setback.Cfrm
 
 [<AutoOpen>]
 module SeatExt =
@@ -47,11 +46,10 @@ module DealView =
             |> ClosedHandView.ofCardViews
 
     /// Creates an open hand view of the user's cards.
-    let private openView dealer deal =
+    let private openView deal =
         promise {
-            let iUser = Seat.getIndex Seat.User dealer
             let! handView =
-                deal.UnplayedCards[iUser]
+                deal.UnplayedCardMap[Seat.User]
                     |> OpenHandView.ofHand
             deal.ClosedDeal.TrumpOpt
                 |> Option.iter (fun trump ->
@@ -74,7 +72,7 @@ module DealView =
 
                 // create open hand view for user
             let iUser = Seat.getIndex Seat.User dealer
-            let! openHandView = openView dealer deal
+            let! openHandView = openView deal
 
                 // deal animation
             let anim =
@@ -119,7 +117,7 @@ module DealView =
         }
 
     /// Creates and positions hand views for the given deal.
-    let private createHandViews (surface : JQueryElement) dealer deal =
+    let private createHandViews (surface : JQueryElement) deal =
 
         /// Sets positions of cards in the given hand.
         let setPositions seat handView =
@@ -131,9 +129,8 @@ module DealView =
         let closedViewPair seat =
             promise {
                 let! handView =
-                    let iSeat = Seat.getIndex seat dealer
                     Array.init
-                        deal.UnplayedCards[iSeat].Count
+                        deal.UnplayedCardMap[seat].Count
                         (fun _ -> CardView.ofBack ())
                         |> Promise.all
                         |> Promise.map ResizeArray
@@ -150,7 +147,7 @@ module DealView =
                     |> Promise.all
 
                 // create open hand view for user
-            let! openHandView = openView dealer deal
+            let! openHandView = openView deal
             setPositions Seat.South openHandView
 
             return [|
@@ -161,10 +158,10 @@ module DealView =
 
     /// Creates hand views for the given deal.
     let start surface dealer deal =
-        if deal.ClosedDeal.Auction.NumBids = 0 then
+        if deal.ClosedDeal.Auction.Bids.IsEmpty then
             animate surface dealer deal
         else
-            createHandViews surface dealer deal   // no animation
+            createHandViews surface deal   // no animation
 
     /// Elements tracking high trump taken.
     let private highElems =
@@ -195,9 +192,9 @@ module DealView =
         |] |> Array.map (~~)
 
     /// Displays deal status (e.g. high, low, jack, and game).
-    let displayStatus dealer deal =
+    let displayStatus deal =
 
-        let displayCard (elems : JQueryElement[]) historyFunc =
+        let displayCard (elems : JQueryElement[]) playoutFunc =
 
                 // reset all elements
             for elem in elems do
@@ -206,35 +203,35 @@ module DealView =
                 // display card, if it exists
             option {
                 let! playout = deal.ClosedDeal.PlayoutOpt
-                let! rank, iTeam = historyFunc playout.History
-                let elem =
-                    let iAbsoluteTeam =
-                        (int dealer + iTeam) % Setback.numTeams
-                    elems[iAbsoluteTeam]
+                let! rank, team = playoutFunc playout
                 let! trump = playout.TrumpOpt
                 let card = Card.create rank trump
-                elem.text(card.String)
+                elems[int team].text(card.String)
             } |> ignore
 
-        displayCard highElems (fun history -> history.HighTakenOpt)
-        displayCard lowElems (fun history -> history.LowTakenOpt)
-        displayCard jackElems (fun history ->
-            history.JackTakenOpt
-                |> Option.map (fun iTeam -> Rank.Jack, iTeam))
+        displayCard highElems _.HighTrumpTeamOpt
+        displayCard lowElems _.LowTrumpTeamOpt
+        displayCard jackElems (fun playout ->
+            option {
+                let! team = playout.JackTrumpTeamOpt
+                return Rank.Jack, team
+            })
 
             // game
-        let absoluteGameScore =
-            match deal.ClosedDeal.PlayoutOpt with
-                | Some playout ->
-                    playout.History.GameScore
-                        |> Game.absoluteScore dealer
-                | None -> AbstractScore.zero
-        for iTeam = 0 to Setback.numTeams - 1 do
-            let gamePointsElem = gamePointsElems[iTeam]
+        let gameScore =
+            deal.ClosedDeal.PlayoutOpt
+                |> Option.map _.GameScore
+                |> Option.defaultValue Score.zero
+        for team in Enum.getValues<Team> do
+            let gamePointsElem = gamePointsElems[int team]
             let text =
-                let teamScore = absoluteGameScore[iTeam]
-                assert(Setback.numTeams = 2)
-                if teamScore > absoluteGameScore[1 - iTeam] then
+                let teamScore = gameScore[team]
+                let otherTeam =
+                    match team with
+                        | Team.EastWest -> Team.NorthSouth
+                        | Team.NorthSouth -> Team.EastWest
+                        | _ -> failwith "Unexpected"
+                if teamScore > gameScore[otherTeam] then
                     $"▶ {teamScore}"
                 else string teamScore
             gamePointsElem.text(text)

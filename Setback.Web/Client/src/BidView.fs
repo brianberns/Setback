@@ -93,7 +93,7 @@ module BidChooser =
 
             // create bid views
         let bidViews =
-            Enum.getValues<Bid>
+            Bid.allBids
                 |> Array.map BidView.createClickable
         for bidView in bidViews do
             div.append(bidView)

@@ -1,9 +1,6 @@
 ﻿namespace Setback.Cfrm
 
-open System
-open System.Data
 open System.Data.SQLite
-
 open Setback
 
 /// Load and run player from database.
@@ -43,7 +40,7 @@ module DatabasePlayer =
             init databasePath
 
         /// Makes a bid in the given deal.
-        let makeBid score deal =
+        let makeBid score (deal : AbstractOpenDeal) =
 
                 // get legal bids in this situation
             let auction = deal.ClosedDeal.Auction

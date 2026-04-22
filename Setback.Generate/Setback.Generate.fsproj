@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Settings.fs" />
+    <Compile Include="Traverse.fs" />
+    <Compile Include="Inference.fs" />
+    <Compile Include="State.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Setback.Learn\Setback.Learn.fsproj" />
+    <ProjectReference Include="..\Setback.Model\Setback.Model.fsproj" />
+  </ItemGroup>
+
+</Project>

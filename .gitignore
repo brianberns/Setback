@@ -339,17 +339,15 @@ ASALocalRun/
 # BeatPulse healthcheck temp database
 healthchecksdb
 
-/Setback.Cfrm.LoadDatabase/Baseline.strategy
-/Setback.Cfrm.LoadDatabase/Bootstrap.strategy
-/Setback.Cfrm.TrainBootstrap/Baseline.strategy
-/Setback.Cfrm.PlayGui/Setback*.db
-/Setback.Cfrm.PlaySelf/*.db
-/Setback.Web/Server/Setback.db
-
 # FABLE output
 *.fs.js
+*.fs.js.map
 fable_modules
 
 # Webpack output
 /Setback.Web/Client/public/*.svg
 /Setback.Web/Client/public/*.LICENSE.txt
+
+# Python virtual environment
+/venv
+/env

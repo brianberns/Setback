@@ -6,24 +6,14 @@ open Fable.Core
 
 open PlayingCards
 open Setback
-open Setback.Cfrm
 
 module Playout =
-
-    /// Answers legal plays in the given hand and deal.
-    let private getLegalPlays hand (closedDeal : AbstractClosedDeal) =
-        closedDeal.Playout
-            |> AbstractPlayout.legalPlays hand
-            |> Set.ofSeq
 
     /// Playout context.
     type private Context =
         {
-            /// Current dealer's seat.
-            Dealer : Seat
-
-            /// Current deal.
-            Deal : AbstractOpenDeal
+            /// Current game.
+            Game : Game
 
             /// Animation of playing a card.
             AnimCardPlay : CardView -> Animation
@@ -35,78 +25,62 @@ module Playout =
             AnimEstablishTrump : Seat -> Suit -> Animation
         }
 
-    /// Plays the given card on the current trick, and returns the
+    /// Plays the given card on the current trick to determine the
     /// seat of the resulting trick winner, if any.
     let private getTrickWinnerOpt context card =
-        assert(context.Deal.ClosedDeal.PlayoutOpt.IsSome)
         option {
-                // get trump suit, if any
-            let! playout = context.Deal.ClosedDeal.PlayoutOpt
-            let! trump = playout.TrumpOpt
+                // get trump suit
+            assert(context.Game.Deal.ClosedDeal.PlayoutOpt.IsSome)
+            let! playout = context.Game.Deal.ClosedDeal.PlayoutOpt
+            let! trump = playout.TrumpOpt   // if trump not yet established, this card can't complete the trick
 
                 // play card on current trick
-            let trick =
-                playout.CurrentTrick
-                    |> AbstractTrick.addPlay trump card
+            assert(playout.CurrentTrickOpt.IsSome)
+            let! trick = playout.CurrentTrickOpt
+            let trick = Trick.addPlay trump card trick   // playout is not affected
 
                 // if this card completes the trick, determine winner
-            if trick |> AbstractTrick.isComplete then
-                return context.Dealer
-                    |> Seat.incr (
-                        AbstractTrick.highPlayerIndex trick)
+            assert(Trick.highPlayerOpt trick |> Option.isSome)
+            if Trick.isComplete trick then
+                return! Trick.highPlayerOpt trick
         }
 
-    /// Has trump just been established?
-    let private tryTrumpJustEstablished deal =
-        option {
-            let! playout = deal.ClosedDeal.PlayoutOpt
-            if playout.CurrentTrick.NumPlays = 1
-                && playout.History = AbstractPlayoutHistory.empty then
-                    assert(playout.TrumpOpt.IsSome)
-                    return! playout.TrumpOpt
-        }
-
-    /// Plays the given card in the given deal and then continues
-    /// the rest of the deal.
+    /// Plays the given card in the given game and then continues
+    /// the rest of the game.
     let private playCard context cardView card =
         assert(cardView |> CardView.card = card)
         promise {
 
                 // write to log
-            let seat =
-                AbstractOpenDeal.getCurrentSeat
-                    context.Dealer
-                    context.Deal
+            let deal = context.Game.Deal
+            let seat = OpenDeal.currentPlayer deal
             console.log($"{Seat.toString seat} plays {card}")
 
-                // add the card to the deal
-            let deal =
-                context.Deal
-                    |> AbstractOpenDeal.addPlay card
-
                 // animate if setting trump
-            match tryTrumpJustEstablished deal with
-                | Some trump ->
-                    do! context.AnimEstablishTrump seat trump
+            match deal.ClosedDeal.PlayoutOpt with
+                | Some playout when Playout.numCardsPlayed playout = 0 ->
+                    do! context.AnimEstablishTrump seat card.Suit
                         |> Animation.run
-                | None -> ()
+                | Some _ -> ()
+                | None -> failwith "Unexpected"
 
-                // play the card
+                // play the card on the deal
+            let deal = deal |> OpenDeal.addPlay card
             do! context.AnimCardPlay cardView
                 |> Animation.run
 
                 // trick is complete?
-            let dealComplete = deal |> AbstractOpenDeal.isComplete
             match getTrickWinnerOpt context card with
                 | Some winner ->
 
                         // track game points won
-                    DealView.displayStatus context.Dealer deal
+                    DealView.displayStatus deal
 
                         // animate
                     let animate () =
                         context.AnimTrickFinish winner
                             |> Animation.run
+                    let dealComplete = deal |> OpenDeal.isComplete
                     if winner.IsUser && not dealComplete then
                         animate () |> ignore   // don't force user to wait for animation to finish
                     else
@@ -114,17 +88,19 @@ module Playout =
 
                 | None -> ()
 
-            return deal
+            return context.Game
+                |> Game.addAction (Choice2Of2 card)
         }
 
     /// Allows user to play a card.
     let private playUser chooser (handView : HandView) context =
 
             // determine all legal plays
+        let infoSet = Game.currentInfoSet context.Game
         let legalPlays =
-            let hand =
-                AbstractOpenDeal.currentHand context.Deal
-            getLegalPlays hand context.Deal.ClosedDeal
+            infoSet.LegalActions
+                |> Seq.map Action.toPlay
+                |> set
         assert(not legalPlays.IsEmpty)
 
             // enable user to select one of the corresponding card views
@@ -155,14 +131,14 @@ module Playout =
     let private playAuto context =
         async {
                 // determine card to play
-            let! card =
-                WebPlayer.makePlay AbstractScore.zero context.Deal
+            let! action = WebPlayer.takeAction context.Game
+            let card = Action.toPlay action
 
                 // create view of the selected card
             let! cardView =
                 let isTrump =
                     option {
-                        let! trump = context.Deal.ClosedDeal.TrumpOpt
+                        let! trump = context.Game.Deal.ClosedDeal.TrumpOpt
                         return card.Suit = trump
                     } |> Option.defaultValue true
                 card
@@ -177,17 +153,14 @@ module Playout =
     /// Runs the given deal's playout
     let run (persState : PersistentState) chooser (playoutMap : Map<_, _>) =
         assert(
-            persState.Deal.ClosedDeal.Auction
-                |> AbstractAuction.isComplete)
-
-        let dealer = persState.Dealer
+            persState.Game.Deal.ClosedDeal.Auction
+                |> Auction.isComplete)
 
         /// Plays a single card and then loops recursively.
         let rec loop (persState : PersistentState) =
             async {
-                let deal = persState.Deal
-                let isComplete =
-                    deal |> AbstractOpenDeal.isComplete
+                let deal = persState.Game.Deal
+                let isComplete = OpenDeal.isComplete deal
                 if isComplete then
 
                         // cleanup at end of deal
@@ -198,8 +171,7 @@ module Playout =
                     return persState
                 else
                         // prepare current player
-                    let seat =
-                        AbstractOpenDeal.getCurrentSeat dealer deal
+                    let seat = OpenDeal.currentPlayer deal
                     let (handView : HandView),
                         animCardPlay,
                         animTrickFinish,
@@ -208,14 +180,12 @@ module Playout =
                     let player =
                         if seat.IsUser then
                             playUser chooser handView >> Async.AwaitPromise
-                        else
-                            playAuto
+                        else playAuto
 
                         // invoke player
-                    let! deal' =
+                    let! game =
                         player {
-                            Dealer = dealer
-                            Deal = deal
+                            Game = persState.Game
                             AnimCardPlay = animCardPlay
                             AnimTrickFinish = animTrickFinish
                             AnimEstablishTrump = animEstablishTrump
@@ -223,10 +193,14 @@ module Playout =
 
                         // recurse until playout is complete
                     let persState' =
-                        { persState with DealOpt = Some deal' }
-                    let trick =
-                        deal'.ClosedDeal.Playout.CurrentTrick
-                    if trick.NumPlays % Seat.numSeats = 0 then   // save at trick boundary
+                        { persState with Game = game }
+                    let save =   // save at trick boundary
+                        option {
+                            let! playout = game.Deal.ClosedDeal.PlayoutOpt
+                            let! trick = playout.CurrentTrickOpt
+                            return trick.Cards.Length % Seat.numSeats = 0
+                        } |> Option.defaultValue true
+                    if save then
                         PersistentState.save persState'
                     return! loop persState'
             }

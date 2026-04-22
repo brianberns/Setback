@@ -18,8 +18,4 @@
     <PackageReference Include="Suave.Dynamic" Version="1.6.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Client\src\Setback.Web.Client.fsproj" />
-  </ItemGroup>
-
 </Project>

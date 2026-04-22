@@ -1,0 +1,6 @@
+[submodule "PlayingCards"]
+	path = PlayingCards
+	url = https://github.com/brianberns/PlayingCards
+[submodule "Fable.Remoting.Suave"]
+	path = Fable.Remoting.Suave
+	url = https://github.com/brianberns/Fable.Remoting.Suave

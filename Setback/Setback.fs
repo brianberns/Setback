@@ -2,7 +2,8 @@
 
 module Setback =
 
-    /// Number of cards dealt to each player.
+    /// Number of cards dealt to each player. This is also the
+    /// number of tricks in each deal.
     let numCardsPerHand = 6
 
     /// Number of cards in a deal.

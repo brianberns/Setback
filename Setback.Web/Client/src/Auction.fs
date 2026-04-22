@@ -1,58 +1,38 @@
 namespace Setback.Web.Client
 
 open Browser.Dom
-
 open Fable.Core
-
 open Setback
-open Setback.Cfrm
-
-module AbstractOpenDeal =
-
-    /// Answers the current player's seat.
-    let getCurrentSeat dealer deal =
-        Seat.incr
-            (AbstractOpenDeal.currentPlayerIndex deal)
-            dealer
 
 module Auction =
 
     /// Auction context.
     type private Context =
         {
-            /// Current dealer's seat.
-            Dealer : Seat
-
-            /// Current score, relative to the dealer's team.
-            Score : AbstractScore
-
-            /// Current deal.
-            Deal : AbstractOpenDeal
+            /// Current game.
+            Game : Game
 
             /// Animation of making a bid.
             AnimBid : Bid -> Animation
         }
 
-    /// Makes the given bid in the given deal and then continues
-    /// the rest of the deal.
+    /// Makes the given bid in the given game and then continues
+    /// the rest of the game.
     let private makeBid context bid =
         promise {
 
                 // write to log
             do
                 let seat =
-                    AbstractOpenDeal.getCurrentSeat
-                        context.Dealer
-                        context.Deal
+                    context.Game.Deal |> OpenDeal.currentPlayer
                 console.log($"{Seat.toString seat} bids {Bid.toString bid}")
 
                 // animate the bid
-            do! context.AnimBid bid
-                |> Animation.run
+            do! context.AnimBid bid |> Animation.run
 
                 // add bid to deal
-            return context.Deal
-                |> AbstractOpenDeal.addBid bid
+            return context.Game
+                |> Game.addAction (Choice1Of2 bid)
         }
 
     /// Allows user to make a bid.
@@ -60,8 +40,8 @@ module Auction =
 
             // determine all legal bids
         let legalBids =
-            context.Deal.ClosedDeal.Auction
-                |> AbstractAuction.legalBids
+            context.Game.Deal.ClosedDeal.Auction
+                |> Auction.legalBids
                 |> set
         assert(legalBids |> Set.isEmpty |> not)
 
@@ -89,8 +69,8 @@ module Auction =
     let private bidAuto context =
         async {
                 // determine bid to make
-            let! bid =
-                WebPlayer.makeBid context.Score context.Deal
+            let! action = WebPlayer.takeAction context.Game
+            let bid = Action.toBid action
 
                 // move to next player
             return! makeBid context bid
@@ -103,20 +83,15 @@ module Auction =
         /// Makes a single bid and then loops recursively.
         let rec loop (persState : PersistentState) =
             async {
-                    // is deal complete?
-                let deal = persState.Deal
+                    // is auction complete?
+                let deal = persState.Game.Deal
                 let isComplete =
-                    deal.ClosedDeal.Auction
-                        |> AbstractAuction.isComplete
+                    Auction.isComplete deal.ClosedDeal.Auction
                 if isComplete then
                     return persState
                 else
                         // prepare current player
-                    let dealer = persState.Dealer
-                    let seat =
-                        AbstractOpenDeal.getCurrentSeat dealer deal
-                    let score =
-                        Game.relativeScore dealer persState.GameScore
+                    let seat = OpenDeal.currentPlayer deal
                     let animBid = auctionMap[seat]
                     let bidder =
                         if seat.IsUser then
@@ -124,17 +99,15 @@ module Auction =
                         else bidAuto
 
                         // invoke bidder
-                    let! deal' =
+                    let! game =
                         bidder {
-                            Dealer = dealer
-                            Score = score
-                            Deal = deal
+                            Game = persState.Game
                             AnimBid = animBid
                         }
 
                         // recurse until auction is complete
                     let persState' =
-                        { persState with DealOpt = Some deal' }.Save()
+                        { persState with Game = game }.Save()
                     return! loop persState'
             }
 

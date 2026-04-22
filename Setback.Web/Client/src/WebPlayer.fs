@@ -3,7 +3,6 @@
 module Remoting =
 
     open Fable.Remoting.Client
-    open Browser.Dom
     open Setback.Web
 
     /// Prefix routes with /Setback.
@@ -16,112 +15,45 @@ module Remoting =
             |> Remoting.withRouteBuilder routeBuilder
             |> Remoting.buildProxy<ISetbackApi>
 
-    let getActionIndex key =
+    /// Chooses an action for the given info set.
+    let getActionIndex infoSet =
         async {
-            match! Async.Catch(api.GetActionIndex(key)) with
-                | Choice1Of2 indexOpt -> return indexOpt
+            match! Async.Catch(api.GetActionIndex infoSet) with
+                | Choice1Of2 index -> return index
                 | Choice2Of2 exn ->
                     failwith exn.Message   // is there a better way to handle this?
-                    return None
+                    return -1
+        }
+
+    /// Gets the strategy for the given info set.
+    let getStrategy infoSet =
+        async {
+            match! Async.Catch(api.GetStrategy infoSet) with
+                | Choice1Of2 strategy -> return strategy
+                | Choice2Of2 exn ->
+                    failwith exn.Message   // is there a better way to handle this?
+                    return Array.empty
         }
 
 /// Plays Setback by calling a remote server.
 module WebPlayer =
 
     open Setback
-    open Setback.Cfrm
 
-    /// Makes a bid in the given deal.
-    let makeBid score deal =
+    /// Takes an action in the given game.
+    let takeAction game =
 
-            // get legal bids in this situation
-        let auction = deal.ClosedDeal.Auction
-        let legalBids =
-            auction |> AbstractAuction.legalBids
+            // get legal actions in this situation
+        let infoSet = Game.currentInfoSet game
+        let legalActions = infoSet.LegalActions
 
-        match legalBids.Length with
+            // choose play
+        match legalActions.Length with
             | 0 -> failwith "Unexpected"
-            | 1 -> async.Return(legalBids[0])          // trivial case
-
-                // must choose between multiple legal bids
+            | 1 -> async { return legalActions[0] }
             | _ ->
                 async {
-                        // determine key for this situation
-                    let key =
-                        let hand =
-                            let iPlayer =
-                                deal |> AbstractOpenDeal.currentPlayerIndex
-                            deal.UnplayedCards[iPlayer]
-                        assert(hand.Count = Setback.numCardsPerHand)
-                        BootstrapGameState.toAbbr auction score hand             // score-sensitive bidding
-
-                        // profile contains key?
-                    match! Remoting.getActionIndex key with
-                        | Some iAction ->
-                            return legalBids[iAction]
-                        | None ->
-                            return
-                                if legalBids |> Array.contains(Bid.Three) then   // assumption: unusual hand is probably strong
-                                    Bid.Three
-                                else Bid.Pass
-                }
-
-    /// Chooses a play action.
-    let private chooseAction (legalPlayActions : _[]) deal =
-        match legalPlayActions.Length with
-            | 0 -> failwith "Unexpected"
-            | 1 -> async.Return(legalPlayActions[0])   // trivial case
-
-                // choose action
-            | _ ->
-                async {
-                        // determine key for this situation
-                    let key =
-                        let legalDealActions =
-                            legalPlayActions
-                                |> Array.map DealPlayAction
-                        BaselineGameState.getKey legalDealActions deal
-
-                        // profile contains key?
-                    match! Remoting.getActionIndex key with
-                        | Some iAction ->
-                            return legalPlayActions[iAction]
-                        | None ->
-                            return legalPlayActions[0]
-                }
-
-    /// Plays a card in the given deal.
-    let makePlay (_ : AbstractScore) (deal : AbstractOpenDeal) =
-
-            // get legal plays in this situation
-        let hand =
-            AbstractOpenDeal.currentHand deal
-        let handLowTrumpRankOpt =
-            AbstractOpenDeal.currentLowTrumpRankOpt deal
-        let playout = deal.ClosedDeal.Playout
-        let legalPlays =
-            playout
-                |> AbstractPlayout.legalPlays hand
-                |> Seq.toArray
-
-        match legalPlays.Length with
-            | 0 -> failwith "Unexpected"
-            | 1 -> async.Return(legalPlays[0])          // trivial case
-
-                // must choose between multiple legal plays
-            | _ ->
-                async {
-                        // get legal actions (not usually 1:1 with legal plays)
-                    let legalPlayActions =
-                        PlayAction.getActions hand handLowTrumpRankOpt playout
-
-                        // choose best action
-                    let! action = chooseAction legalPlayActions deal
-
-                        // convert action to card
-                    return PlayAction.getPlay
-                        hand
-                        handLowTrumpRankOpt
-                        playout
-                        action
+                    let! iAction =
+                        Remoting.getActionIndex infoSet
+                    return legalActions[iAction]
                 }

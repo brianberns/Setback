@@ -16,7 +16,7 @@ type AbstractOpenDeal =
 
         /// Each player's unplayed cards, indexed relative to the
         /// dealer.
-        UnplayedCards : ImmutableArray<Set<Card>>
+        UnplayedCards : ImmutableArray<Hand>
 
         /// Lowest trump card dealt to each player (if any), indexed
         /// relative to the dealer.
@@ -63,7 +63,7 @@ module AbstractOpenDeal =
         }
 
     /// Deals cards from the given deck to each player.
-    let fromDeck dealer deck =
+    let fromDeck dealer (deck : Deck) =
 
         let numCardsPerGroup = 3
         assert (Setback.numCardsPerHand % numCardsPerGroup = 0)
@@ -83,6 +83,7 @@ module AbstractOpenDeal =
                     pairs
                         |> Seq.map snd
                         |> Seq.take Setback.numCardsPerHand
+                        |> set
                 seat, hand)
             |> Map
 
@@ -208,7 +209,7 @@ module AbstractOpenDeal =
     /// Current player's hand.
     let currentHand deal =
         let iPlayer = currentPlayerIndex deal
-        deal.UnplayedCards[iPlayer] :> Hand
+        deal.UnplayedCards[iPlayer]
 
     /// Current player's lowest dealt trump rank, if any.
     let currentLowTrumpRankOpt deal =
