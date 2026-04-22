@@ -20,9 +20,7 @@ module Remoting =
         async {
             match! Async.Catch(api.GetActionIndex infoSet) with
                 | Choice1Of2 index -> return index
-                | Choice2Of2 exn ->
-                    failwith exn.Message   // is there a better way to handle this?
-                    return -1
+                | Choice2Of2 exn -> return failwith exn.Message
         }
 
     /// Gets the strategy for the given info set.
@@ -30,9 +28,7 @@ module Remoting =
         async {
             match! Async.Catch(api.GetStrategy infoSet) with
                 | Choice1Of2 strategy -> return strategy
-                | Choice2Of2 exn ->
-                    failwith exn.Message   // is there a better way to handle this?
-                    return Array.empty
+                | Choice2Of2 exn -> return failwith exn.Message
         }
 
 /// Plays Setback by calling a remote server.
