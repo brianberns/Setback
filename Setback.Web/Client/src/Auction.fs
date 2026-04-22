@@ -29,7 +29,7 @@ module Auction =
                         |> Seq.sortByDescending snd
                 console.log("Bid hint:")
                 for bid, prob in pairs do
-                    console.log($"   {bid}: %.1f{100. * prob}%%")
+                    console.log($"   {Bid.toString bid}: %.1f{100. * prob}%%")
             } |> Async.StartImmediate
 
     /// Makes the given bid in the given game and then continues
