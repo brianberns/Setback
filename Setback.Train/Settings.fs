@@ -60,7 +60,7 @@ module Settings =
 #if DEBUG
             NumEvaluationGames = 40
 #else
-            NumEvaluationGames = 20000
+            NumEvaluationGames = 20_000
 #endif
             Device = torch.CUDA
             ModelDirPath = Path.Combine(".", "Models")
