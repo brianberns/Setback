@@ -25,6 +25,22 @@ module Playout =
             AnimEstablishTrump : Seat -> Suit -> Animation
         }
 
+    /// Logs hint information.
+    let private logHint game =
+        let infoSet = Game.currentInfoSet game
+        let legalPlays =
+            Array.map Action.toPlay infoSet.LegalActions
+        if legalPlays.Length > 1 then
+            async {
+                let! strategy = Remoting.getStrategy infoSet
+                let pairs =
+                    Array.zip legalPlays strategy
+                        |> Seq.sortByDescending snd
+                console.log("Play hint:")
+                for card, prob in pairs do
+                    console.log($"   {card}: %.1f{100. * prob}%%")
+            } |> Async.StartImmediate
+
     /// Plays the given card on the current trick to determine the
     /// seat of the resulting trick winner, if any.
     let private getTrickWinnerOpt context card =
@@ -102,6 +118,7 @@ module Playout =
                 |> Seq.map Action.toPlay
                 |> set
         assert(not legalPlays.IsEmpty)
+        logHint context.Game
 
             // enable user to select one of the corresponding card views
         Promise.create(fun resolve _reject ->
