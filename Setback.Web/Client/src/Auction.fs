@@ -16,6 +16,22 @@ module Auction =
             AnimBid : Bid -> Animation
         }
 
+    /// Logs hint information.
+    let private logHint game =
+        let infoSet = Game.currentInfoSet game
+        let legalBids =
+            Array.map Action.toBid infoSet.LegalActions
+        if legalBids.Length > 1 then
+            async {
+                let! strategy = Remoting.getStrategy infoSet
+                let pairs =
+                    Array.zip legalBids strategy
+                        |> Seq.sortByDescending snd
+                console.log("Bid hint:")
+                for bid, prob in pairs do
+                    console.log($"   {Bid.toString bid}: %.1f{100. * prob}%%")
+            } |> Async.StartImmediate
+
     /// Makes the given bid in the given game and then continues
     /// the rest of the game.
     let private makeBid context bid =
@@ -44,6 +60,7 @@ module Auction =
                 |> Auction.legalBids
                 |> set
         assert(legalBids |> Set.isEmpty |> not)
+        logHint context.Game
 
             // enable user to select one of the corresponding bid views
         Promise.create (fun resolve _reject ->

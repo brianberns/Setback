@@ -90,8 +90,8 @@ module Game =
                     console.log($"E+W make {dealScore[Team.EastWest]} point(s)")
                     console.log($"N+S make {dealScore[Team.NorthSouth]} point(s)")
 
-                    // update game score
-                let gameScore = persState.Game.Score + dealScore
+                    // show score of this game (which has already been updated)
+                let gameScore = persState.Game.Score
                 for team in Enum.getValues<Team> do
                     scoreElems[int team].text(string gameScore[team])
                 do
