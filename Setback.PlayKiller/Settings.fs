@@ -1,7 +1,6 @@
 ﻿namespace Setback.PlayKiller
 
 open TorchSharp
-open Setback.Model
 
 /// Hyperparameters.
 type Settings =
