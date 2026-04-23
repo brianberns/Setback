@@ -50,8 +50,8 @@ module Settings =
     /// Creates default settings.
     let create writer =
         {
-            HiddenSize = Encoding.encodedLength
-            NumHiddenLayers = 4
+            HiddenSize = 1_200
+            NumHiddenLayers = 5
             NumTrainingEpochs = 100
             TrainingBatchSize = 500_000
             TrainingSubBatchSize = 50_000
