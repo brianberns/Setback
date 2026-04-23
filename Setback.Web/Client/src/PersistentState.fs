@@ -43,12 +43,18 @@ module PersistentState =
     /// Answers the current state.
     let get () =
         let json = WebStorage.localStorage[key]
-        if isNull json then
-            let persState = initial
-            save persState
-            persState
-        else
-            Json.parseAs<PersistentState>(json)
+        let persState =
+            if isNull json then initial
+            else
+                match Json.tryParseAs<PersistentState>(json) with
+                    | Ok persState -> persState
+                    | Error _ ->
+                        match Json.tryParseAs<{| GamesWon : {| AbstractScore : int[] |} |}>(json) with
+                            | Ok oldState ->
+                                { initial with GamesWon = Score.ofPoints oldState.GamesWon.AbstractScore }
+                            | Error _ -> initial
+        save persState
+        persState
 
 type PersistentState with
 
