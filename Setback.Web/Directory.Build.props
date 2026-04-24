@@ -5,6 +5,6 @@
     <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="FSharp.Core" Version="10.0.103" />
+    <PackageReference Include="FSharp.Core" Version="10.1.202" />
   </ItemGroup>
 </Project>
