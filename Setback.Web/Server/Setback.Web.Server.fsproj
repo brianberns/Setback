@@ -18,7 +18,12 @@
     <PackageReference Include="Suave" Version="3.2.3">
       <ExcludeAssets>runtime</ExcludeAssets>
 	</PackageReference>
-    <PackageReference Include="TorchSharp-cpu" Version="0.105.2" />
+    <PackageReference Include="TorchSharp" Version="0.105.2">
+		<ExcludeAssets>runtime;native</ExcludeAssets>
+	</PackageReference>
+    <PackageReference Include="TorchSharp-cpu" Version="0.105.2">
+		<ExcludeAssets>runtime;native</ExcludeAssets>
+	</PackageReference>
 	<PackageReference Update="FSharp.Core">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
@@ -26,7 +31,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Fable.Remoting.Suave\Fable.Remoting.Suave\Fable.Remoting.Suave.fsproj" />
-    <ProjectReference Include="..\..\Setback.Model\Setback.Model.fsproj" />
+    <ProjectReference Include="..\..\Setback.Model\Setback.Model.fsproj">
+      <ExcludeAssets>runtime;native</ExcludeAssets>
+    </ProjectReference>
   </ItemGroup>
 
 </Project>
