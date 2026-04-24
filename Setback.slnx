@@ -2,6 +2,8 @@
   <Folder Name="/Solution Items/">
     <File Path="Directory.Build.props" />
     <File Path="README.md" />
+    <File Path="Setback.Web/Directory.Build.props" />
+    <File Path="Setback.Web/README.md" />
   </Folder>
   <Project Path="Fable.Remoting.Suave/Fable.Remoting.Json/Fable.Remoting.Json.fsproj" />
   <Project Path="Fable.Remoting.Suave/Fable.Remoting.MsgPack/Fable.Remoting.MsgPack.fsproj" />
