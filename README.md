@@ -1,6 +1,6 @@
 # Deep CFR for Setback
 
-This project uses [Deep Counterfactual Regret Minimization](https://arxiv.org/abs/1811.00164) (Deep CFR) to train an AI that plays the card game [Setback](https://en.wikipedia.org/wiki/Pitch_%28card_game%29#Auction_Pitch) (aka Auction Pitch) at a very high level.
+This project uses [Deep Counterfactual Regret Minimization](https://arxiv.org/abs/1811.00164) (Deep CFR) to train an AI that plays the card game [Setback](https://en.wikipedia.org/wiki/Pitch_%28card_game%29#Auction_Pitch) (aka Auction Pitch) at a high level.
 
 The approach used here is very similar to the one used previously to train a [Hearts AI](https://github.com/brianberns/Hearts). The main differences are:
 

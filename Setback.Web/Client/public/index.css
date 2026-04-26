@@ -58,9 +58,13 @@ button {
 
 #more {
     position: absolute;
-    left: 2%;
-    top: 87%;
+    left: 73%;
+    top: 10%;
 }
+
+    #more a {
+        font-size: smaller;
+    }
 
 .bid-chooser {
     display: none; /* hidden when created */
