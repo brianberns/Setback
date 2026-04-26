@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Setback.Cfrm.PlaySelf\Setback.Cfrm.PlaySelf.fsproj" />
     <ProjectReference Include="..\Setback.Model\Setback.Model.fsproj" />
     <ProjectReference Include="..\Setback.Train\Setback.Train.fsproj" />
     <ProjectReference Include="..\Setback\Setback.fsproj" />

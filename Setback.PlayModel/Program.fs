@@ -23,11 +23,19 @@ module Program =
                 matcher.AddInclude(arg) |> ignore
             matcher.GetResultsInFullPath(".")
 
-    /// CFR champion.
-    let private champion =
-        Cfrm.DatabasePlayer.player "Champion.db"
-            |> Cfrm.PlaySelf.Program.getPlayer
+    /// Champion for comparison.
+    let private createChampion settings =
+        let model =
+            new AdvantageModel(
+                settings.HiddenSize,
+                settings.NumHiddenLayers,
+                0.0,
+                TorchSharp.torch.CPU)   // always run on CPU
+        model.load("Champion.pt") |> ignore
+        model.eval()
+        Strategy.createPlayer model
 
+    /// Plays models against champion.
     let run paths =
 
         let settings =
@@ -36,6 +44,8 @@ module Program =
         Settings.write settings
 
         printfn $"Server garbage collection: {GCSettings.IsServerGC}"
+
+        let champion = createChampion settings
 
         use model =
             new AdvantageModel(

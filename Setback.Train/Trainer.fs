@@ -1,6 +1,5 @@
 ﻿namespace Setback.Train
 
-open System
 open System.IO
 
 open TorchSharp
@@ -15,6 +14,7 @@ open Setback.Model
 
 module Trainer =
 
+    (*
     /// CFR champion.
     let private champion =
         Cfrm.DatabasePlayer.player "Champion.db"
@@ -40,6 +40,7 @@ module Trainer =
             printfn $"Epoch {epoch} tournament payoff: %0.5f{payoff}"
         settings.Writer.add_scalar(
             $"advantage tournament/iter%03d{iteration}", payoff, epoch)
+    *)
 
     /// A chunk of training data that fits on the GPU and in
     /// memory.
@@ -225,4 +226,6 @@ module Trainer =
             model.save(path) |> ignore
 
                 // evaluate model
+            (*
             evaluate settings store.Iteration epoch model
+            *)
