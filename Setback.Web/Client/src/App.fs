@@ -20,7 +20,8 @@ module Session =
                     persState.Game.Deal.ClosedDeal.Dealer
                         |> Seat.incr 1
                         |> Game.create Random.Shared
-                let persState = { persState with Game = game }
+                console.log($"Dealer is {Seat.toString game.Deal.ClosedDeal.Auction.Dealer}")   // ugly: starting a new game also starts the first deal in that game
+                let persState = { persState with Game = game }.Save()
 
                 do! loop persState
             }
