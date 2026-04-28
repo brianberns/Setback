@@ -1,71 +1,117 @@
-﻿namespace Setback.PlayModel
+namespace Setback.PlayModel
 
 open System
-open System.IO
 
 open PlayingCards
 open Setback
 open Setback.Model
 
-(*
-Auction.fs.js:60 East bids Two
-Playout.fs.js:80 East plays Q♣
-Playout.fs.js:80 East plays 4♥
-Playout.fs.js:80 East plays 7♦
-Playout.fs.js:80 East plays 5♦
-Playout.fs.js:80 East plays T♠
-Playout.fs.js:80 East plays 9♠
-*)
-
 module Program =
 
-    let runModel (model : AdvantageModel) path =
+    let run () =
 
-        model.load(path : string) |> ignore
+        use model =
+            new AdvantageModel(1200, 5, 0.0, TorchSharp.torch.CPU)
+        model.load("AdvantageModel.pt") |> ignore
         model.eval()
 
-        let cards =
+        let player = Strategy.createPlayer model
+
+        // "Low" non-club cards (suits S, D, H; ranks 2-10).
+        let lowCards =
             [|
                 for suit in [ Suit.Spades; Suit.Diamonds; Suit.Hearts ] do
                     for rankNum = 2 to 10 do
                         Card(enum<Rank> rankNum, suit)
             |]
-        [
-            for _ = 1 to 1000 do
-                let hand =
-                    set [
-                        Card.fromString "QC"
-                        yield! Array.randomShuffle cards |> Array.take 5
-                    ]
-                // printfn $"{Hand.toString hand}"
-                let deal = ClosedDeal.create Seat.North
-                let infoSet =
-                    InformationSet.create Seat.East hand deal Score.zero
-                let strategy =
-                    Strategy.getFromAdvantage
-                        model
-                        [| infoSet |]
-                        |> Array.exactlyOne
-                yield! Array.zip
-                    (Array.map Action.toBid infoSet.LegalActions)
-                    (strategy.ToArray())
-        ]
-            |> Seq.groupBy fst
-            |> Seq.map (fun (bid, group) ->
-                let avg =
-                    Seq.map snd group
-                        |> Seq.average
-                bid, avg)
-            |> Seq.iter (fun (bid, avg) ->
-                printfn $"   {bid}: {avg}")
 
-    let run () =
-        use model =
-            new AdvantageModel(1200, 5, 0.0, TorchSharp.torch.CPU)
-        let dir = DirectoryInfo(@"C:\Users\brian\iCloudDrive\Setback\iter006\Training large")
-        for file in dir.GetFiles("*.pt") do
-            printfn $"{file.Name}"
-            runModel model file.FullName
+        let queenClubs = Card.fromString "QC"
+        let allCards = set Card.allCards
+        let dealer = Seat.North
+
+        // Plays a single deal to completion using the model for
+        // every decision (modeled on Game.playGame, but stops at
+        // end of deal). East's first bid is forced to firstBid.
+        let playDeal handMap firstBid =
+            let game =
+                {
+                    Deal =
+                        OpenDeal.fromHands dealer handMap
+                            |> OpenDeal.addBid firstBid
+                    Score = Score.zero
+                }
+            let rec loop (game : Game) =
+                if OpenDeal.isComplete game.Deal then
+                    ClosedDeal.getDealScore game.Deal.ClosedDeal
+                else
+                    let infoSet = Game.currentInfoSet game
+                    let action =
+                        match Seq.tryExactlyOne infoSet.LegalActions with
+                            | Some action -> action
+                            | None -> player.Act infoSet
+                    loop (Game.addAction action game)
+            loop game
+
+        let rng = Random()
+        let nDealPairs = 10000
+
+        let results =
+            [|
+                for _ = 1 to nDealPairs do
+
+                        // East's hand: singleton Q♣ plus 5 random low cards
+                    let eastHand =
+                        set [
+                            queenClubs
+                            yield! Array.randomShuffleWith rng lowCards
+                                |> Array.take 5
+                        ]
+
+                        // Deal 6 cards each to N, S, W from the remaining cards
+                    let others =
+                        Set.difference allCards eastHand
+                            |> Set.toArray
+                            |> Array.randomShuffleWith rng
+                    let handMap =
+                        Map [
+                            Seat.East,  eastHand
+                            Seat.North, set others[ 0 ..  5]
+                            Seat.South, set others[ 6 .. 11]
+                            Seat.West,  set others[12 .. 17]
+                        ]
+
+                    let scorePass = playDeal handMap Bid.Pass
+                    let scoreTwo  = playDeal handMap Bid.Two
+                    let payoff (score : Score) =
+                        score[Team.EastWest] - score[Team.NorthSouth]
+                    yield payoff scorePass, payoff scoreTwo
+            |]
+
+        let avgPass = results |> Array.averageBy (fst >> float)
+        let avgTwo  = results |> Array.averageBy (snd >> float)
+        let avgDiff =
+            results
+                |> Array.averageBy (fun (p, t) -> float (t - p))
+        let nTwoBetter =
+            results
+                |> Array.filter (fun (p, t) -> t > p)
+                |> Array.length
+        let nTwoWorse =
+            results
+                |> Array.filter (fun (p, t) -> t < p)
+                |> Array.length
+        let nTie =
+            results
+                |> Array.filter (fun (p, t) -> t = p)
+                |> Array.length
+
+        printfn $"Deal pairs: {nDealPairs}"
+        printfn $"Avg payoff (E+W minus N+S) when East passes: {avgPass:F4}"
+        printfn $"Avg payoff (E+W minus N+S) when East bids 2: {avgTwo:F4}"
+        printfn $"Avg difference (Two - Pass):                 {avgDiff:F4}"
+        printfn $"Two better than Pass: {nTwoBetter}"
+        printfn $"Two worse  than Pass: {nTwoWorse}"
+        printfn $"Tie:                  {nTie}"
 
     do
         Console.OutputEncoding <- Text.Encoding.UTF8
