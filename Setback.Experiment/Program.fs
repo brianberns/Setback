@@ -15,7 +15,15 @@ module Program =
         model.load("AdvantageModel.pt") |> ignore
         model.eval()
 
-        let player = Strategy.createPlayer model
+        // Thread-safe player: uses Random.Shared so Act can be
+        // called from multiple threads concurrently.
+        let act infoSet =
+            let strategy =
+                Strategy.getFromAdvantage model [| infoSet |]
+                    |> Array.exactlyOne
+            Vector.sample Random.Shared strategy
+                |> Array.get infoSet.LegalActions
+        let player = { Act = act }
 
         // "Low" non-club cards (suits S, D, H; ranks 2-10).
         let lowCards =
@@ -53,39 +61,42 @@ module Program =
             loop game
 
         let rng = Random()
-        let nDealPairs = 10000
+        let nDealPairs = 100_000
 
+        // Pre-generate all hand maps serially (rng is not
+        // thread-safe).
+        let handMaps =
+            Array.init nDealPairs (fun _ ->
+
+                    // East's hand: singleton Q♣ plus 5 random low cards
+                let eastHand =
+                    set [
+                        queenClubs
+                        yield! Array.randomShuffleWith rng lowCards
+                            |> Array.take 5
+                    ]
+
+                    // Deal 6 cards each to N, S, W from the remaining cards
+                let others =
+                    Set.difference allCards eastHand
+                        |> Set.toArray
+                        |> Array.randomShuffleWith rng
+                Map [
+                    Seat.East,  eastHand
+                    Seat.North, set others[ 0 ..  5]
+                    Seat.South, set others[ 6 .. 11]
+                    Seat.West,  set others[12 .. 17]
+                ])
+
+        // Play deal pairs in parallel.
         let results =
-            [|
-                for _ = 1 to nDealPairs do
-
-                        // East's hand: singleton Q♣ plus 5 random low cards
-                    let eastHand =
-                        set [
-                            queenClubs
-                            yield! Array.randomShuffleWith rng lowCards
-                                |> Array.take 5
-                        ]
-
-                        // Deal 6 cards each to N, S, W from the remaining cards
-                    let others =
-                        Set.difference allCards eastHand
-                            |> Set.toArray
-                            |> Array.randomShuffleWith rng
-                    let handMap =
-                        Map [
-                            Seat.East,  eastHand
-                            Seat.North, set others[ 0 ..  5]
-                            Seat.South, set others[ 6 .. 11]
-                            Seat.West,  set others[12 .. 17]
-                        ]
-
+            handMaps
+                |> Array.Parallel.map (fun handMap ->
                     let scorePass = playDeal handMap Bid.Pass
                     let scoreTwo  = playDeal handMap Bid.Two
                     let payoff (score : Score) =
                         score[Team.EastWest] - score[Team.NorthSouth]
-                    yield payoff scorePass, payoff scoreTwo
-            |]
+                    payoff scorePass, payoff scoreTwo)
 
         let avgPass = results |> Array.averageBy (fst >> float)
         let avgTwo  = results |> Array.averageBy (snd >> float)
