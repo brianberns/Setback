@@ -21,7 +21,7 @@ module Settings =
     /// Creates default settings.
     let create () =
         {
-            HiddenSize = 1_200
-            NumHiddenLayers = 5
+            HiddenSize = 1_250
+            NumHiddenLayers = 6
             Device = torch.CPU
         }
