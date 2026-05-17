@@ -106,11 +106,9 @@ module Game =
 
                             // increment games won
                         let persState = incrGamesWon team persState
-                        PersistentState.save persState
-
-                            // display game result
                         do! gameOver surface team persState.GamesWon
                             |> Async.AwaitPromise
+                        PersistentState.save persState
 
                         return persState
 
