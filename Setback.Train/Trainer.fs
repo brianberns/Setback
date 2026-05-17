@@ -14,34 +14,6 @@ open Setback.Model
 
 module Trainer =
 
-    (*
-    /// CFR champion.
-    let private champion =
-        Cfrm.DatabasePlayer.player "Champion.db"
-            |> Cfrm.PlaySelf.Program.getPlayer
-
-    /// Evaluates the given model by playing it against a
-    /// standard.
-    let private evaluate settings iteration epoch model =
-
-            // determine payoff
-        let nGames =
-            use model = AdvantageModel.Copy(model, CPU)   // avoid cross-thread TorchSharp GPU problems (memory leaks, toFloat crash)
-            model.eval()
-            Tournament.run
-                settings.NumEvaluationGames
-                champion
-                (Strategy.createPlayer model)
-        let payoff =
-            float32 nGames / float32 settings.NumEvaluationGames
-
-            // write payoff
-        if settings.Verbose then
-            printfn $"Epoch {epoch} tournament payoff: %0.5f{payoff}"
-        settings.Writer.add_scalar(
-            $"advantage tournament/iter%03d{iteration}", payoff, epoch)
-    *)
-
     /// A chunk of training data that fits on the GPU and in
     /// memory.
     type private SubBatch = AdvantageSample[]
@@ -224,8 +196,3 @@ module Trainer =
                     settings.ModelDirPath,
                     $"AdvantageModel-i%03d{store.Iteration}-e%03d{epoch}.pt")
             model.save(path) |> ignore
-
-                // evaluate model
-            (*
-            evaluate settings store.Iteration epoch model
-            *)
