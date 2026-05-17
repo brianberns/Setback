@@ -1,7 +1,8 @@
-namespace Setback
+namespace Setback.PlayModel
 
 open System
 open PlayingCards
+open Setback
 
 module Tournament =
 
