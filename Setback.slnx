@@ -9,6 +9,7 @@
   <Project Path="Fable.Remoting.Suave/Fable.Remoting.Server/Fable.Remoting.Server.fsproj" />
   <Project Path="Fable.Remoting.Suave/Fable.Remoting.Suave/Fable.Remoting.Suave.fsproj" />
   <Project Path="PlayingCards/PlayingCards/PlayingCards.fsproj" />
+  <Project Path="Setback.Experiment/Setback.Experiment.fsproj" />
   <Project Path="Setback.Generate/Setback.Generate.fsproj" Id="1c1061dd-ad4b-4bd5-b111-2cc99a419553" />
   <Project Path="Setback.Learn/Setback.Learn.fsproj" Id="ecee59f5-f6d2-4ada-bea7-4a3cd6ceb642" />
   <Project Path="Setback.Model/Setback.Model.fsproj" Id="32ba2174-6a1d-486d-a052-a089548d7c9f" />
