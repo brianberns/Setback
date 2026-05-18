@@ -4,28 +4,18 @@ open PlayingCards
 open Setback
 open Setback.Model
 
-(*
-Dealer is East
-Auction.fs.js:60 South bids Three
-Auction.fs.js:60 West bids Four
-Auction.fs.js:60 North bids Pass
-Auction.fs.js:60 East bids Four
-Playout.fs.js:80 East plays J♦
-Playout.fs.js:80 East plays 9♦
-Playout.fs.js:80 East plays 3♣
-Playout.fs.js:80 East plays 3♠
-Playout.fs.js:80 East plays 8♣
-Playout.fs.js:80 East plays 9♣
-*)
-
 module Program =
 
-    let run () =
-
-        use model =
+    let private getModel () =
+        let model =
             new AdvantageModel(1250, 6, 0.0, TorchSharp.torch.CPU)
         model.load("AdvantageModel.pt") |> ignore
         model.eval()
+        model
+
+    let run1 () =
+
+        use model = getModel ()
 
         let hand =
             [ 
@@ -55,4 +45,33 @@ module Program =
             (Array.map Action.toBid infoSet.LegalActions)
             (strategy.ToArray())
 
-    do run ()
+    let run2 () =
+
+        use model = getModel ()
+
+        let hand =
+            [ 
+                "A♥"
+                "J♥"
+                "5♠"
+                "T♦"
+                "2♠"
+                "2♣"
+            ]
+                |> Seq.map Card.fromString
+                |> set
+        let deal =
+            ClosedDeal.create Seat.West
+        let infoSet =
+            InformationSet.create Seat.North hand deal Score.zero
+        let strategy =
+            Strategy.getFromAdvantage
+                model
+                [| infoSet |]
+                |> Array.exactlyOne
+        Array.iter2 (fun bid prob ->
+            printfn $"   {bid}: {prob}")
+            (Array.map Action.toBid infoSet.LegalActions)
+            (strategy.ToArray())
+
+    do run2 ()
