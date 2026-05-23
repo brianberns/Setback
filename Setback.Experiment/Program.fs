@@ -16,7 +16,8 @@ module Program =
         model.eval()
         model
 
-    let run1 () =
+    /// Model bids Four with J9.
+    let test1 () =
 
         use model = getModel ()
 
@@ -48,7 +49,8 @@ module Program =
             (Array.map Action.toBid infoSet.LegalActions)
             (strategy.ToArray())
 
-    let run2 () =
+    /// Model bids Two with AJ.
+    let test2 () =
 
         use model = getModel ()
 
@@ -77,7 +79,8 @@ module Program =
             (Array.map Action.toBid infoSet.LegalActions)
             (strategy.ToArray())
 
-    let run3 () =
+    /// Model holding K53 establishes trump with 5.
+    let test3 () =
 
         use model = getModel ()
 
@@ -112,4 +115,4 @@ module Program =
 
     do
         Console.OutputEncoding <- Encoding.UTF8
-        run3 ()
+        test3 ()
