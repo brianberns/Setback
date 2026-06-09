@@ -14,7 +14,7 @@ module AdvantageModel =
     /// calculations.
     let private _noGrade = TorchSharp.torch.no_grad()
 
-    /// Connects to Hearts model.
+    /// Connects to Setback model.
     let private connect dir =
         let model =
             new AdvantageModel(
@@ -27,8 +27,8 @@ module AdvantageModel =
         model.eval()
         model
 
-    /// Hearts API.
-    let heartsApi dir =
+    /// Setback API.
+    let setbackApi dir =
         let rng = Random(0)
         let model = connect dir
         model.eval()
@@ -61,5 +61,5 @@ module Remoting =
     /// Build API.
     let webPart dir =
         Remoting.createApi()
-            |> Remoting.fromValue (AdvantageModel.heartsApi dir)
+            |> Remoting.fromValue (AdvantageModel.setbackApi dir)
             |> Remoting.buildWebPart
