@@ -15,7 +15,7 @@
   <ItemGroup>
     <PackageReference Include="MathNet.Numerics.FSharp" Version="5.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageReference Include="Suave" Version="3.2.3">
+    <PackageReference Include="Suave" Version="3.4.4">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
     <PackageReference Include="TorchSharp" Version="0.105.2">
